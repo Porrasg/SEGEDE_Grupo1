@@ -2,8 +2,8 @@
 
 namespace SEGEDE_Grupo1.WebApp.Pages.Engineer;
 
-// TODO: PageModel para Operations Dashboard consumiendo la Web API REST.
-public class DashboardModel : PageModel
+// TODO: PageModel para Energy Generation & Losses consumiendo la Web API REST.
+public class EnergyModel : PageModel
 {
     public void OnGet() { }
 }

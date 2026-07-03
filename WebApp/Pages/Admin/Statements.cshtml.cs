@@ -2,8 +2,8 @@
 
 namespace SEGEDE_Grupo1.WebApp.Pages.Admin;
 
-// TODO: PageModel para Admin Dashboard consumiendo la Web API REST.
-public class DashboardModel : PageModel
+// TODO: PageModel para Account Statements consumiendo la Web API REST.
+public class StatementsModel : PageModel
 {
     public void OnGet() { }
 }

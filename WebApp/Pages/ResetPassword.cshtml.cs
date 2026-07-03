@@ -2,8 +2,8 @@
 
 namespace SEGEDE_Grupo1.WebApp.Pages;
 
-// TODO: PageModel para Login consumiendo la Web API REST.
-public class LoginModel : PageModel
+// TODO: PageModel para Reset Password consumiendo la Web API REST.
+public class ResetPasswordModel : PageModel
 {
     public void OnGet() { }
 }

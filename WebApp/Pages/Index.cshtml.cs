@@ -1,13 +1,9 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
+﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace WebApp.Pages
+namespace SEGEDE_Grupo1.WebApp.Pages;
+
+// TODO: PageModel para Home consumiendo la Web API REST.
+public class IndexModel : PageModel
 {
-    public class IndexModel : PageModel
-    {
-        public void OnGet()
-        {
-
-        }
-    }
+    public void OnGet() { }
 }
