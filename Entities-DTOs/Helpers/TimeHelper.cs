@@ -1,10 +1,18 @@
-﻿namespace SEGEDE_Grupo1.EntitiesDTOs.Helpers;
+namespace SEGEDE_Grupo1.EntitiesDTOs.Helpers;
 
-// TODO: Helper de tiempo con zona horaria America/Costa_Rica segÃºn documento tÃ©cnico Â§7.1.
+/// <summary>
+/// Helper de tiempo con zona horaria America/Costa_Rica (§7.1).
+/// Regla: nunca usar DateTime.Now / DateTime.UtcNow en managers/factories.
+/// Siempre usar TimeHelper.NowCR().
+/// </summary>
 public static class TimeHelper
 {
-    public static DateTime NowCR()
-    {
-        return DateTime.UtcNow;
-    }
+    private static readonly TimeZoneInfo CR =
+        TimeZoneInfo.FindSystemTimeZoneById("America/Costa_Rica");
+
+    public static DateTime NowCR() =>
+        TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, CR);
+
+    public static bool IsLastDayOfMonth(DateTime date) =>
+        date.Day == DateTime.DaysInMonth(date.Year, date.Month);
 }

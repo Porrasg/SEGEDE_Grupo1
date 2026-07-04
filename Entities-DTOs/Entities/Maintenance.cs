@@ -1,6 +1,8 @@
-﻿namespace SEGEDE_Grupo1.EntitiesDTOs.Entities;
+namespace SEGEDE_Grupo1.EntitiesDTOs.Entities;
 
-// TODO: Entidad Maintenance mapeada a tblMaintenances segÃºn documento tÃ©cnico Â§9.6.
+/// <summary>
+/// Mantenimiento de turbina → tblMaintenances (§9.6).
+/// </summary>
 public class Maintenance : BaseDTO
 {
     public int TurbineId { get; set; }

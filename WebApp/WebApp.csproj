@@ -6,4 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Entities-DTOs\Entities-DTOs.csproj" />
+  </ItemGroup>
 </Project>

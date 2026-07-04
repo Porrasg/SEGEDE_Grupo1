@@ -1,7 +1,10 @@
-﻿namespace SEGEDE_Grupo1.EntitiesDTOs;
+namespace SEGEDE_Grupo1.EntitiesDTOs;
 
-// TODO: Implementar propiedades base (Id, Created, Updated) segÃºn documento tÃ©cnico Â§3.1.
-public abstract class BaseDTO
+/// <summary>
+/// Clase base para todas las entidades del sistema.
+/// Propiedades comunes: Id, Created, Updated (§3.1).
+/// </summary>
+public class BaseDTO
 {
     public int Id { get; set; }
     public DateTime Created { get; set; }

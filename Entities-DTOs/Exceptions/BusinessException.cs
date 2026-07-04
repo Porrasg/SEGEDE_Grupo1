@@ -1,7 +1,12 @@
-﻿namespace SEGEDE_Grupo1.EntitiesDTOs.Exceptions;
+namespace SEGEDE_Grupo1.EntitiesDTOs.Exceptions;
 
-// TODO: ExcepciÃ³n de negocio base segÃºn documento tÃ©cnico Â§5.
+/// <summary>
+/// Regla de negocio violada → HTTP 409 (§5).
+/// </summary>
 public class BusinessException : Exception
 {
-    public BusinessException(string message) : base(message) { }
+    public string? Code { get; }
+
+    public BusinessException(string message, string? code = null) : base(message)
+        => Code = code;
 }

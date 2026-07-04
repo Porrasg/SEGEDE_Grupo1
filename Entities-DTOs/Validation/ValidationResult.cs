@@ -1,8 +1,19 @@
-﻿namespace SEGEDE_Grupo1.EntitiesDTOs.Validation;
+using SEGEDE_Grupo1.EntitiesDTOs.Exceptions;
 
-// TODO: Resultado de validaciÃ³n para lÃ³gica de negocio y entidades segÃºn documento tÃ©cnico Â§6.
+namespace SEGEDE_Grupo1.EntitiesDTOs.Validation;
+
+/// <summary>
+/// Resultado de validación para lógica de negocio (§6).
+/// </summary>
 public class ValidationResult
 {
-    public bool IsValid { get; set; } = true;
-    public List<string> Errors { get; set; } = new();
+    public List<string> Errors { get; } = new();
+    public bool IsValid => Errors.Count == 0;
+
+    public void Add(string error) => Errors.Add(error);
+
+    public void ThrowIfInvalid()
+    {
+        if (!IsValid) throw new Exceptions.ValidationException(Errors.ToArray());
+    }
 }

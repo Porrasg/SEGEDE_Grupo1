@@ -1,8 +1,10 @@
-﻿namespace SEGEDE_Grupo1.EntitiesDTOs.DTOs;
+namespace SEGEDE_Grupo1.EntitiesDTOs.DTOs;
 
-// TODO: Estructura base para solicitudes paginadas segÃºn documento tÃ©cnico Â§3.4.
+/// <summary>
+/// Solicitud de paginación estándar (§3.4). Page 1-indexed, PageSize máx 200.
+/// </summary>
 public class PagedRequest
 {
-    public int PageNumber { get; set; } = 1;
-    public int PageSize { get; set; } = 10;
+    public int Page { get; set; } = 1;
+    public int PageSize { get; set; } = 50;
 }

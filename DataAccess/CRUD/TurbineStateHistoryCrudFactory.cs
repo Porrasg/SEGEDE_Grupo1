@@ -1,0 +1,69 @@
+using SEGEDE_Grupo1.DataAccess.DAO;
+using SEGEDE_Grupo1.EntitiesDTOs;
+using SEGEDE_Grupo1.EntitiesDTOs.Entities;
+
+namespace SEGEDE_Grupo1.DataAccess.CRUD;
+
+/// <summary>
+/// CrudFactory para TurbineStateHistory → tblTurbineStateHistory (§12.4). WORM log.
+/// </summary>
+public class TurbineStateHistoryCrudFactory : CrudFactory
+{
+    public override void Create(BaseDTO baseDTO)
+    {
+        var h = (TurbineStateHistory)baseDTO;
+        var op = new Operation { ProcedureName = "CRE_TRB_STATE_PR" };
+        op.AddIntParameter("@TurbineId", h.TurbineId);
+        op.AddStringParameter("@PreviousState", h.PreviousState);
+        op.AddStringParameter("@NewState", h.NewState);
+        op.AddDateTimeParameter("@ChangeDate", h.ChangeDate);
+        op.AddStringParameter("@Reason", h.Reason);
+        op.AddIntParameter("@UserId", h.UserId);
+        op.AddDateTimeParameter("@Created", h.Created);
+        sqlDao.ExecuteProcedure(op);
+    }
+
+    public override void Update(BaseDTO baseDTO) =>
+        throw new NotSupportedException("Update is not supported for TurbineStateHistory (WORM).");
+
+    public override void Delete(BaseDTO baseDTO) =>
+        throw new NotSupportedException("Delete is not supported for TurbineStateHistory (WORM).");
+
+    public override T RetrieveById<T>(int id)
+    {
+        var op = new Operation { ProcedureName = "RET_ID_TRB_STATE_PR" };
+        op.AddIntParameter("@Id", id);
+        var results = sqlDao.ExecuteQueryProcedure(op);
+        return results.Count > 0 ? (T)(object)BuildHistory(results[0]) : default!;
+    }
+
+    public override List<T> RetrieveAll<T>()
+    {
+        var op = new Operation { ProcedureName = "RET_ALL_TRB_STATE_PR" };
+        var results = sqlDao.ExecuteQueryProcedure(op);
+        return results.Select(r => (T)(object)BuildHistory(r)).ToList();
+    }
+
+    // --- Custom methods ---
+
+    public List<TurbineStateHistory> RetrieveByTurbine(int turbineId)
+    {
+        var op = new Operation { ProcedureName = "RET_BY_TURBINE_TRB_STATE_PR" };
+        op.AddIntParameter("@TurbineId", turbineId);
+        var results = sqlDao.ExecuteQueryProcedure(op);
+        return results.Select(BuildHistory).ToList();
+    }
+
+    private static TurbineStateHistory BuildHistory(Dictionary<string, object> row) => new()
+    {
+        Id = (int)row["Id"],
+        TurbineId = (int)row["TurbineId"],
+        PreviousState = (string)row["PreviousState"],
+        NewState = (string)row["NewState"],
+        ChangeDate = (DateTime)row["ChangeDate"],
+        Reason = (string)row["Reason"],
+        UserId = (int)row["UserId"],
+        Created = (DateTime)row["Created"],
+        Updated = row["Updated"] as DateTime? ?? default
+    };
+}
