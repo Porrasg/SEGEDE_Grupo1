@@ -1,0 +1,87 @@
+@* _Navbar.cshtml (§29.2) - Barra de navegación por rol con tema minimalista alto contraste *@
+<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom box-shadow mb-4 sticky-top">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand fw-bold" href="/">
+            <span class="border border-2 border-dark px-2 py-1 bg-dark text-white me-1">SGDE</span>
+            <span class="fs-6 text-muted fw-normal">| Energía</span>
+        </a>
+        <button class="navbar-toggler border-dark" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <!-- Menú Administrator -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle fw-bold" href="#" id="navAdmin" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        [ Admin ]
+                    </a>
+                    <ul class="dropdown-menu border-dark shadow-sm" aria-labelledby="navAdmin">
+                        <li><a class="dropdown-item" href="/Admin/Dashboard">Dashboard</a></li>
+                        <li><a class="dropdown-item" href="/Admin/Users">Users</a></li>
+                        <li><a class="dropdown-item" href="/Admin/Turbines">Turbines</a></li>
+                        <li><a class="dropdown-item" href="/Admin/Flush">Flush Control</a></li>
+                        <li><a class="dropdown-item" href="/Admin/CentralBank">Central Bank</a></li>
+                        <li><a class="dropdown-item" href="/Admin/Forecasts">Forecasts</a></li>
+                        <li><a class="dropdown-item" href="/Admin/Distribution">Distribution</a></li>
+                        <li><a class="dropdown-item" href="/Admin/Prices">Prices</a></li>
+                        <li><a class="dropdown-item" href="/Admin/Taxes">Taxes</a></li>
+                        <li><a class="dropdown-item" href="/Admin/Statements">Statements</a></li>
+                        <li><a class="dropdown-item" href="/Admin/Audit">Audit Logs</a></li>
+                        <li><a class="dropdown-item" href="/Admin/Exports">Export Logs</a></li>
+                    </ul>
+                </li>
+                <!-- Menú Engineer -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle fw-bold" href="#" id="navEngineer" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        [ Engineer ]
+                    </a>
+                    <ul class="dropdown-menu border-dark shadow-sm" aria-labelledby="navEngineer">
+                        <li><a class="dropdown-item" href="/Engineer/Dashboard">Operations Dashboard</a></li>
+                        <li><a class="dropdown-item" href="/Engineer/Turbines">Turbines</a></li>
+                        <li><a class="dropdown-item" href="/Engineer/Maintenances">Maintenances</a></li>
+                        <li><a class="dropdown-item" href="/Engineer/Failures">Failures</a></li>
+                        <li><a class="dropdown-item" href="/Engineer/Energy">Energy & Losses</a></li>
+                        <li><a class="dropdown-item" href="/Engineer/CentralBank">Central Bank</a></li>
+                        <li><a class="dropdown-item" href="/Engineer/FlushHistory">Flush History</a></li>
+                        <li><a class="dropdown-item" href="/Engineer/Audit">Technical Audit</a></li>
+                    </ul>
+                </li>
+                <!-- Menú Buyer -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle fw-bold" href="#" id="navBuyer" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        [ Buyer ]
+                    </a>
+                    <ul class="dropdown-menu border-dark shadow-sm" aria-labelledby="navBuyer">
+                        <li><a class="dropdown-item" href="/Buyer/Dashboard">Buyer Dashboard</a></li>
+                        <li><a class="dropdown-item" href="/Buyer/Forecasts">My Forecasts</a></li>
+                        <li><a class="dropdown-item" href="/Buyer/Statements">My Statements</a></li>
+                        <li><a class="dropdown-item" href="/Buyer/Distributions">My Distributions</a></li>
+                        <li><a class="dropdown-item" href="/Buyer/Profile">My Profile</a></li>
+                    </ul>
+                </li>
+                <!-- Páginas Públicas -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navPublic" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Public
+                    </a>
+                    <ul class="dropdown-menu border-dark shadow-sm" aria-labelledby="navPublic">
+                        <li><a class="dropdown-item" href="/Login">Login</a></li>
+                        <li><a class="dropdown-item" href="/LoginOtp">Login OTP</a></li>
+                        <li><a class="dropdown-item" href="/Register">Register</a></li>
+                        <li><a class="dropdown-item" href="/Activate">Activate Account</a></li>
+                        <li><a class="dropdown-item" href="/RecoverPassword">Recover Password</a></li>
+                        <li><a class="dropdown-item" href="/ResetPassword">Reset Password</a></li>
+                        <li><a class="dropdown-item" href="/AccessDenied">Access Denied</a></li>
+                    </ul>
+                </li>
+            </ul>
+            <div class="d-flex align-items-center gap-3">
+                <span class="badge bg-secondary border border-dark text-dark px-2 py-1" id="navUserName">Usuario No Autenticado</span>
+                <button class="btn btn-sm btn-outline-secondary" id="btnToggleTheme" title="Alternar Tema (Blanco/Negro)">
+                    <span id="themeIcon">◑</span> Modo Oscuro
+                </button>
+                <a href="/Login" class="btn btn-sm btn-dark" id="btnSignOut">Sign Out</a>
+            </div>
+        </div>
+    </div>
+</nav>
