@@ -12,6 +12,8 @@ SqlDao.Configure(connectionString);
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 // Registro de servicios en segundo plano para simulación de energía, notificaciones y auditoría WORM.
 builder.Services.AddHostedService<EnergySimulationJob>();
@@ -27,7 +29,12 @@ app.UseExceptionHandlingMiddleware();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
+
+// Redirección automática de la ruta raíz hacia la interfaz visual Swagger para facilitar inspección en el navegador.
+app.MapGet("/", () => Results.Redirect("/swagger"));
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
