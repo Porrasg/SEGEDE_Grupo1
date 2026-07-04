@@ -9,4 +9,5 @@ public class CentralBank : BaseDTO
     public decimal CurrentInventory { get; set; }
     public decimal? ManualCapacity { get; set; }
     public decimal AutomaticCapacity { get; set; }
+    public decimal EffectiveCapacity => ManualCapacity ?? AutomaticCapacity;
 }

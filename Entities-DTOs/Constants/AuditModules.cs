@@ -16,4 +16,5 @@ public static class AuditModules
     public const string Distribution = "Distribution";
     public const string Billing = "Billing";
     public const string Audit = "Audit";
+    public const string System = "System";
 }

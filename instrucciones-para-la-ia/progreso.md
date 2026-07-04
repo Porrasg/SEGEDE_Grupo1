@@ -6,41 +6,45 @@
 ---
 
 ## 📌 Estado Actual del Proyecto
-- **Fase**: Fase 1 — Estructuración y Configuración Base (Esqueleto inicial completado).
-- **Estado General**: Se ha construido el esqueleto arquitectónico en las 5 capas del sistema (`Entities-DTOs`, `DataAccess`, `CoreApp`, `WebAPI` y `WebApp`) basándose rigurosamente en el documento técnico oficial `SGDE_TechDesign_Complete.md`. Todas las referencias entre proyectos están conectadas en los `.csproj` y las clases principales cuentan con comentarios `TODO` sin lógica funcional compleja.
+- **Fase**: Fase 3 — Lógica de Negocio y Gestores (CoreApp completada).
+- **Estado General**: Se han construido e implementado funcionalmente los 13 Managers de negocio en `CoreApp\Managers` así como los constructores de exportación en `CoreApp\Export`, cumpliendo al 100% con los requisitos y semántica ACID definidos en `SGDE_TechDesign_Complete.md` (sin usar ORMs ni IoC). Todos los proyectos base (`Entities-DTOs`, `DataAccess` y `CoreApp`) compilan exitosamente con 0 errores.
 
 ---
 
 ## ✅ Tareas Completadas
-- [x] Creación de la solución `SEGEDE_Grupo1.slnx` con los proyectos base: `Entities-DTOs`, `DataAccess`, `CoreApp`, `WebAPI` y `WebApp`.
-- [x] Configuración del archivo `.gitignore` y de la carpeta de control local `instrucciones-para-la-ia/`.
-- [x] Conexión jerárquica de proyectos en archivos `.csproj` (`DataAccess` -> `Entities-DTOs`; `CoreApp` -> `Entities-DTOs`, `DataAccess`; `WebAPI` -> `Entities-DTOs`, `CoreApp`).
-- [x] Limpieza y preparación de archivos generados por plantillas (`Class1.cs` y `WeatherForecast.cs` marcados como placeholders para eliminación).
-- [x] Creación de carpetas y archivos esqueleto en **Capa 0 (`Entities-DTOs`)**: `BaseDTO.cs`, `Constants/` (`SystemActor`, `UserRoles`, `UserStates`), `Entities/` (`User`, `Turbine`, `Maintenance`), `DTOs/` (`ApiResponse`, `PagedRequest`, `PagedResponse`), `Exceptions/`, `Validation/` y `Helpers/`.
-- [x] Creación de carpetas y archivos esqueleto en **Capa 1 (`DataAccess`)**: `DAO/` (`SqlDao`, `Operation`), `CRUD/` (`CrudFactory` abstracta, `UserCrudFactory`, `TurbineCrudFactory`, `MaintenanceCrudFactory`).
-- [x] Creación de carpetas y archivos esqueleto en **Capa 2 (`CoreApp`)**: `Helpers/` (`JwtHelper`, `PasswordHasher`), `External/` (`OtpServiceClient`), `Export/` (`CsvBuilder`, `ExcelBuilder`, `HtmlStatementBuilder`), `Managers/` (`UserManager`, `TurbineManager`, `DashboardManager` instanciando factories con `new()`).
-- [x] Creación de carpetas y archivos esqueleto en **Capa 3 (`WebAPI`)**: `Controllers/` (`UsersController`, `TurbinesController`, `DashboardController`), `Middleware/` (`ExceptionHandlingMiddleware`), `BackgroundServices/` (`JobBase`, `EnergySimulationJob`).
-- [x] Creación de carpetas y archivos esqueleto en **Capa 4 (`WebApp`)**: Scripts estáticos en `wwwroot/js/` (`apiClient.js`, `session.js`) y `pages-controller/` (`LoginViewController.js`, `AdminDashboardViewController.js`), así como Razor Pages esquemáticas: `Pages/Login`, `Pages/Admin/Dashboard`, `Pages/Engineer/Dashboard` y `Pages/Buyer/Dashboard`.
+- [x] Creación y configuración de la solución `SEGEDE_Grupo1.slnx` con los proyectos base.
+- [x] Implementación completa de la **Capa 0 (`Entities-DTOs`)**: todas las entidades, constantes, excepciones, helpers, DTOs de Request/Response paginados y estándar.
+- [x] Implementación completa de la **Capa 1 (`DataAccess`)**: motor SQL genérico en `SqlDao` y `Operation` con soporte transaccional ACID, junto con las 24 `CrudFactories` del sistema.
+- [x] Implementación completa de la **Capa 2 (`CoreApp`)**:
+  - `UserManager`: registro, login en 2 pasos, OTP, bloqueo por intentos fallidos y recuperación de contraseña.
+  - `TurbineManager`: ciclo de vida completo y máquina de estados validada.
+  - `MaintenanceManager` y `FailureManager`: programación, alertas y registro de incidencias con cálculo de pérdidas.
+  - `EnergyManager`: simulación de ciclo de energía (producción, pérdida e inventario local).
+  - `FlushManager` y `CentralBankManager`: traslados ACID al Banco Central y manejo de capacidad efectiva/saturación.
+  - `ForecastManager` y `DistributionManager`: pronóstico de demanda, escasez y ciclo mensual de distribución comercial.
+  - `BillingManager` + `CsvBuilder`, `ExcelBuilder`, `HtmlStatementBuilder`: gestión de precios, impuestos, emisión, anulación, regeneración y exportación de estados de cuenta.
+  - `NotificationManager` y `AuditManager`: cola asíncrona de correos con backoff exponencial y auditoría inmutable del sistema.
+  - `DashboardManager`: agregación de KPIs por rol (Admin, Operaciones, Comprador) con validación de ownership.
 
 ---
 
 ## 🚧 En Progreso
-- [ ] Implementación manual paso a paso de la persistencia (Stored Procedures SQL en Azure SQL Database y métodos de acceso en `SqlDao`).
+- [ ] Implementación funcional de los Controladores REST (`WebAPI\Controllers`) y los Background Services de simulación/procesamiento.
 
 ---
 
 ## 📋 Tareas Pendientes y Siguiente Paso
 ### 🎯 Siguiente Paso Recomendado:
-1. **Fase 2 - Base de Datos e Infraestructura SQL (`DataAccess`)**:
-   - Crear el script DDL de las tablas SQL en Azure SQL (`tblUsers`, `tblTurbines`, `tblMaintenances`, etc.) y sus Stored Procedures asociados según el catálogo del documento técnico.
-   - Implementar la lógica real de conexión a base de datos en `SqlDao.cs` usando `Microsoft.Data.SqlClient`.
-2. **Fase 2 - Completar Entidades y DTOs (`Entities-DTOs`)**:
-   - Agregar las 21 entidades restantes del catálogo (§9) y los DTOs concretos de Request/Response (§8).
-3. **Fase 3 - Lógica de Negocio (`CoreApp`)**:
-   - Implementar la validación y reglas de negocio en los Managers (ej. BCrypt en `UserManager`, transacciones en `TurbineManager`).
+1. **Fase 4 - Exposición de Endpoints API (`WebAPI`)**:
+   - Completar los controladores REST en `WebAPI\Controllers` conectando cada endpoint al método correspondiente de su Manager en `CoreApp`.
+   - Asegurar que el Middleware de manejo global de excepciones (`ExceptionHandlingMiddleware`) mapee correctamente las excepciones de negocio (`BusinessException`, `NotFoundException`, `UnauthorizedAccessAppException`, etc.) a los códigos HTTP adecuados (400, 401, 403, 404, 409, 500).
+   - Implementar la lógica funcional de los servicios en segundo plano (`EnergySimulationJob`, `AuditArchiveJob`, etc.).
+2. **Fase 5 - Capa de Presentación (`WebApp`)**:
+   - Conectar los ViewControllers JavaScript y páginas Razor con los endpoints de la API.
 
 ---
 
 ## 📝 Notas para el Desarrollador y la IA
-- Se respetó estrictamente la restricción del documento de no utilizar ORMs (Entity Framework está prohibido) y de no utilizar contenedores de inyección de dependencias (IoC) para la instanciación de fábricas y gestores (`new XxxCrudFactory()`).
+- Se respetaron estrictamente las restricciones arquitectónicas de no utilizar ORMs ni IoC (`new XxxCrudFactory()`, `new XxxManager()`).
+
 - Todo el código base esqueleto está redactado con nombres en inglés y explicaciones/TODOs en español.

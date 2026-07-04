@@ -1,6 +1,107 @@
-﻿namespace SEGEDE_Grupo1.CoreApp.External;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text.Json;
+using SEGEDE_Grupo1.EntitiesDTOs.Exceptions;
 
-// TODO: Cliente para API externa de terceros de OTP segÃºn documento tÃ©cnico Â§13.3 y Â§19.
+namespace SEGEDE_Grupo1.CoreApp.External;
+
+/// <summary>
+/// Cliente para la comunicación con el servicio externo de OTP (§13.3).
+/// Lee BaseUrl y ApiKey de variables de entorno o configuración estática al instanciarse sin DI.
+/// </summary>
 public class OtpServiceClient
 {
+    public static string BaseUrlSetting { get; set; } = Environment.GetEnvironmentVariable("OtpService:BaseUrl") ?? "https://api.otpservice.local";
+    public static string ApiKeySetting { get; set; } = Environment.GetEnvironmentVariable("OtpService:ApiKey") ?? "";
+
+    private readonly HttpClient _httpClient;
+    private readonly string _baseUrl;
+    private readonly string _apiKey;
+
+    public OtpServiceClient()
+    {
+        _baseUrl = BaseUrlSetting;
+        _apiKey = ApiKeySetting;
+        _httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+    }
+
+    public OtpServiceClient(string baseUrl, string apiKey, HttpClient? httpClient = null)
+    {
+        _baseUrl = baseUrl;
+        _apiKey = apiKey;
+        _httpClient = httpClient ?? new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+    }
+
+    /// <summary>
+    /// Solicita la generación y envío de un OTP para un correo y tipo de uso específicos.
+    /// </summary>
+    /// <param name="email">Correo del destinatario.</param>
+    /// <param name="usageType">Tipo de uso (ej. Activation, Login, PasswordRecovery).</param>
+    /// <returns>True si la solicitud fue exitosa; de lo contrario, False.</returns>
+    public bool RequestOtp(string email, string usageType)
+    {
+        try
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, $"{_baseUrl.TrimEnd('/')}/api/otp/request");
+            if (!string.IsNullOrEmpty(_apiKey))
+            {
+                request.Headers.Add("X-Api-Key", _apiKey);
+            }
+
+            var payload = new { email, usageType };
+            request.Content = JsonContent.Create(payload);
+
+            var response = _httpClient.Send(request);
+            return response.IsSuccessStatusCode;
+        }
+        catch (HttpRequestException)
+        {
+            throw new BusinessException("OTP service unavailable.", "OTP_SERVICE_UNAVAILABLE");
+        }
+        catch (TaskCanceledException)
+        {
+            throw new BusinessException("OTP service unavailable.", "OTP_SERVICE_UNAVAILABLE");
+        }
+        catch (Exception ex) when (ex is not BusinessException)
+        {
+            throw new BusinessException("OTP service unavailable.", "OTP_SERVICE_UNAVAILABLE");
+        }
+    }
+
+    /// <summary>
+    /// Verifica si el código OTP proporcionado es válido para el correo y tipo de uso.
+    /// </summary>
+    /// <param name="email">Correo del usuario.</param>
+    /// <param name="usageType">Tipo de uso.</param>
+    /// <param name="code">Código OTP de 6 dígitos ingresado por el usuario.</param>
+    /// <returns>True si el código es válido; de lo contrario, False.</returns>
+    public bool VerifyOtp(string email, string usageType, string code)
+    {
+        try
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, $"{_baseUrl.TrimEnd('/')}/api/otp/verify");
+            if (!string.IsNullOrEmpty(_apiKey))
+            {
+                request.Headers.Add("X-Api-Key", _apiKey);
+            }
+
+            var payload = new { email, usageType, code };
+            request.Content = JsonContent.Create(payload);
+
+            var response = _httpClient.Send(request);
+            return response.IsSuccessStatusCode;
+        }
+        catch (HttpRequestException)
+        {
+            throw new BusinessException("OTP service unavailable.", "OTP_SERVICE_UNAVAILABLE");
+        }
+        catch (TaskCanceledException)
+        {
+            throw new BusinessException("OTP service unavailable.", "OTP_SERVICE_UNAVAILABLE");
+        }
+        catch (Exception ex) when (ex is not BusinessException)
+        {
+            throw new BusinessException("OTP service unavailable.", "OTP_SERVICE_UNAVAILABLE");
+        }
+    }
 }
