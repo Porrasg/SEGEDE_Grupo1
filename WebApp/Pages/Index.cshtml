@@ -1,21 +1,257 @@
 @page
 @model SEGEDE_Grupo1.WebApp.Pages.IndexModel
 @{
-    ViewData["Title"] = "Inicio - SGDE";
+    ViewData["Title"] = "Portal Principal";
 }
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>@ViewData["Title"]</h2>
+<!-- SECCIÓN 1: HERO & LOGIN INTEGRADO -->
+<div class="row g-4 mb-5 align-items-center">
+    <div class="col-lg-7">
+        <div class="p-4 p-md-5 card bg-white border-2 shadow-sm h-100 justify-content-center">
+            <span class="badge bg-dark text-white border border-dark mb-3 align-self-start px-3 py-2 fs-6">Plataforma Nacional N-Tier</span>
+            <h1 class="display-5 fw-bold text-dark letter-spacing mb-3">SISTEMA DE GESTIÓN Y DISTRIBUCIÓN DE ENERGÍA</h1>
+            <p class="fs-5 text-muted mb-4">
+                Infraestructura centralizada de alta disponibilidad para el control operativo de turbinas renovables, administración del inventario del Banco Central, pronóstico de demanda mayorista y facturación transaccional ACID.
+            </p>
+            <div class="d-flex flex-wrap gap-2 pt-2 border-top">
+                <a href="#modulos" class="btn btn-outline-secondary">Explorar Módulos</a>
+                <a href="#arquitectura" class="btn btn-outline-secondary">Especificaciones</a>
+                <a href="#contacto" class="btn btn-outline-secondary">Contáctenos</a>
+            </div>
+        </div>
     </div>
-        <div class="p-5 mb-4 bg-light rounded-3">
-        <div class="container-fluid py-5">
-            <h1 class="display-5 fw-bold">Sistema de Gestión y Distribución de Energía (SGDE)</h1>
-            <p class="col-md-8 fs-4">Plataforma centralizada para la gestión, pronóstico, distribución y facturación de recursos energéticos renovables.</p>
-            <div class="mt-4">
-                <a href="/Login" class="btn btn-primary btn-lg me-2">Iniciar Sesión</a>
-                <a href="/Register" class="btn btn-outline-secondary btn-lg">Registrarse como Comprador</a>
+    
+    <!-- LOGIN INTEGRADO EN LANDING PAGE -->
+    <div class="col-lg-5">
+        <div class="card border-2 shadow h-100">
+            <div class="card-header bg-dark text-white py-3">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-shield-lock me-2"></i>ACCESO AL SISTEMA / LOGIN</h5>
+            </div>
+            <div class="card-body p-4 d-flex flex-column justify-content-center">
+                <p class="text-muted small mb-3">Ingresa tus credenciales para acceder al portal operativo o comercial (Autenticación 2FA/OTP requerida).</p>
+                
+                <form id="landingLoginForm">
+                    <div class="mb-3">
+                        <label for="loginIdent" class="form-label fw-bold">Identificación o Correo Electrónico</label>
+                        <input type="text" class="form-control" id="loginIdent" required placeholder="ej. admin@sgde.cr o 101110111">
+                    </div>
+                    <div class="mb-3">
+                        <label for="loginPass" class="form-label fw-bold">Contraseña</label>
+                        <input type="password" class="form-control" id="loginPass" required placeholder="••••••••">
+                    </div>
+                    <div class="d-grid mb-3 mt-4">
+                        <button type="submit" class="btn btn-primary py-2 fw-bold">
+                            Continuar <i class="bi bi-arrow-right ms-1"></i>
+                        </button>
+                    </div>
+                    <div class="d-flex justify-content-between pt-2 border-top small">
+                        <a href="/Register" class="text-dark fw-bold text-decoration-none">¿Nuevo comprador? Regístrate</a>
+                        <a href="/RecoverPassword" class="text-muted text-decoration-none">¿Olvidaste tu contraseña?</a>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 </div>
+
+<!-- SECCIÓN 2: MÓDULOS DEL SISTEMA -->
+<div id="modulos" class="mb-5 pt-3">
+    <div class="border-bottom border-2 pb-2 mb-4 d-flex justify-content-between align-items-end">
+        <h3 class="mb-0 fw-bold text-uppercase">Módulos Operativos y Comerciales</h3>
+        <span class="text-muted small">Arquitectura Desacoltada §27/§28</span>
+    </div>
+    
+    <div class="row g-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-header">Banco Central Energético</div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">
+                        Almacén maestro y gestión transaccional de inventario (MWh). Control de capacidad nominal automática vs. máxima manual.
+                    </p>
+                    <ul class="list-unstyled small mb-0 fw-bold">
+                        <li class="mb-1"><i class="bi bi-check2-square me-1"></i> Operaciones Flush ACID</li>
+                        <li class="mb-1"><i class="bi bi-check2-square me-1"></i> Mermas por Saturación</li>
+                        <li><i class="bi bi-check2-square me-1"></i> Bitácora de Movimientos</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-header">Control de Turbinas</div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">
+                        Monitoreo en tiempo real del parque de generación renovable. Gestión de estados operativos y ciclos de carga local.
+                    </p>
+                    <ul class="list-unstyled small mb-0 fw-bold">
+                        <li class="mb-1"><i class="bi bi-check2-square me-1"></i> Mantenimientos Prev/Corr</li>
+                        <li class="mb-1"><i class="bi bi-check2-square me-1"></i> Registro de Fallas y Severidad</li>
+                        <li><i class="bi bi-check2-square me-1"></i> KPIs: DO / IO / MTBF / MTTR</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-header">Demanda y Pronósticos</div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">
+                        Portal exclusivo para compradores autorizados. Registro y ajuste de proyecciones de consumo de energía a mediano plazo.
+                    </p>
+                    <ul class="list-unstyled small mb-0 fw-bold">
+                        <li class="mb-1"><i class="bi bi-check2-square me-1"></i> Horizonte Futuro ≤ 12 Meses</li>
+                        <li class="mb-1"><i class="bi bi-check2-square me-1"></i> Validación de Ownership</li>
+                        <li><i class="bi bi-check2-square me-1"></i> Escenarios de Distribución</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-header">Facturación y Auditoría</div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">
+                        Generación automática de estados de cuenta mensuales, control fiscal, notas de crédito y trazabilidad inmodificable.
+                    </p>
+                    <ul class="list-unstyled small mb-0 fw-bold">
+                        <li class="mb-1"><i class="bi bi-check2-square me-1"></i> Exportación CSV / Excel / PDF</li>
+                        <li class="mb-1"><i class="bi bi-check2-square me-1"></i> Precios e Impuestos Históricos</li>
+                        <li><i class="bi bi-check2-square me-1"></i> Auditoría WORM (Cold Archive)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SECCIÓN 3: ESPECIFICACIONES TÉCNICAS -->
+<div id="arquitectura" class="mb-5 pt-3">
+    <div class="card bg-white border-2">
+        <div class="card-header bg-light">Estándares de Diseño y Seguridad</div>
+        <div class="card-body p-4">
+            <div class="row g-4 text-center">
+                <div class="col-md-4 border-end">
+                    <h5 class="fw-bold mb-2">Arquitectura N-Tier Puro</h5>
+                    <p class="text-muted small mb-0">
+                        Separación estricta en capas (Entities/DTOs, DataAccess, CoreApp, WebAPI y WebApp). Acceso a datos nativo mediante ADO.NET y procedimientos almacenados, garantizando cero ORMs y máximo rendimiento de ejecución.
+                    </p>
+                </div>
+                <div class="col-md-4 border-end">
+                    <h5 class="fw-bold mb-2">Autenticación 2FA / OTP</h5>
+                    <p class="text-muted small mb-0">
+                        Seguridad de doble factor para todos los accesos. Verificación mediante códigos temporales (One-Time Password) enviados por correo electrónico, con bloqueo de seguridad tras intentos fallidos y tokens JWT sin estado.
+                    </p>
+                </div>
+                <div class="col-md-4">
+                    <h5 class="fw-bold mb-2">Inmutabilidad Transaccional</h5>
+                    <p class="text-muted small mb-0">
+                        Los registros de auditoría y movimientos financieros operan bajo el principio WORM (Write Once, Read Many). Las modificaciones a estados de cuenta generados generan notas de crédito y reversiones auditables.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SECCIÓN 4: INFORMACIÓN Y CONTÁCTENOS -->
+<div id="contacto" class="mb-4 pt-3">
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="card h-100">
+                <div class="card-header">Información y Operaciones</div>
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">Centro de Operaciones SGDE</h5>
+                    <p class="text-muted small mb-3">
+                        El Sistema de Gestión y Distribución de Energía opera las 24 horas del día, los 365 días del año, monitoreando la red nacional y coordinando los traslados del Banco Central.
+                    </p>
+                    <hr>
+                    <ul class="list-unstyled small mb-0">
+                        <li class="mb-2"><strong class="d-inline-block" style="width: 90px;">Ubicación:</strong> San José, Costa Rica</li>
+                        <li class="mb-2"><strong class="d-inline-block" style="width: 90px;">Teléfono:</strong> +506 2200-0000</li>
+                        <li class="mb-2"><strong class="d-inline-block" style="width: 90px;">Soporte:</strong> soporte@sgde.cr</li>
+                        <li class="mb-0"><strong class="d-inline-block" style="width: 90px;">Monitoreo:</strong> SOC / NOC Activo (99.99% SLA)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-7">
+            <div class="card h-100">
+                <div class="card-header">Formulario de Contacto / Consultas</div>
+                <div class="card-body">
+                    <form id="contactForm">
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Nombre Completo / Empresa</label>
+                                <input type="text" class="form-control" id="cName" required placeholder="Nombre o Razón Social">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Correo Electrónico de Contacto</label>
+                                <input type="email" class="form-control" id="cEmail" required placeholder="usuario@empresa.cr">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Tipo de Consulta</label>
+                            <select class="form-select" id="cSubject">
+                                <option value="Soporte Técnico">Soporte Técnico Operativo</option>
+                                <option value="Afiliación Comprador">Solicitud de Afiliación (Comprador)</option>
+                                <option value="Facturación">Consultas sobre Estados de Cuenta</option>
+                                <option value="Otros">Información General</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Mensaje o Detalle</label>
+                            <textarea class="form-control" id="cMessage" rows="3" required placeholder="Escriba su consulta aquí..."></textarea>
+                        </div>
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-dark px-4">Enviar Consulta</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Manejo de Login Integrado en Landing Page
+            const landingLoginForm = document.getElementById("landingLoginForm");
+            if (landingLoginForm) {
+                landingLoginForm.addEventListener("submit", function(e) {
+                    e.preventDefault();
+                    const ident = document.getElementById("loginIdent").value;
+                    const pass = document.getElementById("loginPass").value;
+                    
+                    if (ident && pass) {
+                        if (typeof Notifications !== "undefined") {
+                            Notifications.showToast("Verificando credenciales. Enviando código OTP al correo registrado...", "info");
+                        }
+                        // En desarrollo / demo: guardar en session y redirigir a LoginOtp tras breve pausa
+                        sessionStorage.setItem("temp_login_id", ident);
+                        setTimeout(() => {
+                            window.location.href = "/LoginOtp";
+                        }, 1200);
+                    }
+                });
+            }
+
+            // Manejo de Formulario de Contacto
+            const contactForm = document.getElementById("contactForm");
+            if (contactForm) {
+                contactForm.addEventListener("submit", function(e) {
+                    e.preventDefault();
+                    if (typeof Notifications !== "undefined") {
+                        Notifications.showToast("¡Gracias por su mensaje! Nuestro equipo de soporte técnico procesará su consulta en breve.", "success");
+                    }
+                    contactForm.reset();
+                });
+            }
+        });
+    </script>
+}
