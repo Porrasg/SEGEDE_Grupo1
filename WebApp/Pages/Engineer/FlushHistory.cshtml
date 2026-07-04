@@ -1,10 +1,15 @@
-﻿@page
+@page
 @model SEGEDE_Grupo1.WebApp.Pages.Engineer.FlushHistoryModel
 @{
-    ViewData["Title"] = "Flush Operational History";
+    ViewData["Title"] = "Historial Operativo de Flush";
 }
 
 <div class="container mt-4">
-    <h2>@ViewData["Title"]</h2>
-    <p class="text-muted">Esqueleto de la vista Flush Operational History segÃºn documento tÃ©cnico Â§27/Â§28.</p>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>@ViewData["Title"]</h2>
+    </div>
+        <div class="card">
+        <div class="card-header">Bitácora de Traslados y Vaciamientos al Banco Central</div>
+        <div class="card-body p-0"><table class="table table-hover mb-0"><thead><tr><th>ID</th><th>Tipo Ejecución</th><th>Fecha Inicio</th><th>Fecha Fin</th><th>Energía Trasladada (MWh)</th><th>Pérdida por Saturación (MWh)</th><th>Estado</th></tr></thead><tbody id="engFlushBody"><tr><td colspan="7" class="text-center">Cargando historial de flush...</td></tr></tbody></table></div>
+    </div>
 </div>

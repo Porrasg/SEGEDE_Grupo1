@@ -1,10 +1,33 @@
-﻿@page
+@page
 @model SEGEDE_Grupo1.WebApp.Pages.ActivateModel
 @{
-    ViewData["Title"] = "Account Activation";
+    ViewData["Title"] = "Activación de Cuenta";
 }
 
 <div class="container mt-4">
-    <h2>@ViewData["Title"]</h2>
-    <p class="text-muted">Esqueleto de la vista Account Activation segÃºn documento tÃ©cnico Â§27/Â§28.</p>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>@ViewData["Title"]</h2>
+    </div>
+        <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <p class="text-muted">Ingresa tu correo y el código OTP de activación enviado al registrarte.</p>
+                    <form id="activateForm">
+                        <div class="mb-3">
+                            <label class="form-label">Correo Electrónico</label>
+                            <input type="email" class="form-control" id="actEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Código de Activación (6 dígitos)</label>
+                            <input type="text" class="form-control text-center fs-4" id="actOtp" maxlength="6" required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success">Activar Cuenta</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

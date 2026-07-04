@@ -1,10 +1,32 @@
-﻿@page
+@page
 @model SEGEDE_Grupo1.WebApp.Pages.Engineer.TurbineDetailModel
 @{
-    ViewData["Title"] = "Turbine Technical Detail";
+    ViewData["Title"] = "Detalle Técnico de Turbina";
 }
 
 <div class="container mt-4">
-    <h2>@ViewData["Title"]</h2>
-    <p class="text-muted">Esqueleto de la vista Turbine Technical Detail segÃºn documento tÃ©cnico Â§27/Â§28.</p>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>@ViewData["Title"]</h2>
+    </div>
+        <div class="card mb-4">
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <div>
+                <h4 id="engDetName">Turbina #---</h4>
+                <p class="text-muted mb-0" id="engDetMeta">Código: --- | Ubicación: --- | Capacidad: --- MWh/sem</p>
+            </div>
+            <div><span class="badge bg-secondary fs-6" id="engDetStatus">Unknown</span></div>
+        </div>
+    </div>
+    <ul class="nav nav-tabs mb-3" id="engTurbineTabs" role="tablist">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#engTabHistory">Historial de Estados</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#engTabMaint">Mantenimientos</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#engTabFail">Fallas</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#engTabMetrics">Métricas (DO / IO / MTBF / MTTR)</button></li>
+    </ul>
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="engTabHistory"><table class="table table-sm"><thead><tr><th>Fecha</th><th>Estado Anterior</th><th>Nuevo Estado</th><th>Razón</th><th>Usuario</th></tr></thead><tbody id="engHistoryBody"></tbody></table></div>
+        <div class="tab-pane fade" id="engTabMaint"><table class="table table-sm"><thead><tr><th>Tipo</th><th>Inicio Est.</th><th>Fin Est.</th><th>Estado</th><th>Resultado</th></tr></thead><tbody id="engMaintBody"></tbody></table></div>
+        <div class="tab-pane fade" id="engTabFail"><table class="table table-sm"><thead><tr><th>Fecha</th><th>Severidad</th><th>Descripción</th></tr></thead><tbody id="engFailBody"></tbody></table></div>
+        <div class="tab-pane fade" id="engTabMetrics"><div class="row g-3"><div class="col-md-3"><div class="card text-center p-3"><h5>Disponibilidad (DO)</h5><h3 id="engValDo">-%</h3></div></div><div class="col-md-3"><div class="card text-center p-3"><h5>Indisponibilidad (IO)</h5><h3 id="engValIo">-%</h3></div></div><div class="col-md-3"><div class="card text-center p-3"><h5>MTBF</h5><h3 id="engValMtbf">- hrs</h3></div></div><div class="col-md-3"><div class="card text-center p-3"><h5>MTTR</h5><h3 id="engValMttr">- hrs</h3></div></div></div></div>
+    </div>
 </div>

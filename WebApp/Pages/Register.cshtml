@@ -1,10 +1,64 @@
-﻿@page
+@page
 @model SEGEDE_Grupo1.WebApp.Pages.RegisterModel
 @{
-    ViewData["Title"] = "User Registration";
+    ViewData["Title"] = "Registro de Comprador";
 }
 
 <div class="container mt-4">
-    <h2>@ViewData["Title"]</h2>
-    <p class="text-muted">Esqueleto de la vista User Registration segÃºn documento tÃ©cnico Â§27/Â§28.</p>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>@ViewData["Title"]</h2>
+    </div>
+        <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <form id="registerForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Identificación (Cédula/RUC)</label>
+                                <input type="text" class="form-control" id="regId" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Correo Electrónico</label>
+                                <input type="email" class="form-control" id="regEmail" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Nombre / Razón Social</label>
+                                <input type="text" class="form-control" id="regFirstName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Apellidos</label>
+                                <input type="text" class="form-control" id="regLastName" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Teléfono</label>
+                                <input type="tel" class="form-control" id="regPhone" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Fecha de Nacimiento / Constitución</label>
+                                <input type="date" class="form-control" id="regBirthDate" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Contraseña</label>
+                                <input type="password" class="form-control" id="regPassword" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Confirmar Contraseña</label>
+                                <input type="password" class="form-control" id="regConfirmPassword" required>
+                            </div>
+                        </div>
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-primary">Registrar Cuenta</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

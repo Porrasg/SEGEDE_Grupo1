@@ -1,10 +1,20 @@
-﻿@page
+@page
 @model SEGEDE_Grupo1.WebApp.Pages.Engineer.TurbinesModel
 @{
-    ViewData["Title"] = "Turbines Operations";
+    ViewData["Title"] = "Operación de Turbinas";
 }
 
 <div class="container mt-4">
-    <h2>@ViewData["Title"]</h2>
-    <p class="text-muted">Esqueleto de la vista Turbines Operations segÃºn documento tÃ©cnico Â§27/Â§28.</p>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>@ViewData["Title"]</h2>
+    </div>
+        <div class="d-flex justify-content-between mb-3">
+        <input type="text" class="form-control" id="opSearchTurbine" placeholder="Buscar turbina..." style="max-width: 300px;">
+    </div>
+    <table class="table table-bordered table-hover">
+        <thead><tr><th>Código</th><th>Nombre</th><th>Ubicación</th><th>Capacidad (MWh/sem)</th><th>Estado</th><th>Acciones Operativas</th></tr></thead>
+        <tbody id="opTurbinesBody"><tr><td colspan="6" class="text-center">Cargando turbinas...</td></tr></tbody>
+    </table>
+    <!-- Modal Cambio Estado -->
+    <div class="modal fade" id="opStateModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Cambiar Estado Operativo</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="opStateForm"><div class="mb-3"><label class="form-label">Nuevo Estado</label><select class="form-select" id="opNewState"></select></div><div class="mb-3"><label class="form-label">Razón Técnica</label><textarea class="form-control" id="opStateReason" required></textarea></div></form></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="button" class="btn btn-primary" id="opConfirmStateBtn">Confirmar</button></div></div></div></div>
 </div>
