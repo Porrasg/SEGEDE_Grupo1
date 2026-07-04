@@ -19,9 +19,11 @@ public class CentralBankCrudFactory : CrudFactory
     public override void Delete(BaseDTO baseDTO) =>
         throw new NotSupportedException("Delete is not supported for CentralBank (Singleton).");
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public override T RetrieveById<T>(int id) =>
         throw new NotSupportedException("Use RetrieveSingleton for CentralBank.");
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public override List<T> RetrieveAll<T>() =>
         throw new NotSupportedException("Use RetrieveSingleton for CentralBank.");
 
@@ -34,6 +36,7 @@ public class CentralBankCrudFactory : CrudFactory
         return results.Count > 0 ? BuildCentralBank(results[0]) : null;
     }
 
+    // Función encargada de modificar y actualizar los campos operacionales de registros existentes.
     public void UpdateInventory(decimal currentInventory, DateTime updated)
     {
         var op = new Operation { ProcedureName = "UPD_INVENTORY_CENT_BANK_PR" };
@@ -42,6 +45,7 @@ public class CentralBankCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función encargada de modificar y actualizar los campos operacionales de registros existentes.
     public void UpdateAutomaticCapacity(decimal automaticCapacity, DateTime updated)
     {
         var op = new Operation { ProcedureName = "UPD_AUTO_CAP_CENT_BANK_PR" };
@@ -50,6 +54,7 @@ public class CentralBankCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función encargada de modificar y actualizar los campos operacionales de registros existentes.
     public void UpdateManualCapacity(decimal? manualCapacity, DateTime updated)
     {
         var op = new Operation { ProcedureName = "UPD_MANUAL_CAP_CENT_BANK_PR" };
@@ -58,6 +63,7 @@ public class CentralBankCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     private static CentralBank BuildCentralBank(Dictionary<string, object> row) => new()
     {
         Id = (int)row["Id"],

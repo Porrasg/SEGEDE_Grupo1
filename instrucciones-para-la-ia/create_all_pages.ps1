@@ -1,5 +1,6 @@
 $root = "C:\Users\yorze\OneDrive\Documentos\GitHub\SEGEDE_Grupo1\WebApp\Pages"
 
+# Función de automatización y despliegue del entorno en PowerShell.
 function New-RazorPage($folder, $pageName, $title, $namespaceSuffix) {
     $dir = Join-Path $root $folder
     if (-not (Test-Path $dir)) {

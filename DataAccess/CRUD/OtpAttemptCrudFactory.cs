@@ -7,6 +7,7 @@ namespace SEGEDE_Grupo1.DataAccess.CRUD;
 // CrudFactory para OtpAttempt → tblOtpAttempts (§12.2).
 public class OtpAttemptCrudFactory : CrudFactory
 {
+    // Función encargada de registrar e insertar nuevos elementos en el almacén de datos cumpliendo las reglas de negocio.
     public override void Create(BaseDTO baseDTO)
     {
         var otp = (OtpAttempt)baseDTO;
@@ -22,6 +23,7 @@ public class OtpAttemptCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función encargada de modificar y actualizar los campos operacionales de registros existentes.
     public override void Update(BaseDTO baseDTO)
     {
         var otp = (OtpAttempt)baseDTO;
@@ -38,6 +40,7 @@ public class OtpAttemptCrudFactory : CrudFactory
     public override void Delete(BaseDTO baseDTO) =>
         throw new NotSupportedException("Delete is not supported for OtpAttempt.");
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public override T RetrieveById<T>(int id)
     {
         var op = new Operation { ProcedureName = "RET_ID_OTP_ATTEMPT_PR" };
@@ -46,6 +49,7 @@ public class OtpAttemptCrudFactory : CrudFactory
         return results.Count > 0 ? (T)(object)BuildOtpAttempt(results[0]) : default!;
     }
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public override List<T> RetrieveAll<T>() =>
         throw new NotSupportedException("RetrieveAll is not supported for OtpAttempt.");
 
@@ -60,6 +64,7 @@ public class OtpAttemptCrudFactory : CrudFactory
         return results.Count > 0 ? BuildOtpAttempt(results[0]) : null;
     }
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     public void IncrementResendCount(int id)
     {
         var op = new Operation { ProcedureName = "UPD_RESEND_OTP_ATTEMPT_PR" };
@@ -67,6 +72,7 @@ public class OtpAttemptCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     public void IncrementFailedAttempts(int id)
     {
         var op = new Operation { ProcedureName = "UPD_FAIL_OTP_ATTEMPT_PR" };
@@ -74,6 +80,7 @@ public class OtpAttemptCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función encargada de modificar y actualizar los campos operacionales de registros existentes.
     public void UpdateStatus(int id, string status, DateTime updated)
     {
         var op = new Operation { ProcedureName = "UPD_STATUS_OTP_ATTEMPT_PR" };
@@ -83,6 +90,7 @@ public class OtpAttemptCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     private static OtpAttempt BuildOtpAttempt(Dictionary<string, object> row) => new()
     {
         Id = (int)row["Id"],

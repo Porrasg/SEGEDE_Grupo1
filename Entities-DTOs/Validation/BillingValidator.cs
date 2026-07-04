@@ -3,6 +3,7 @@ namespace SEGEDE_Grupo1.EntitiesDTOs.Validation;
 // Validador de facturación: precios, impuestos y anulaciones (§6.5).
 public static class BillingValidator
 {
+    // Realiza la validación técnica y de reglas de negocio sobre los parámetros de entrada del sistema.
     public static ValidationResult ValidatePrice(decimal priceCRCPerMWh)
     {
         var result = new ValidationResult();
@@ -19,6 +20,7 @@ public static class BillingValidator
         return result;
     }
 
+    // Realiza la validación técnica y de reglas de negocio sobre los parámetros de entrada del sistema.
     public static ValidationResult ValidateTax(decimal percentage)
     {
         var result = new ValidationResult();
@@ -31,6 +33,7 @@ public static class BillingValidator
         return result;
     }
 
+    // Realiza la validación técnica y de reglas de negocio sobre los parámetros de entrada del sistema.
     public static ValidationResult ValidateAnnulment(string? reason)
     {
         var result = new ValidationResult();

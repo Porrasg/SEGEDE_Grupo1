@@ -7,6 +7,7 @@ namespace SEGEDE_Grupo1.DataAccess.CRUD;
 // CrudFactory para Forecast → tblForecast (§12.16).
 public class ForecastCrudFactory : CrudFactory
 {
+    // Función encargada de registrar e insertar nuevos elementos en el almacén de datos cumpliendo las reglas de negocio.
     public override void Create(BaseDTO baseDTO)
     {
         var f = (Forecast)baseDTO;
@@ -20,6 +21,7 @@ public class ForecastCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función encargada de modificar y actualizar los campos operacionales de registros existentes.
     public override void Update(BaseDTO baseDTO)
     {
         var f = (Forecast)baseDTO;
@@ -35,6 +37,7 @@ public class ForecastCrudFactory : CrudFactory
     public override void Delete(BaseDTO baseDTO) =>
         throw new NotSupportedException("Use UpdateStatus method to cancel Forecast.");
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public override T RetrieveById<T>(int id)
     {
         var op = new Operation { ProcedureName = "RET_ID_FORECAST_PR" };
@@ -43,6 +46,7 @@ public class ForecastCrudFactory : CrudFactory
         return results.Count > 0 ? (T)(object)BuildForecast(results[0]) : default!;
     }
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public override List<T> RetrieveAll<T>()
     {
         var op = new Operation { ProcedureName = "RET_ALL_FORECAST_PR" };
@@ -60,6 +64,7 @@ public class ForecastCrudFactory : CrudFactory
         return results.Select(BuildForecast).ToList();
     }
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public List<Forecast> RetrieveByMonth(int month, int year)
     {
         var op = new Operation { ProcedureName = "RET_BY_MONTH_FORECAST_PR" };
@@ -69,6 +74,7 @@ public class ForecastCrudFactory : CrudFactory
         return results.Select(BuildForecast).ToList();
     }
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public Forecast? RetrieveActiveByBuyerMonth(int buyerId, int month, int year)
     {
         var op = new Operation { ProcedureName = "RET_ACTIVE_BY_BUYER_MONTH_FORECAST_PR" };
@@ -79,6 +85,7 @@ public class ForecastCrudFactory : CrudFactory
         return results.Count > 0 ? BuildForecast(results[0]) : null;
     }
 
+    // Función encargada de modificar y actualizar los campos operacionales de registros existentes.
     public void UpdateStatus(int id, string status, DateTime updated)
     {
         var op = new Operation { ProcedureName = "UPD_STATUS_FORECAST_PR" };
@@ -88,6 +95,7 @@ public class ForecastCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     public void BlockMonth(int month, int year, DateTime updated)
     {
         var op = new Operation { ProcedureName = "BLOCK_MONTH_FORECAST_PR" };
@@ -97,6 +105,7 @@ public class ForecastCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     public void CancelBeyond3Months(int buyerId, int startMonth, int startYear, DateTime updated)
     {
         var op = new Operation { ProcedureName = "CANCEL_BEYOND_3M_FORECAST_PR" };
@@ -107,6 +116,7 @@ public class ForecastCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     private static Forecast BuildForecast(Dictionary<string, object> row) => new()
     {
         Id = (int)row["Id"],

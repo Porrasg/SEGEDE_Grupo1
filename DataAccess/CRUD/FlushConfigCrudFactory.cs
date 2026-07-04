@@ -11,6 +11,7 @@ public class FlushConfigCrudFactory : CrudFactory
     public override void Create(BaseDTO baseDTO) =>
         throw new NotSupportedException("Create is not supported for FlushConfig (Singleton).");
 
+    // Función encargada de modificar y actualizar los campos operacionales de registros existentes.
     public override void Update(BaseDTO baseDTO)
     {
         var c = (FlushConfig)baseDTO;
@@ -21,9 +22,11 @@ public class FlushConfigCrudFactory : CrudFactory
     public override void Delete(BaseDTO baseDTO) =>
         throw new NotSupportedException("Delete is not supported for FlushConfig (Singleton).");
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public override T RetrieveById<T>(int id) =>
         throw new NotSupportedException("Use RetrieveSingleton for FlushConfig.");
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public override List<T> RetrieveAll<T>() =>
         throw new NotSupportedException("Use RetrieveSingleton for FlushConfig.");
 
@@ -36,6 +39,7 @@ public class FlushConfigCrudFactory : CrudFactory
         return results.Count > 0 ? BuildConfig(results[0]) : null;
     }
 
+    // Función encargada de modificar y actualizar los campos operacionales de registros existentes.
     public void UpdateSingleton(TimeSpan executionTime, bool isAutomatic, DateTime updated)
     {
         var op = new Operation { ProcedureName = "UPD_SINGLETON_FLUSH_CFG_PR" };
@@ -45,6 +49,7 @@ public class FlushConfigCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     private static FlushConfig BuildConfig(Dictionary<string, object> row) => new()
     {
         Id = (int)row["Id"],

@@ -8,6 +8,7 @@ namespace SEGEDE_Grupo1.DataAccess.CRUD;
 // 13 SPs: CRUD base + 8 custom.
 public class UserCrudFactory : CrudFactory
 {
+    // Función encargada de registrar e insertar nuevos elementos en el almacén de datos cumpliendo las reglas de negocio.
     public override void Create(BaseDTO baseDTO)
     {
         var user = (User)baseDTO;
@@ -26,6 +27,7 @@ public class UserCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función encargada de modificar y actualizar los campos operacionales de registros existentes.
     public override void Update(BaseDTO baseDTO)
     {
         var user = (User)baseDTO;
@@ -40,6 +42,7 @@ public class UserCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función encargada de realizar el borrado lógico o desactivación de registros según las políticas del sistema.
     public override void Delete(BaseDTO baseDTO)
     {
         var op = new Operation { ProcedureName = "DEL_USER_PR" };
@@ -47,6 +50,7 @@ public class UserCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public override T RetrieveById<T>(int id)
     {
         var op = new Operation { ProcedureName = "RET_ID_USER_PR" };
@@ -55,6 +59,7 @@ public class UserCrudFactory : CrudFactory
         return results.Count > 0 ? (T)(object)BuildUser(results[0]) : default!;
     }
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public override List<T> RetrieveAll<T>()
     {
         var op = new Operation { ProcedureName = "RET_ALL_USER_PR" };
@@ -72,6 +77,7 @@ public class UserCrudFactory : CrudFactory
         return results.Count > 0 ? BuildUser(results[0]) : null;
     }
 
+    // Función encargada de modificar y actualizar los campos operacionales de registros existentes.
     public void UpdateStatus(int userId, string status, DateTime updated)
     {
         var op = new Operation { ProcedureName = "UPD_STATUS_USER_PR" };
@@ -81,6 +87,7 @@ public class UserCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     public void IncrementFailedAttempts(int userId)
     {
         var op = new Operation { ProcedureName = "UPD_ATTEMPTS_USER_PR" };
@@ -88,6 +95,7 @@ public class UserCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     public void ResetFailedAttempts(int userId)
     {
         var op = new Operation { ProcedureName = "UPD_RESET_ATTEMPTS_USER_PR" };
@@ -95,6 +103,7 @@ public class UserCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     public void BlockUser(int userId, DateTime blockedAt, DateTime updated)
     {
         var op = new Operation { ProcedureName = "UPD_BLOCK_USER_PR" };
@@ -104,6 +113,7 @@ public class UserCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Ejecuta operaciones criptográficas para el resguardo y verificación segura de credenciales e integridad.
     public void UpdateProfile(int userId, string phone, string? photoUrl, string? passwordHash, DateTime updated)
     {
         var op = new Operation { ProcedureName = "UPD_PROFILE_USER_PR" };
@@ -115,6 +125,7 @@ public class UserCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Ejecuta operaciones criptográficas para el resguardo y verificación segura de credenciales e integridad.
     public void UpdatePassword(int userId, string passwordHash, DateTime updated)
     {
         var op = new Operation { ProcedureName = "UPD_PASSWORD_USER_PR" };
@@ -124,6 +135,7 @@ public class UserCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public List<User> RetrieveExpiredBlocks(DateTime threshold)
     {
         var op = new Operation { ProcedureName = "RET_EXPIRED_BLOCKS_USER_PR" };
@@ -132,6 +144,7 @@ public class UserCrudFactory : CrudFactory
         return results.Select(BuildUser).ToList();
     }
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     private static User BuildUser(Dictionary<string, object> row) => new()
     {
         Id = (int)row["Id"],

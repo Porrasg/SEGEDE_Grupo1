@@ -7,6 +7,7 @@ namespace SEGEDE_Grupo1.DataAccess.CRUD;
 // CrudFactory para DistributionDetail → tblDistributionDetail (§12.18).
 public class DistributionDetailCrudFactory : CrudFactory
 {
+    // Función encargada de registrar e insertar nuevos elementos en el almacén de datos cumpliendo las reglas de negocio.
     public override void Create(BaseDTO baseDTO)
     {
         var d = (DistributionDetail)baseDTO;
@@ -29,6 +30,7 @@ public class DistributionDetailCrudFactory : CrudFactory
     public override void Delete(BaseDTO baseDTO) =>
         throw new NotSupportedException("Delete is not supported for DistributionDetail.");
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public override T RetrieveById<T>(int id)
     {
         var op = new Operation { ProcedureName = "RET_ID_DIST_DTL_PR" };
@@ -37,6 +39,7 @@ public class DistributionDetailCrudFactory : CrudFactory
         return results.Count > 0 ? (T)(object)BuildDetail(results[0]) : default!;
     }
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public override List<T> RetrieveAll<T>() =>
         throw new NotSupportedException("RetrieveAll is not supported for DistributionDetail.");
 
@@ -50,6 +53,7 @@ public class DistributionDetailCrudFactory : CrudFactory
         return results.Select(BuildDetail).ToList();
     }
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public List<DistributionDetail> RetrieveByBuyer(int buyerId)
     {
         var op = new Operation { ProcedureName = "RET_BY_BUYER_DIST_DTL_PR" };
@@ -58,6 +62,7 @@ public class DistributionDetailCrudFactory : CrudFactory
         return results.Select(BuildDetail).ToList();
     }
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     private static DistributionDetail BuildDetail(Dictionary<string, object> row) => new()
     {
         Id = (int)row["Id"],

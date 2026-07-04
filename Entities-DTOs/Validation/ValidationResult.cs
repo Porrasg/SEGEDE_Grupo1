@@ -11,6 +11,7 @@ public class ValidationResult
 
     public void Add(string error) => Errors.Add(error);
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     public void ThrowIfInvalid()
     {
         if (!IsValid) throw new Exceptions.ValidationException(Errors.ToArray());

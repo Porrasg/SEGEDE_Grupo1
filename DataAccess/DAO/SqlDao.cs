@@ -10,6 +10,7 @@ public class SqlDao
     private static SqlDao? _instance;
     private readonly string _connectionString;
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     private SqlDao()
     {
         // Lee connection string de la configuración de la aplicación.
@@ -104,6 +105,7 @@ public class SqlDao
         return results;
     }
 
+    // Función encargada de registrar e insertar nuevos elementos en el almacén de datos cumpliendo las reglas de negocio.
     private static SqlCommand CreateCommand(
         Operation operation, SqlConnection conn, SqlTransaction? tx = null)
     {

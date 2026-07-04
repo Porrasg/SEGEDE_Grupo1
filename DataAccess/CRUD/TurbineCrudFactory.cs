@@ -7,6 +7,7 @@ namespace SEGEDE_Grupo1.DataAccess.CRUD;
 // CrudFactory para Turbine → tblTurbines (§12.3).
 public class TurbineCrudFactory : CrudFactory
 {
+    // Función encargada de registrar e insertar nuevos elementos en el almacén de datos cumpliendo las reglas de negocio.
     public override void Create(BaseDTO baseDTO)
     {
         var t = (Turbine)baseDTO;
@@ -24,6 +25,7 @@ public class TurbineCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función encargada de modificar y actualizar los campos operacionales de registros existentes.
     public override void Update(BaseDTO baseDTO)
     {
         var t = (Turbine)baseDTO;
@@ -38,6 +40,7 @@ public class TurbineCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función encargada de realizar el borrado lógico o desactivación de registros según las políticas del sistema.
     public override void Delete(BaseDTO baseDTO)
     {
         var op = new Operation { ProcedureName = "DEL_TURBINE_PR" };
@@ -45,6 +48,7 @@ public class TurbineCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public override T RetrieveById<T>(int id)
     {
         var op = new Operation { ProcedureName = "RET_ID_TURBINE_PR" };
@@ -53,6 +57,7 @@ public class TurbineCrudFactory : CrudFactory
         return results.Count > 0 ? (T)(object)BuildTurbine(results[0]) : default!;
     }
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public override List<T> RetrieveAll<T>()
     {
         var op = new Operation { ProcedureName = "RET_ALL_TURBINE_PR" };
@@ -69,6 +74,7 @@ public class TurbineCrudFactory : CrudFactory
         return results.Select(BuildTurbine).ToList();
     }
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public Turbine? RetrieveByCode(string uniqueCode)
     {
         var op = new Operation { ProcedureName = "RET_BY_CODE_TURBINE_PR" };
@@ -77,6 +83,7 @@ public class TurbineCrudFactory : CrudFactory
         return results.Count > 0 ? BuildTurbine(results[0]) : null;
     }
 
+    // Función encargada de modificar y actualizar los campos operacionales de registros existentes.
     public void UpdateStatus(int turbineId, string status, DateTime lastStateChange, DateTime? lastMaintenance, DateTime updated)
     {
         var op = new Operation { ProcedureName = "UPD_STATUS_TURBINE_PR" };
@@ -88,6 +95,7 @@ public class TurbineCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public List<Turbine> RetrieveOverdue(DateTime threshold)
     {
         var op = new Operation { ProcedureName = "RET_OVERDUE_TURBINE_PR" };
@@ -96,6 +104,7 @@ public class TurbineCrudFactory : CrudFactory
         return results.Select(BuildTurbine).ToList();
     }
 
+    // Función encargada de modificar y actualizar los campos operacionales de registros existentes.
     public void UpdateMaintenanceDate(int turbineId, DateTime lastMaintenance, DateTime updated)
     {
         var op = new Operation { ProcedureName = "UPD_MAINT_DATE_TURBINE_PR" };
@@ -105,6 +114,7 @@ public class TurbineCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     private static Turbine BuildTurbine(Dictionary<string, object> row) => new()
     {
         Id = (int)row["Id"],

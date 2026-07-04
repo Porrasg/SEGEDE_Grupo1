@@ -7,6 +7,7 @@ namespace SEGEDE_Grupo1.CoreApp.Export;
 // Utiliza el formato XML Spreadsheet 2003 nativo (sin librerías externas).
 public class ExcelBuilder
 {
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     public byte[] BuildStatementExcel(AccountStatement s, User? buyer)
     {
         var sb = new StringBuilder();

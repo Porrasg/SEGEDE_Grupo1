@@ -157,6 +157,7 @@ public class EnergyManager
         };
     }
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     private static string MapStatusToCause(string status) => status switch
     {
         TurbineStates.UnderMaintenance => EnergyLossCauses.Maintenance,

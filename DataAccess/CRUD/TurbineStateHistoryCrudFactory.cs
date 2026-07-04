@@ -7,6 +7,7 @@ namespace SEGEDE_Grupo1.DataAccess.CRUD;
 // CrudFactory para TurbineStateHistory → tblTurbineStateHistory (§12.4). WORM log.
 public class TurbineStateHistoryCrudFactory : CrudFactory
 {
+    // Función encargada de registrar e insertar nuevos elementos en el almacén de datos cumpliendo las reglas de negocio.
     public override void Create(BaseDTO baseDTO)
     {
         var h = (TurbineStateHistory)baseDTO;
@@ -29,6 +30,7 @@ public class TurbineStateHistoryCrudFactory : CrudFactory
     public override void Delete(BaseDTO baseDTO) =>
         throw new NotSupportedException("Delete is not supported for TurbineStateHistory (WORM).");
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public override T RetrieveById<T>(int id)
     {
         var op = new Operation { ProcedureName = "RET_ID_TRB_STATE_PR" };
@@ -37,6 +39,7 @@ public class TurbineStateHistoryCrudFactory : CrudFactory
         return results.Count > 0 ? (T)(object)BuildHistory(results[0]) : default!;
     }
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public override List<T> RetrieveAll<T>()
     {
         var op = new Operation { ProcedureName = "RET_ALL_TRB_STATE_PR" };
@@ -54,6 +57,7 @@ public class TurbineStateHistoryCrudFactory : CrudFactory
         return results.Select(BuildHistory).ToList();
     }
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     private static TurbineStateHistory BuildHistory(Dictionary<string, object> row) => new()
     {
         Id = (int)row["Id"],

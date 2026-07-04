@@ -13,6 +13,7 @@ namespace WebApp.Pages
 
         public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
 
+        // Método manejador que se ejecuta al recibir una petición HTTP GET para inicializar la vista y presentar los datos en pantalla.
         public void OnGet()
         {
             RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier;

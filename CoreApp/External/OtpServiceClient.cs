@@ -18,6 +18,7 @@ public class OtpServiceClient
     private readonly string _baseUrl;
     private readonly string _apiKey;
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     public OtpServiceClient()
     {
         _baseUrl = BaseUrlSetting;
@@ -25,6 +26,7 @@ public class OtpServiceClient
         _httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
     }
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     public OtpServiceClient(string baseUrl, string apiKey, HttpClient? httpClient = null)
     {
         _baseUrl = baseUrl;

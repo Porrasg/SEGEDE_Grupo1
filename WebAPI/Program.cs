@@ -1,12 +1,27 @@
+using SEGEDE_Grupo1.DataAccess.DAO;
+using SEGEDE_Grupo1.WebAPI.BackgroundServices;
+using SEGEDE_Grupo1.WebAPI.Middleware;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Configuración de cadena de conexión a base de datos relacional para ADO.NET sin ORM (§11.1).
+string connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+    ?? "Server=tcp:segede-sql-server.database.windows.net,1433;Initial Catalog=SEGEDE_DB;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+SqlDao.Configure(connectionString);
 
+// Add services to the container.
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+// Registro de servicios en segundo plano para simulación de energía, notificaciones y auditoría WORM.
+builder.Services.AddHostedService<EnergySimulationJob>();
+builder.Services.AddHostedService<NotificationProcessingJob>();
+builder.Services.AddHostedService<AuditArchiveJob>();
+
 var app = builder.Build();
+
+// Intercepción global de excepciones para convertir errores de negocio en respuestas HTTP estandarizadas.
+app.UseExceptionHandlingMiddleware();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -15,9 +30,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

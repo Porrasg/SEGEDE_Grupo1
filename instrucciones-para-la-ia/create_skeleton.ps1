@@ -1,5 +1,6 @@
 $root = "C:\Users\yorze\OneDrive\Documentos\GitHub\SEGEDE_Grupo1"
 
+# Función de automatización y despliegue del entorno en PowerShell.
 function New-SkeletonFile($path, $content) {
     $fullPath = Join-Path $root $path
     $dir = Split-Path $fullPath -Parent

@@ -7,6 +7,7 @@ namespace SEGEDE_Grupo1.DataAccess.CRUD;
 // CrudFactory para CentralBankLog → tblCentralBankLog (§12.15).
 public class CentralBankLogCrudFactory : CrudFactory
 {
+    // Función encargada de registrar e insertar nuevos elementos en el almacén de datos cumpliendo las reglas de negocio.
     public override void Create(BaseDTO baseDTO)
     {
         var l = (CentralBankLog)baseDTO;
@@ -29,6 +30,7 @@ public class CentralBankLogCrudFactory : CrudFactory
     public override void Delete(BaseDTO baseDTO) =>
         throw new NotSupportedException("Delete is not supported for CentralBankLog.");
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public override T RetrieveById<T>(int id)
     {
         var op = new Operation { ProcedureName = "RET_ID_CB_LOG_PR" };
@@ -37,6 +39,7 @@ public class CentralBankLogCrudFactory : CrudFactory
         return results.Count > 0 ? (T)(object)BuildLog(results[0]) : default!;
     }
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public override List<T> RetrieveAll<T>()
     {
         var op = new Operation { ProcedureName = "RET_ALL_CB_LOG_PR" };
@@ -55,6 +58,7 @@ public class CentralBankLogCrudFactory : CrudFactory
         return results.Select(BuildLog).ToList();
     }
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public List<CentralBankLog> RetrieveByFlush(int flushId)
     {
         var op = new Operation { ProcedureName = "RET_BY_FLUSH_CB_LOG_PR" };
@@ -63,6 +67,7 @@ public class CentralBankLogCrudFactory : CrudFactory
         return results.Select(BuildLog).ToList();
     }
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public List<CentralBankLog> RetrieveByDistribution(int distributionId)
     {
         var op = new Operation { ProcedureName = "RET_BY_DIST_CB_LOG_PR" };
@@ -71,6 +76,7 @@ public class CentralBankLogCrudFactory : CrudFactory
         return results.Select(BuildLog).ToList();
     }
 
+    // Función que registra eventos de trazabilidad y seguridad en la bitácora inmutable del sistema (WORM).
     private static CentralBankLog BuildLog(Dictionary<string, object> row) => new()
     {
         Id = (int)row["Id"],

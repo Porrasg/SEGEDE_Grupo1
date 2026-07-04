@@ -7,6 +7,7 @@ namespace SEGEDE_Grupo1.DataAccess.CRUD;
 // CrudFactory para AccountStatement → tblAccountStatement (§12.21). WORM parcial.
 public class AccountStatementCrudFactory : CrudFactory
 {
+    // Función encargada de registrar e insertar nuevos elementos en el almacén de datos cumpliendo las reglas de negocio.
     public override void Create(BaseDTO baseDTO)
     {
         var s = (AccountStatement)baseDTO;
@@ -39,6 +40,7 @@ public class AccountStatementCrudFactory : CrudFactory
     public override void Delete(BaseDTO baseDTO) =>
         throw new NotSupportedException("Delete is not supported for AccountStatement (WORM parcial).");
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public override T RetrieveById<T>(int id)
     {
         var op = new Operation { ProcedureName = "RET_ID_ACCT_STMT_PR" };
@@ -47,6 +49,7 @@ public class AccountStatementCrudFactory : CrudFactory
         return results.Count > 0 ? (T)(object)BuildStatement(results[0]) : default!;
     }
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public override List<T> RetrieveAll<T>()
     {
         var op = new Operation { ProcedureName = "RET_ALL_ACCT_STMT_PR" };
@@ -64,6 +67,7 @@ public class AccountStatementCrudFactory : CrudFactory
         return results.Select(BuildStatement).ToList();
     }
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public List<AccountStatement> RetrieveByDistribution(int distributionId)
     {
         var op = new Operation { ProcedureName = "RET_BY_DIST_ACCT_STMT_PR" };
@@ -72,6 +76,7 @@ public class AccountStatementCrudFactory : CrudFactory
         return results.Select(BuildStatement).ToList();
     }
 
+    // Función encargada de modificar y actualizar los campos operacionales de registros existentes.
     public void UpdateAnnulment(int id, string status, string annulmentReason, DateTime updated)
     {
         var op = new Operation { ProcedureName = "UPD_ANNUL_ACCT_STMT_PR" };
@@ -82,6 +87,7 @@ public class AccountStatementCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public AccountStatement? RetrieveCurrentVersion(int buyerId, int month, int year)
     {
         var op = new Operation { ProcedureName = "RET_CURRENT_VERSION_ACCT_STMT_PR" };
@@ -92,6 +98,7 @@ public class AccountStatementCrudFactory : CrudFactory
         return results.Count > 0 ? BuildStatement(results[0]) : null;
     }
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     private static AccountStatement BuildStatement(Dictionary<string, object> row) => new()
     {
         Id = (int)row["Id"],

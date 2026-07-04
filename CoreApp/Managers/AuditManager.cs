@@ -90,6 +90,7 @@ public class AuditManager
         LogAction(null, "System", AuditModules.System, AuditActions.Update, "tblAuditLog", 0, null, $"Cold archive threshold: {threshold:yyyy-MM-dd}");
     }
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     private static PagedResponse<T> BuildPagedResponse<T>(List<T> items, PagedRequest p)
     {
         int totalCount = items.Count;

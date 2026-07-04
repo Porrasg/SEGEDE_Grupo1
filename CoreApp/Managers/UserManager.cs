@@ -350,6 +350,7 @@ public class UserManager
         }
     }
 
+    // Ejecuta operaciones criptográficas para el resguardo y verificación segura de credenciales e integridad.
     private void VerifyOtpOrThrow(int userId, string email, string usageType, string code)
     {
         var activeAttempt = _otpAttemptCrudFactory.RetrieveActive(userId, usageType);
@@ -372,6 +373,7 @@ public class UserManager
         _otpAttemptCrudFactory.UpdateStatus(activeAttempt.Id, OtpAttemptStates.Verified, TimeHelper.NowCR());
     }
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     private void EnqueueNotification(int userId, string email, string type, string subject, string body, bool isCritical)
     {
         var notif = new NotificationQueue
@@ -390,6 +392,7 @@ public class UserManager
         _notificationFactory.Create(notif);
     }
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     private UserSafeResponse MapToSafeResponse(User user) => new()
     {
         Id = user.Id,

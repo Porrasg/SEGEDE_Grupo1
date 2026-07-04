@@ -7,6 +7,7 @@ namespace SEGEDE_Grupo1.CoreApp.Export;
 // Produce HTML imprimible diseñado para que el frontend invoque "Guardar como PDF".
 public class HtmlStatementBuilder
 {
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     public byte[] BuildStatementHtml(AccountStatement s, User? buyer)
     {
         var sb = new StringBuilder();

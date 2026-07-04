@@ -7,6 +7,7 @@ namespace SEGEDE_Grupo1.DataAccess.CRUD;
 // CrudFactory para LocalBattery → tblLocalBattery (§12.5).
 public class LocalBatteryCrudFactory : CrudFactory
 {
+    // Función encargada de registrar e insertar nuevos elementos en el almacén de datos cumpliendo las reglas de negocio.
     public override void Create(BaseDTO baseDTO)
     {
         var b = (LocalBattery)baseDTO;
@@ -25,6 +26,7 @@ public class LocalBatteryCrudFactory : CrudFactory
     public override void Delete(BaseDTO baseDTO) =>
         throw new NotSupportedException("Delete is not supported for LocalBattery.");
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public override T RetrieveById<T>(int id)
     {
         var op = new Operation { ProcedureName = "RET_ID_LOCAL_BAT_PR" };
@@ -33,6 +35,7 @@ public class LocalBatteryCrudFactory : CrudFactory
         return results.Count > 0 ? (T)(object)BuildBattery(results[0]) : default!;
     }
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public override List<T> RetrieveAll<T>()
     {
         var op = new Operation { ProcedureName = "RET_ALL_LOCAL_BAT_PR" };
@@ -50,6 +53,7 @@ public class LocalBatteryCrudFactory : CrudFactory
         return results.Count > 0 ? BuildBattery(results[0]) : null;
     }
 
+    // Función encargada de modificar y actualizar los campos operacionales de registros existentes.
     public void UpdateEnergy(int id, decimal storedEnergy, DateTime updated)
     {
         var op = new Operation { ProcedureName = "UPD_ENERGY_LOCAL_BAT_PR" };
@@ -59,6 +63,7 @@ public class LocalBatteryCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public List<LocalBattery> RetrieveAllNonEmpty()
     {
         var op = new Operation { ProcedureName = "RET_ALL_NONEMPTY_LOCAL_BAT_PR" };
@@ -66,6 +71,7 @@ public class LocalBatteryCrudFactory : CrudFactory
         return results.Select(BuildBattery).ToList();
     }
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     private static LocalBattery BuildBattery(Dictionary<string, object> row) => new()
     {
         Id = (int)row["Id"],

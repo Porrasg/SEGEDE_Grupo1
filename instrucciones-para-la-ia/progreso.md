@@ -6,8 +6,8 @@
 ---
 
 ## 📌 Estado Actual del Proyecto
-- **Fase**: Fase 3 — Lógica de Negocio y Gestores (CoreApp completada).
-- **Estado General**: Se han construido e implementado funcionalmente los 13 Managers de negocio en `CoreApp\Managers` así como los constructores de exportación en `CoreApp\Export`, cumpliendo al 100% con los requisitos y semántica ACID definidos en `SGDE_TechDesign_Complete.md` (sin usar ORMs ni IoC). Todos los proyectos base (`Entities-DTOs`, `DataAccess` y `CoreApp`) compilan exitosamente con 0 errores.
+- **Fase**: Fase 4 — Exposición de Endpoints API (`WebAPI` completada).
+- **Estado General**: Se han desarrollado e implementado funcionalmente los 13 Controladores REST en `WebAPI\Controllers`, el Middleware global de manejo de excepciones (`ExceptionHandlingMiddleware`) en `WebAPI\Middleware` y los 3 Servicios en Segundo Plano (`EnergySimulationJob`, `NotificationProcessingJob`, `AuditArchiveJob`) en `WebAPI\BackgroundServices`. Todo el código respeta al 100% las normas arquitectónicas N-Tier, documentación con comentarios regulares `//` en cada método, sin IoC ni ORMs. El proyecto `WebAPI` compila con 0 errores y 0 advertencias.
 
 ---
 
@@ -25,21 +25,21 @@
   - `BillingManager` + `CsvBuilder`, `ExcelBuilder`, `HtmlStatementBuilder`: gestión de precios, impuestos, emisión, anulación, regeneración y exportación de estados de cuenta.
   - `NotificationManager` y `AuditManager`: cola asíncrona de correos con backoff exponencial y auditoría inmutable del sistema.
   - `DashboardManager`: agregación de KPIs por rol (Admin, Operaciones, Comprador) con validación de ownership.
+- [x] Implementación completa de la **Capa 3 (`WebAPI`)**:
+  - 13 Controladores REST (`UsersController`, `TurbinesController`, `MaintenanceController`, `FailuresController`, `EnergyController`, `FlushController`, `CentralBankController`, `ForecastController`, `DistributionController`, `BillingController`, `NotificationsController`, `AuditController`, `DashboardController`).
+  - Middleware Global de Excepciones (`ExceptionHandlingMiddleware`) con mapeo de errores de negocio a HTTP status codes (400, 401, 403, 404, 409, 500).
+  - Background Services (`EnergySimulationJob`, `NotificationProcessingJob`, `AuditArchiveJob`) programados e integrados en `Program.cs`.
 
 ---
 
 ## 🚧 En Progreso
-- [ ] Implementación funcional de los Controladores REST (`WebAPI\Controllers`) y los Background Services de simulación/procesamiento.
+- [ ] Conexión de los ViewControllers JavaScript y páginas Razor de la Capa de Presentación (`WebApp`) con los endpoints del `WebAPI`.
 
 ---
 
 ## 📋 Tareas Pendientes y Siguiente Paso
 ### 🎯 Siguiente Paso Recomendado:
-1. **Fase 4 - Exposición de Endpoints API (`WebAPI`)**:
-   - Completar los controladores REST en `WebAPI\Controllers` conectando cada endpoint al método correspondiente de su Manager en `CoreApp`.
-   - Asegurar que el Middleware de manejo global de excepciones (`ExceptionHandlingMiddleware`) mapee correctamente las excepciones de negocio (`BusinessException`, `NotFoundException`, `UnauthorizedAccessAppException`, etc.) a los códigos HTTP adecuados (400, 401, 403, 404, 409, 500).
-   - Implementar la lógica funcional de los servicios en segundo plano (`EnergySimulationJob`, `AuditArchiveJob`, etc.).
-2. **Fase 5 - Capa de Presentación (`WebApp`)**:
+1. **Fase 5 - Capa de Presentación (`WebApp`)**:
    - Conectar los ViewControllers JavaScript y páginas Razor con los endpoints de la API.
 
 ---

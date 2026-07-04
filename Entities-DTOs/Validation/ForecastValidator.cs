@@ -5,6 +5,7 @@ namespace SEGEDE_Grupo1.EntitiesDTOs.Validation;
 // Validador de pronóstico de demanda (§6.4).
 public static class ForecastValidator
 {
+    // Realiza la validación técnica y de reglas de negocio sobre los parámetros de entrada del sistema.
     public static ValidationResult Validate(decimal amountMWh, int month, int year)
     {
         var result = new ValidationResult();

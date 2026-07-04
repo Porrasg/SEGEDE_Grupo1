@@ -10,6 +10,7 @@ public class Operation
     // Propiedad de datos mapeada a la columna de base de datos o parámetro de transferencia.
     public List<SqlParameter> Parameters { get; } = new();
 
+    // Función encargada de registrar e insertar nuevos elementos en el almacén de datos cumpliendo las reglas de negocio.
     public void AddStringParameter(string name, string? value)
     {
         Parameters.Add(new SqlParameter(name, System.Data.SqlDbType.NVarChar)
@@ -18,11 +19,13 @@ public class Operation
         });
     }
 
+    // Función encargada de registrar e insertar nuevos elementos en el almacén de datos cumpliendo las reglas de negocio.
     public void AddIntParameter(string name, int value)
     {
         Parameters.Add(new SqlParameter(name, System.Data.SqlDbType.Int) { Value = value });
     }
 
+    // Función encargada de registrar e insertar nuevos elementos en el almacén de datos cumpliendo las reglas de negocio.
     public void AddNullableIntParameter(string name, int? value)
     {
         Parameters.Add(new SqlParameter(name, System.Data.SqlDbType.Int)
@@ -31,6 +34,7 @@ public class Operation
         });
     }
 
+    // Función encargada de registrar e insertar nuevos elementos en el almacén de datos cumpliendo las reglas de negocio.
     public void AddDecimalParameter(string name, decimal value)
     {
         Parameters.Add(new SqlParameter(name, System.Data.SqlDbType.Decimal)
@@ -41,6 +45,7 @@ public class Operation
         });
     }
 
+    // Función encargada de registrar e insertar nuevos elementos en el almacén de datos cumpliendo las reglas de negocio.
     public void AddNullableDecimalParameter(string name, decimal? value)
     {
         Parameters.Add(new SqlParameter(name, System.Data.SqlDbType.Decimal)
@@ -51,11 +56,13 @@ public class Operation
         });
     }
 
+    // Función encargada de registrar e insertar nuevos elementos en el almacén de datos cumpliendo las reglas de negocio.
     public void AddDateTimeParameter(string name, DateTime value)
     {
         Parameters.Add(new SqlParameter(name, System.Data.SqlDbType.DateTime2) { Value = value });
     }
 
+    // Función encargada de registrar e insertar nuevos elementos en el almacén de datos cumpliendo las reglas de negocio.
     public void AddNullableDateTimeParameter(string name, DateTime? value)
     {
         Parameters.Add(new SqlParameter(name, System.Data.SqlDbType.DateTime2)
@@ -64,16 +71,19 @@ public class Operation
         });
     }
 
+    // Función encargada de registrar e insertar nuevos elementos en el almacén de datos cumpliendo las reglas de negocio.
     public void AddBoolParameter(string name, bool value)
     {
         Parameters.Add(new SqlParameter(name, System.Data.SqlDbType.Bit) { Value = value });
     }
 
+    // Función encargada de registrar e insertar nuevos elementos en el almacén de datos cumpliendo las reglas de negocio.
     public void AddTimeParameter(string name, TimeSpan value)
     {
         Parameters.Add(new SqlParameter(name, System.Data.SqlDbType.Time) { Value = value });
     }
 
+    // Función encargada de registrar e insertar nuevos elementos en el almacén de datos cumpliendo las reglas de negocio.
     public void AddOutputIntParameter(string name)
     {
         Parameters.Add(new SqlParameter(name, System.Data.SqlDbType.Int)
