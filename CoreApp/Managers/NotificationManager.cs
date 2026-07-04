@@ -8,17 +8,13 @@ using SEGEDE_Grupo1.EntitiesDTOs.Helpers;
 
 namespace SEGEDE_Grupo1.CoreApp.Managers;
 
-/// <summary>
-/// Manager de Notificaciones (§14.11). Instanciación directa con new sin IoC.
-/// Gestiona la cola asíncrona de notificaciones (ACID, RNF-009, RF-070), envíos SMTP con reintentos y backoff exponencial, y consulta paginada por usuario.
-/// </summary>
+// Manager de Notificaciones (§14.11). Instanciación directa con new sin IoC.
+// Gestiona la cola asíncrona de notificaciones (ACID, RNF-009, RF-070), envíos SMTP con reintentos y backoff exponencial, y consulta paginada por usuario.
 public class NotificationManager
 {
     private readonly NotificationQueueCrudFactory _queueFactory = new();
 
-    /// <summary>
-    /// RF-070: Encola una notificación para envío posterior por el job en segundo plano. NextAttempt=NowCR().
-    /// </summary>
+    // RF-070: Encola una notificación para envío posterior por el job en segundo plano. NextAttempt=NowCR().
     public void Enqueue(int userId, string email, string type, string subject, string body, bool isCritical)
     {
         var notif = new NotificationQueue
@@ -39,10 +35,8 @@ public class NotificationManager
         _queueFactory.Create(notif);
     }
 
-    /// <summary>
-    /// RF-070 / RNF-009: Procesa la cola de notificaciones pendientes (ejecutado en job de 60s).
-    /// Intenta el envío por SMTP; si falla, aplica backoff hasta un máximo de 3 reintentos antes de marcar Failed.
-    /// </summary>
+    // RF-070 / RNF-009: Procesa la cola de notificaciones pendientes (ejecutado en job de 60s).
+    // Intenta el envío por SMTP; si falla, aplica backoff hasta un máximo de 3 reintentos antes de marcar Failed.
     public void ProcessQueue()
     {
         var pending = _queueFactory.RetrievePending();
@@ -110,9 +104,7 @@ public class NotificationManager
         }
     }
 
-    /// <summary>
-    /// RF-070: Retorna las notificaciones del usuario de manera paginada.
-    /// </summary>
+    // RF-070: Retorna las notificaciones del usuario de manera paginada.
     public PagedResponse<NotificationQueue> RetrieveByUser(int userId, PagedRequest p)
     {
         int page = p.Page < 1 ? 1 : p.Page;

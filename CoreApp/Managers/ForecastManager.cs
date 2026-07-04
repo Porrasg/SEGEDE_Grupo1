@@ -7,18 +7,14 @@ using SEGEDE_Grupo1.EntitiesDTOs.Helpers;
 
 namespace SEGEDE_Grupo1.CoreApp.Managers;
 
-/// <summary>
-/// Manager de Pronósticos de Demanda (§14.8).
-/// Instanciación directa de fábricas sin IoC. Respeto al ownership de recursos del comprador.
-/// </summary>
+// Manager de Pronósticos de Demanda (§14.8).
+// Instanciación directa de fábricas sin IoC. Respeto al ownership de recursos del comprador.
 public class ForecastManager
 {
     private readonly ForecastCrudFactory _forecastCrudFactory = new();
     private readonly AuditManager _auditManager = new();
 
-    /// <summary>
-    /// RF-044: Registro de pronóstico. Valida fecha futura, horizonte y que no exista un pronóstico duplicado activo.
-    /// </summary>
+    // RF-044: Registro de pronóstico. Valida fecha futura, horizonte y que no exista un pronóstico duplicado activo.
     public void Register(RegisterForecastRequest r, int callerUserId)
     {
         var now = TimeHelper.NowCR();
@@ -60,9 +56,7 @@ public class ForecastManager
         _auditManager.LogAction(callerUserId, $"User {callerUserId}", AuditModules.Forecasts, AuditActions.Create, "tblForecast", 0, null, $"Registered forecast {r.AmountMWh} MWh for {r.Month}/{r.Year}");
     }
 
-    /// <summary>
-    /// RF-046: Modificación de pronóstico. Verifica ownership y estado no bloqueado.
-    /// </summary>
+    // RF-046: Modificación de pronóstico. Verifica ownership y estado no bloqueado.
     public void Modify(ModifyForecastRequest r, int callerUserId, string callerRole)
     {
         var forecast = _forecastCrudFactory.RetrieveById<Forecast>(r.ForecastId) ?? throw new NotFoundException("Forecast not found.");
@@ -93,9 +87,7 @@ public class ForecastManager
         _auditManager.LogAction(callerUserId, $"User {callerUserId}", AuditModules.Forecasts, AuditActions.Update, "tblForecast", forecast.Id, oldVal, $"{forecast.AmountMWh} MWh (Modified)");
     }
 
-    /// <summary>
-    /// RF-047: Cancelación de pronóstico. Verifica ownership y estado no bloqueado.
-    /// </summary>
+    // RF-047: Cancelación de pronóstico. Verifica ownership y estado no bloqueado.
     public void Cancel(int forecastId, int callerUserId, string callerRole)
     {
         var forecast = _forecastCrudFactory.RetrieveById<Forecast>(forecastId) ?? throw new NotFoundException("Forecast not found.");
@@ -116,9 +108,7 @@ public class ForecastManager
         _auditManager.LogAction(callerUserId, $"User {callerUserId}", AuditModules.Forecasts, AuditActions.LogicalDelete, "tblForecast", forecastId, forecast.Status, "Cancelled");
     }
 
-    /// <summary>
-    /// RF-049: Obtener pronósticos por comprador con validación de ownership.
-    /// </summary>
+    // RF-049: Obtener pronósticos por comprador con validación de ownership.
     public List<Forecast> RetrieveByBuyer(int buyerId, int callerUserId, string callerRole)
     {
         if (!string.Equals(callerRole, "Administrator", StringComparison.OrdinalIgnoreCase) && buyerId != callerUserId)
@@ -129,17 +119,13 @@ public class ForecastManager
         return _forecastCrudFactory.RetrieveByBuyer(buyerId);
     }
 
-    /// <summary>
-    /// RF-050: Obtener pronósticos por mes y año (para distribución comercial).
-    /// </summary>
+    // RF-050: Obtener pronósticos por mes y año (para distribución comercial).
     public List<Forecast> RetrieveByMonth(int month, int year)
     {
         return _forecastCrudFactory.RetrieveByMonth(month, year);
     }
 
-    /// <summary>
-    /// RF-048: Cancela los pronósticos más allá de 3 meses en el futuro tras inactivar a un usuario.
-    /// </summary>
+    // RF-048: Cancela los pronósticos más allá de 3 meses en el futuro tras inactivar a un usuario.
     public void CancelBeyond3Months(int buyerId)
     {
         var thresholdDate = TimeHelper.NowCR().AddMonths(3);

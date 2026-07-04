@@ -1,0 +1,31 @@
+using Microsoft.AspNetCore.Mvc;
+using SEGEDE_Grupo1.CoreApp.Managers;
+using SEGEDE_Grupo1.EntitiesDTOs.DTOs;
+using SEGEDE_Grupo1.EntitiesDTOs.DTOs.Requests;
+using SEGEDE_Grupo1.EntitiesDTOs.Entities;
+
+namespace SEGEDE_Grupo1.WebAPI.Controllers;
+
+// Controlador REST para el registro de averías, alertas de seguridad y paradas de emergencia (§14.4).
+[ApiController]
+[Route("api/[controller]")]
+public class FailuresController : ControllerBase
+{
+    private readonly FailureManager _failureManager = new();
+
+    // Método manejador que registra una falla o incidente operativo cambiando la turbina a estado Damaged.
+    [HttpPost("Register")]
+    public IActionResult Register([FromBody] RegisterFailureRequest request, [FromQuery] int callerUserId = 1)
+    {
+        _failureManager.Register(request, callerUserId);
+        return Ok(new ApiResponse<object> { Success = true, Message = "Falla reportada con éxito. Turbina detenida por seguridad." });
+    }
+
+    // Función de consulta que lista el historial de fallas reportadas para una turbina específica.
+    [HttpGet("ByTurbine/{turbineId:int}")]
+    public IActionResult GetByTurbine(int turbineId)
+    {
+        var result = _failureManager.RetrieveByTurbine(turbineId);
+        return Ok(new ApiResponse<List<Failure>> { Success = true, Data = result });
+    }
+}

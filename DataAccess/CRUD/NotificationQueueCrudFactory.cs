@@ -4,11 +4,10 @@ using SEGEDE_Grupo1.EntitiesDTOs.Entities;
 
 namespace SEGEDE_Grupo1.DataAccess.CRUD;
 
-/// <summary>
-/// CrudFactory para NotificationQueue → tblNotificationQueue (§12.22).
-/// </summary>
+// CrudFactory para NotificationQueue → tblNotificationQueue (§12.22).
 public class NotificationQueueCrudFactory : CrudFactory
 {
+    // Función encargada de registrar e insertar nuevos elementos en el almacén de datos cumpliendo las reglas de negocio.
     public override void Create(BaseDTO baseDTO)
     {
         var n = (NotificationQueue)baseDTO;
@@ -27,6 +26,7 @@ public class NotificationQueueCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función encargada de modificar y actualizar los campos operacionales de registros existentes.
     public override void Update(BaseDTO baseDTO)
     {
         var n = (NotificationQueue)baseDTO;
@@ -40,9 +40,11 @@ public class NotificationQueueCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Ejecuta el borrado lógico o desactivación del registro en la tabla relacional correspondiente.
     public override void Delete(BaseDTO baseDTO) =>
         throw new NotSupportedException("Delete is not supported for NotificationQueue.");
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public override T RetrieveById<T>(int id)
     {
         var op = new Operation { ProcedureName = "RET_ID_NOTIF_PR" };
@@ -51,6 +53,7 @@ public class NotificationQueueCrudFactory : CrudFactory
         return results.Count > 0 ? (T)(object)BuildNotif(results[0]) : default!;
     }
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public override List<T> RetrieveAll<T>() =>
         throw new NotSupportedException("Use RetrieveByUser or RetrievePending for NotificationQueue.");
 
@@ -63,6 +66,7 @@ public class NotificationQueueCrudFactory : CrudFactory
         return results.Select(BuildNotif).ToList();
     }
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public List<NotificationQueue> RetrieveByUser(int userId, int pageNumber, int pageSize)
     {
         var op = new Operation { ProcedureName = "RET_BY_USER_NOTIF_PR" };
@@ -73,6 +77,7 @@ public class NotificationQueueCrudFactory : CrudFactory
         return results.Select(BuildNotif).ToList();
     }
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     private static NotificationQueue BuildNotif(Dictionary<string, object> row) => new()
     {
         Id = (int)row["Id"],

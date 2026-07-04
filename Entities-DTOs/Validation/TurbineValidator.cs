@@ -2,11 +2,10 @@ using SEGEDE_Grupo1.EntitiesDTOs.Helpers;
 
 namespace SEGEDE_Grupo1.EntitiesDTOs.Validation;
 
-/// <summary>
-/// Validador de turbina (§6.2).
-/// </summary>
+// Validador de turbina (§6.2).
 public static class TurbineValidator
 {
+    // Realiza la validación técnica y de reglas de negocio sobre los parámetros de entrada del sistema.
     public static ValidationResult Validate(
         string? uniqueCode, string? name, string? location,
         string? brand, string? model, int year, decimal weeklyNominalCapacity)

@@ -1,6 +1,6 @@
 ﻿namespace SEGEDE_Grupo1.EntitiesDTOs.Constants;
 
-// TODO: Definir roles de usuario (Administrator, Engineer, Buyer) segÃºn documento tÃ©cnico Â§4.
+// Nota arquitectónica: Definir roles de usuario (Administrator, Engineer, Buyer) segÃºn documento tÃ©cnico Â§4.
 public static class UserRoles
 {
     public const string Administrator = "Administrator";

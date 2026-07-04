@@ -12,13 +12,13 @@ using SEGEDE_Grupo1.EntitiesDTOs.Validation;
 
 namespace SEGEDE_Grupo1.CoreApp.Managers;
 
-/// <summary>
-/// Manager de Usuarios (§14.1). Respetando la arquitectura, instancia fábricas directamente con new sin IoC.
-/// Aplica validaciones de seguridad, control de intentos fallidos (bloqueo a los 3 intentos), flujos OTP y ownership.
-/// </summary>
+// Manager de Usuarios (§14.1). Respetando la arquitectura, instancia fábricas directamente con new sin IoC.
+// Aplica validaciones de seguridad, control de intentos fallidos (bloqueo a los 3 intentos), flujos OTP y ownership.
 public class UserManager
 {
+    // Propiedad de datos mapeada a la columna de base de datos o parámetro de transferencia.
     public static string JwtSecret { get; set; } = Environment.GetEnvironmentVariable("Jwt:Secret") ?? "DefaultSuperSecretKeyThatIsAtLeast32BytesLongForHmacSha256!!";
+    // Propiedad de datos mapeada a la columna de base de datos o parámetro de transferencia.
     public static int JwtExpiryMinutes { get; set; } = 480;
 
     private readonly UserCrudFactory _userCrudFactory = new();
@@ -27,9 +27,7 @@ public class UserManager
     private readonly OtpServiceClient _otpClient = new();
     private readonly AuditManager _auditManager = new();
 
-    /// <summary>
-    /// RF-001: Registro de comprador. Crea el usuario en estado PendingActivation, genera OTP de activación y encola notificación.
-    /// </summary>
+    // RF-001: Registro de comprador. Crea el usuario en estado PendingActivation, genera OTP de activación y encola notificación.
     public void Register(RegisterBuyerRequest r)
     {
         var validation = UserValidator.Validate(r.Email, r.Identification, r.Password, r.Phone, r.BirthDate, r.FirstName, r.LastName);
@@ -67,9 +65,7 @@ public class UserManager
         _auditManager.LogAction(createdUser.Id, createdUser.Email, AuditModules.Users, AuditActions.Create, "tblUser", createdUser.Id, null, "Buyer registered");
     }
 
-    /// <summary>
-    /// RF-002: Calcula la edad actual en años a partir de la fecha de nacimiento.
-    /// </summary>
+    // RF-002: Calcula la edad actual en años a partir de la fecha de nacimiento.
     public int CalculateAge(DateTime dob)
     {
         var now = TimeHelper.NowCR();
@@ -78,9 +74,7 @@ public class UserManager
         return age;
     }
 
-    /// <summary>
-    /// RF-004: Activación de cuenta por OTP.
-    /// </summary>
+    // RF-004: Activación de cuenta por OTP.
     public void Activate(ActivateAccountRequest r)
     {
         var user = _userCrudFactory.RetrieveByEmail(r.Email) ?? throw new NotFoundException("User not found.");
@@ -96,9 +90,7 @@ public class UserManager
         _auditManager.LogAction(user.Id, user.Email, AuditModules.Users, AuditActions.Activate, "tblUser", user.Id, "PendingActivation", "Active");
     }
 
-    /// <summary>
-    /// RF-005: Paso 1 del login (autenticación por contraseña). Si es válido, genera OTP de Login.
-    /// </summary>
+    // RF-005: Paso 1 del login (autenticación por contraseña). Si es válido, genera OTP de Login.
     public void LoginStep1(LoginStep1Request r)
     {
         var user = _userCrudFactory.RetrieveByEmail(r.Email);
@@ -134,9 +126,7 @@ public class UserManager
         _auditManager.LogAction(user.Id, user.Email, AuditModules.Users, AuditActions.Execute, "tblUser", user.Id, null, "Step 1 password verified");
     }
 
-    /// <summary>
-    /// RF-005: Paso 2 del login (verificación OTP y emisión de JWT).
-    /// </summary>
+    // RF-005: Paso 2 del login (verificación OTP y emisión de JWT).
     public LoginResponse LoginStep2(LoginStep2Request r)
     {
         var user = _userCrudFactory.RetrieveByEmail(r.Email) ?? throw new NotFoundException("User not found.");
@@ -159,9 +149,7 @@ public class UserManager
         };
     }
 
-    /// <summary>
-    /// RF-006: Inicio de recuperación de contraseña.
-    /// </summary>
+    // RF-006: Inicio de recuperación de contraseña.
     public void RecoverPassword(RecoverPasswordRequest r)
     {
         var user = _userCrudFactory.RetrieveByEmail(r.Email);
@@ -172,9 +160,7 @@ public class UserManager
         }
     }
 
-    /// <summary>
-    /// RF-006: Reinicio de contraseña con OTP verificado.
-    /// </summary>
+    // RF-006: Reinicio de contraseña con OTP verificado.
     public void ResetPassword(ResetPasswordRequest r)
     {
         var user = _userCrudFactory.RetrieveByEmail(r.Email) ?? throw new NotFoundException("User not found.");
@@ -192,9 +178,7 @@ public class UserManager
         _auditManager.LogAction(user.Id, user.Email, AuditModules.Users, AuditActions.Execute, "tblUser", user.Id, null, "Password successfully reset");
     }
 
-    /// <summary>
-    /// RF-007: Reenvío de código OTP (< 3 reenvíos permitidos).
-    /// </summary>
+    // RF-007: Reenvío de código OTP (< 3 reenvíos permitidos).
     public void ResendOtp(ResendOtpRequest r)
     {
         var user = _userCrudFactory.RetrieveByEmail(r.Email) ?? throw new NotFoundException("User not found.");
@@ -214,9 +198,7 @@ public class UserManager
         _auditManager.LogAction(user.Id, user.Email, AuditModules.Users, AuditActions.Update, "tblOtpAttempts", user.Id, null, $"Resent OTP for {r.UsageType}");
     }
 
-    /// <summary>
-    /// RF-008: Creación de usuario interno (Engineer/Admin) por el Administrador.
-    /// </summary>
+    // RF-008: Creación de usuario interno (Engineer/Admin) por el Administrador.
     public void CreateInternal(CreateInternalUserRequest r)
     {
         var existingUser = _userCrudFactory.RetrieveByEmail(r.Email);
@@ -253,9 +235,7 @@ public class UserManager
         _auditManager.LogAction(createdUser.Id, createdUser.Email, AuditModules.Users, AuditActions.Create, "tblUser", createdUser.Id, null, $"Created internal user with role {r.Role}");
     }
 
-    /// <summary>
-    /// RF-009: Administrador edita campos administrativos de un usuario.
-    /// </summary>
+    // RF-009: Administrador edita campos administrativos de un usuario.
     public void UpdateUser(UpdateUserRequest r)
     {
         var existing = _userCrudFactory.RetrieveById<User>(r.UserId) ?? throw new NotFoundException("User not found.");
@@ -275,9 +255,7 @@ public class UserManager
         _auditManager.LogAction(r.UserId, existing.Email, AuditModules.Users, AuditActions.Update, "tblUser", r.UserId, existing.Status, r.Status);
     }
 
-    /// <summary>
-    /// RF-010: Comprador edita su perfil (verificación de propiedad / ownership).
-    /// </summary>
+    // RF-010: Comprador edita su perfil (verificación de propiedad / ownership).
     public void UpdateProfile(UpdateProfileRequest r, int callerUserId)
     {
         var existing = _userCrudFactory.RetrieveById<User>(callerUserId) ?? throw new NotFoundException("User not found.");
@@ -287,9 +265,7 @@ public class UserManager
         _auditManager.LogAction(callerUserId, existing.Email, AuditModules.Users, AuditActions.Update, "tblUser", callerUserId, null, "Profile updated by buyer");
     }
 
-    /// <summary>
-    /// RF-011: Borrado lógico de usuario. Si se borra un comprador, cancela proyecciones a > 3 meses.
-    /// </summary>
+    // RF-011: Borrado lógico de usuario. Si se borra un comprador, cancela proyecciones a > 3 meses.
     public void Deactivate(DeactivateUserRequest r, int callerUserId, string callerRole)
     {
         if (!string.Equals(callerRole, "Administrator", StringComparison.OrdinalIgnoreCase) && r.UserId != callerUserId)
@@ -309,9 +285,7 @@ public class UserManager
         _auditManager.LogAction(callerUserId, user.Email, AuditModules.Users, AuditActions.LogicalDelete, "tblUser", user.Id, "Active", "Inactive");
     }
 
-    /// <summary>
-    /// RF-012: Solo el Administrador puede reactivar usuarios inactivos.
-    /// </summary>
+    // RF-012: Solo el Administrador puede reactivar usuarios inactivos.
     public void Reactivate(int userId)
     {
         var user = _userCrudFactory.RetrieveById<User>(userId) ?? throw new NotFoundException("User not found.");
@@ -319,27 +293,21 @@ public class UserManager
         _auditManager.LogAction(null, "System/Admin", AuditModules.Users, AuditActions.Activate, "tblUser", user.Id, "Inactive", "Active");
     }
 
-    /// <summary>
-    /// Retorna lista de usuarios sin exponer datos sensibles (hash, intentos).
-    /// </summary>
+    // Retorna lista de usuarios sin exponer datos sensibles (hash, intentos).
     public List<UserSafeResponse> RetrieveAll()
     {
         var users = _userCrudFactory.RetrieveAll<User>();
         return users.Select(MapToSafeResponse).ToList();
     }
 
-    /// <summary>
-    /// Retorna un usuario por ID sin exponer datos sensibles.
-    /// </summary>
+    // Retorna un usuario por ID sin exponer datos sensibles.
     public UserSafeResponse RetrieveById(int id)
     {
         var user = _userCrudFactory.RetrieveById<User>(id) ?? throw new NotFoundException("User not found.");
         return MapToSafeResponse(user);
     }
 
-    /// <summary>
-    /// Sube una foto de perfil y actualiza el campo PhotoUrl del usuario.
-    /// </summary>
+    // Sube una foto de perfil y actualiza el campo PhotoUrl del usuario.
     public string UploadPhoto(int userId, Stream file, string contentType)
     {
         var user = _userCrudFactory.RetrieveById<User>(userId) ?? throw new NotFoundException("User not found.");
@@ -382,6 +350,7 @@ public class UserManager
         }
     }
 
+    // Ejecuta operaciones criptográficas para el resguardo y verificación segura de credenciales e integridad.
     private void VerifyOtpOrThrow(int userId, string email, string usageType, string code)
     {
         var activeAttempt = _otpAttemptCrudFactory.RetrieveActive(userId, usageType);
@@ -404,6 +373,7 @@ public class UserManager
         _otpAttemptCrudFactory.UpdateStatus(activeAttempt.Id, OtpAttemptStates.Verified, TimeHelper.NowCR());
     }
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     private void EnqueueNotification(int userId, string email, string type, string subject, string body, bool isCritical)
     {
         var notif = new NotificationQueue
@@ -422,6 +392,7 @@ public class UserManager
         _notificationFactory.Create(notif);
     }
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     private UserSafeResponse MapToSafeResponse(User user) => new()
     {
         Id = user.Id,

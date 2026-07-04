@@ -1,8 +1,6 @@
 namespace SEGEDE_Grupo1.EntitiesDTOs.Constants;
 
-/// <summary>
-/// Tipos de uso de OTP (§4).
-/// </summary>
+// Tipos de uso de OTP (§4).
 public static class OtpUsageTypes
 {
     public const string Activation = "Activation";

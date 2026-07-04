@@ -1,8 +1,6 @@
 namespace SEGEDE_Grupo1.EntitiesDTOs.Constants;
 
-/// <summary>
-/// Tipos de flush (§4).
-/// </summary>
+// Tipos de flush (§4).
 public static class FlushTypes
 {
     public const string Automatic = "Automatic";

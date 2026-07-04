@@ -8,10 +8,8 @@ using SEGEDE_Grupo1.EntitiesDTOs.Helpers;
 
 namespace SEGEDE_Grupo1.CoreApp.Managers;
 
-/// <summary>
-/// Manager de Facturación y Finanzas (§14.10). Instanciación directa con new sin IoC.
-/// Gestiona precios, impuestos, consulta, anulación y regeneración de estados de cuenta, así como exportación en formatos CSV, Excel y HTML/PDF.
-/// </summary>
+// Manager de Facturación y Finanzas (§14.10). Instanciación directa con new sin IoC.
+// Gestiona precios, impuestos, consulta, anulación y regeneración de estados de cuenta, así como exportación en formatos CSV, Excel y HTML/PDF.
 public class BillingManager
 {
     private readonly AccountStatementCrudFactory _statementFactory = new();
@@ -25,9 +23,7 @@ public class BillingManager
     private readonly ExcelBuilder _excelBuilder = new();
     private readonly HtmlStatementBuilder _htmlBuilder = new();
 
-    /// <summary>
-    /// RF-057: Establecer un nuevo precio por MWh. Cierra el precio activo vigente (manejado por el SP de inserción) y registra el nuevo.
-    /// </summary>
+    // RF-057: Establecer un nuevo precio por MWh. Cierra el precio activo vigente (manejado por el SP de inserción) y registra el nuevo.
     public void SetPrice(SetPriceRequest r, int callerUserId)
     {
         if (r.PriceCRCPerMWh <= 0)
@@ -52,17 +48,13 @@ public class BillingManager
         _auditManager.LogAction(callerUserId, $"User {callerUserId}", AuditModules.Billing, AuditActions.Create, "tblPrice", 0, oldVal, $"{r.PriceCRCPerMWh:F2}");
     }
 
-    /// <summary>
-    /// RF-057: Retorna el historial de precios configurados.
-    /// </summary>
+    // RF-057: Retorna el historial de precios configurados.
     public List<Price> RetrievePriceHistory()
     {
         return _priceFactory.RetrieveAll<Price>();
     }
 
-    /// <summary>
-    /// RF-058: Establecer un nuevo impuesto. Valida que sea fracción entre 0 y 1 (ej. 0.13), cierra el anterior y crea el nuevo.
-    /// </summary>
+    // RF-058: Establecer un nuevo impuesto. Valida que sea fracción entre 0 y 1 (ej. 0.13), cierra el anterior y crea el nuevo.
     public void SetTax(SetTaxRequest r, int callerUserId)
     {
         if (r.Percentage < 0 || r.Percentage > 1)
@@ -93,17 +85,13 @@ public class BillingManager
         _auditManager.LogAction(callerUserId, $"User {callerUserId}", AuditModules.Billing, AuditActions.Create, "tblTax", 0, oldVal, $"{r.Name}: {r.Percentage:P2}");
     }
 
-    /// <summary>
-    /// RF-058: Retorna el historial de impuestos configurados.
-    /// </summary>
+    // RF-058: Retorna el historial de impuestos configurados.
     public List<Tax> RetrieveTaxHistory()
     {
         return _taxFactory.RetrieveAll<Tax>();
     }
 
-    /// <summary>
-    /// RF-064: Retorna estados de cuenta. Si buyerId es null, retorna todos (Administrador/Ingeniero); si se especifica buyerId, verifica ownership.
-    /// </summary>
+    // RF-064: Retorna estados de cuenta. Si buyerId es null, retorna todos (Administrador/Ingeniero); si se especifica buyerId, verifica ownership.
     public List<AccountStatement> RetrieveStatements(int? buyerId, int callerUserId, string callerRole)
     {
         if (buyerId.HasValue)
@@ -124,9 +112,7 @@ public class BillingManager
         return _statementFactory.RetrieveAll<AccountStatement>();
     }
 
-    /// <summary>
-    /// RF-062: Anula un estado de cuenta. Valida que exista motivo, marca Status=Annulled sin tocar valores financieros.
-    /// </summary>
+    // RF-062: Anula un estado de cuenta. Valida que exista motivo, marca Status=Annulled sin tocar valores financieros.
     public void AnnulStatement(AnnulStatementRequest r, int callerUserId)
     {
         if (string.IsNullOrWhiteSpace(r.Reason))
@@ -145,9 +131,7 @@ public class BillingManager
         _auditManager.LogAction(callerUserId, $"User {callerUserId}", AuditModules.Billing, AuditActions.Update, "tblAccountStatement", stmt.Id, StatementStates.Issued, StatementStates.Annulled);
     }
 
-    /// <summary>
-    /// RF-063: Regenera un estado de cuenta anulado (§17.10). Copia valores congelados con RevisionNumber incrementado y ParentId apuntando al origen.
-    /// </summary>
+    // RF-063: Regenera un estado de cuenta anulado (§17.10). Copia valores congelados con RevisionNumber incrementado y ParentId apuntando al origen.
     public void RegenerateStatement(RegenerateStatementRequest r, int callerUserId)
     {
         var orig = _statementFactory.RetrieveById<AccountStatement>(r.OriginalStatementId) ?? throw new NotFoundException("Original account statement not found.");
@@ -183,9 +167,7 @@ public class BillingManager
         _auditManager.LogAction(callerUserId, $"User {callerUserId}", AuditModules.Billing, AuditActions.Create, "tblAccountStatement", 0, $"Annulled #{orig.Id} (Rev {orig.RevisionNumber})", $"Regenerated (Rev {newStmt.RevisionNumber})");
     }
 
-    /// <summary>
-    /// RF-065/072: Exportación de estado de cuenta (§20.1). Verifica ownership, construye el archivo (CSV, Excel o HTML/PDF) y registra en ExportLog.
-    /// </summary>
+    // RF-065/072: Exportación de estado de cuenta (§20.1). Verifica ownership, construye el archivo (CSV, Excel o HTML/PDF) y registra en ExportLog.
     public byte[] ExportStatement(ExportStatementRequest r, int callerUserId, string callerRole)
     {
         var stmt = _statementFactory.RetrieveById<AccountStatement>(r.StatementId) ?? throw new NotFoundException("Account statement not found.");

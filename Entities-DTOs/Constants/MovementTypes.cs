@@ -1,8 +1,6 @@
 namespace SEGEDE_Grupo1.EntitiesDTOs.Constants;
 
-/// <summary>
-/// Tipos de movimiento en banco central (§4).
-/// </summary>
+// Tipos de movimiento en banco central (§4).
 public static class MovementTypes
 {
     public const string Inflow = "Inflow";

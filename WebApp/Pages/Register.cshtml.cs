@@ -2,8 +2,9 @@
 
 namespace SEGEDE_Grupo1.WebApp.Pages;
 
-// TODO: PageModel para User Registration consumiendo la Web API REST.
+// Nota arquitectónica: PageModel para User Registration consumiendo la Web API REST.
 public class RegisterModel : PageModel
 {
+    // Método manejador que se ejecuta al recibir una petición HTTP GET para inicializar la vista y presentar los datos en pantalla.
     public void OnGet() { }
 }

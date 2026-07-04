@@ -1,5 +1,6 @@
 // notifications.js (§29.3) - Gestión de alertas y toasts
 const Notifications = {
+    // Función de cliente en JavaScript que gestiona la interactividad de la interfaz y comunicación asíncrona.
     showToast: function (message, type = "info") {
         const toastContainer = document.getElementById("toastContainer");
         if (!toastContainer) return;

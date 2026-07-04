@@ -1,8 +1,6 @@
 namespace SEGEDE_Grupo1.EntitiesDTOs.Constants;
 
-/// <summary>
-/// Módulos de auditoría (§4).
-/// </summary>
+// Módulos de auditoría (§4).
 public static class AuditModules
 {
     public const string Users = "Users";

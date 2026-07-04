@@ -3,23 +3,26 @@ using SEGEDE_Grupo1.EntitiesDTOs.Helpers;
 
 namespace SEGEDE_Grupo1.EntitiesDTOs.Validation;
 
-/// <summary>
-/// Validador de usuario (§6.1).
-/// </summary>
+// Validador de usuario (§6.1).
 public static class UserValidator
 {
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     private static readonly Regex EmailRegex = new(
         @"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.Compiled);
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     private static readonly Regex PasswordRegex = new(
         @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$", RegexOptions.Compiled);
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     private static readonly Regex PhoneRegex = new(
         @"^(\+506)?\d{8}$", RegexOptions.Compiled);
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     private static readonly Regex DigitsOnly = new(
         @"^\d+$", RegexOptions.Compiled);
 
+    // Realiza la validación técnica y de reglas de negocio sobre los parámetros de entrada del sistema.
     public static ValidationResult Validate(
         string? email, string? identification, string? password,
         string? phone, DateTime? birthDate, string? firstName, string? lastName)

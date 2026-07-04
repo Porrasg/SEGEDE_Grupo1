@@ -7,19 +7,15 @@ using SEGEDE_Grupo1.EntitiesDTOs.Helpers;
 
 namespace SEGEDE_Grupo1.CoreApp.Managers;
 
-/// <summary>
-/// Manager de Fallas (§14.4). Instancia fábricas directamente con new sin IoC.
-/// Gestiona registro de fallas e impactos automáticos en el estado de la turbina si la severidad es crítica.
-/// </summary>
+// Manager de Fallas (§14.4). Instancia fábricas directamente con new sin IoC.
+// Gestiona registro de fallas e impactos automáticos en el estado de la turbina si la severidad es crítica.
 public class FailureManager
 {
     private readonly FailureCrudFactory _failureCrudFactory = new();
     private readonly TurbineCrudFactory _turbineCrudFactory = new();
     private readonly AuditManager _auditManager = new();
 
-    /// <summary>
-    /// RF-020: Registra una falla en una turbina. Si la severidad es Critical, la turbina pasa automáticamente a estado Damaged.
-    /// </summary>
+    // RF-020: Registra una falla en una turbina. Si la severidad es Critical, la turbina pasa automáticamente a estado Damaged.
     public void Register(RegisterFailureRequest r, int callerUserId)
     {
         var turbine = _turbineCrudFactory.RetrieveById<Turbine>(r.TurbineId) ?? throw new NotFoundException("Turbine not found.");
@@ -52,9 +48,7 @@ public class FailureManager
         _auditManager.LogAction(callerUserId, $"User {callerUserId}", AuditModules.Failures, AuditActions.Create, "tblFailures", r.TurbineId, null, $"Reported {r.Severity} failure on turbine {turbine.UniqueCode}");
     }
 
-    /// <summary>
-    /// RF-021: Retorna el historial de fallas de una turbina.
-    /// </summary>
+    // RF-021: Retorna el historial de fallas de una turbina.
     public List<Failure> RetrieveByTurbine(int turbineId)
     {
         return _failureCrudFactory.RetrieveByTurbine(turbineId);

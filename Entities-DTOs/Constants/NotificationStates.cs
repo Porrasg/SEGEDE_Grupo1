@@ -1,8 +1,6 @@
 namespace SEGEDE_Grupo1.EntitiesDTOs.Constants;
 
-/// <summary>
-/// Estados de notificación (§4).
-/// </summary>
+// Estados de notificación (§4).
 public static class NotificationStates
 {
     public const string Pending = "Pending";

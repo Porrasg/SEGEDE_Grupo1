@@ -4,23 +4,26 @@ using SEGEDE_Grupo1.EntitiesDTOs.Entities;
 
 namespace SEGEDE_Grupo1.DataAccess.CRUD;
 
-/// <summary>
-/// CrudFactory para CentralBank → tblCentralBank (§12.14). Singleton (Id=1).
-/// </summary>
+// CrudFactory para CentralBank → tblCentralBank (§12.14). Singleton (Id=1).
 public class CentralBankCrudFactory : CrudFactory
 {
+    // Ejecuta el Stored Procedure de creación parametrizado en la base de datos SQL sin utilizar ORM.
     public override void Create(BaseDTO baseDTO) =>
         throw new NotSupportedException("Create is not supported for CentralBank (Singleton).");
 
+    // Invoca el SP de modificación para actualizar los campos operacionales del registro en la base de datos.
     public override void Update(BaseDTO baseDTO) =>
         throw new NotSupportedException("Use specific update methods for CentralBank.");
 
+    // Ejecuta el borrado lógico o desactivación del registro en la tabla relacional correspondiente.
     public override void Delete(BaseDTO baseDTO) =>
         throw new NotSupportedException("Delete is not supported for CentralBank (Singleton).");
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public override T RetrieveById<T>(int id) =>
         throw new NotSupportedException("Use RetrieveSingleton for CentralBank.");
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public override List<T> RetrieveAll<T>() =>
         throw new NotSupportedException("Use RetrieveSingleton for CentralBank.");
 
@@ -33,6 +36,7 @@ public class CentralBankCrudFactory : CrudFactory
         return results.Count > 0 ? BuildCentralBank(results[0]) : null;
     }
 
+    // Función encargada de modificar y actualizar los campos operacionales de registros existentes.
     public void UpdateInventory(decimal currentInventory, DateTime updated)
     {
         var op = new Operation { ProcedureName = "UPD_INVENTORY_CENT_BANK_PR" };
@@ -41,6 +45,7 @@ public class CentralBankCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función encargada de modificar y actualizar los campos operacionales de registros existentes.
     public void UpdateAutomaticCapacity(decimal automaticCapacity, DateTime updated)
     {
         var op = new Operation { ProcedureName = "UPD_AUTO_CAP_CENT_BANK_PR" };
@@ -49,6 +54,7 @@ public class CentralBankCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función encargada de modificar y actualizar los campos operacionales de registros existentes.
     public void UpdateManualCapacity(decimal? manualCapacity, DateTime updated)
     {
         var op = new Operation { ProcedureName = "UPD_MANUAL_CAP_CENT_BANK_PR" };
@@ -57,6 +63,7 @@ public class CentralBankCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     private static CentralBank BuildCentralBank(Dictionary<string, object> row) => new()
     {
         Id = (int)row["Id"],

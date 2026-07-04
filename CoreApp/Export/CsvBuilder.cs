@@ -3,12 +3,11 @@ using SEGEDE_Grupo1.EntitiesDTOs.Entities;
 
 namespace SEGEDE_Grupo1.CoreApp.Export;
 
-/// <summary>
-/// Constructor de archivos CSV para exportación de datos y estados de cuenta según §20.1.
-/// Utiliza StringBuilder, UTF-8 con BOM y formateo adecuado.
-/// </summary>
+// Constructor de archivos CSV para exportación de datos y estados de cuenta según §20.1.
+// Utiliza StringBuilder, UTF-8 con BOM y formateo adecuado.
 public class CsvBuilder
 {
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     public byte[] BuildStatementCsv(AccountStatement s, User? buyer)
     {
         var sb = new StringBuilder();

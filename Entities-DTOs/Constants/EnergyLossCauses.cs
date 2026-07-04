@@ -1,8 +1,6 @@
 namespace SEGEDE_Grupo1.EntitiesDTOs.Constants;
 
-/// <summary>
-/// Causas de pérdida de energía (§4).
-/// </summary>
+// Causas de pérdida de energía (§4).
 public static class EnergyLossCauses
 {
     public const string Maintenance = "Maintenance";

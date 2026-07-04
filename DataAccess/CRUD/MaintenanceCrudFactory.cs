@@ -4,11 +4,10 @@ using SEGEDE_Grupo1.EntitiesDTOs.Entities;
 
 namespace SEGEDE_Grupo1.DataAccess.CRUD;
 
-/// <summary>
-/// CrudFactory para Maintenance → tblMaintenances (§12.6).
-/// </summary>
+// CrudFactory para Maintenance → tblMaintenances (§12.6).
 public class MaintenanceCrudFactory : CrudFactory
 {
+    // Función encargada de registrar e insertar nuevos elementos en el almacén de datos cumpliendo las reglas de negocio.
     public override void Create(BaseDTO baseDTO)
     {
         var m = (Maintenance)baseDTO;
@@ -22,6 +21,7 @@ public class MaintenanceCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función encargada de modificar y actualizar los campos operacionales de registros existentes.
     public override void Update(BaseDTO baseDTO)
     {
         var m = (Maintenance)baseDTO;
@@ -35,6 +35,7 @@ public class MaintenanceCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función encargada de realizar el borrado lógico o desactivación de registros según las políticas del sistema.
     public override void Delete(BaseDTO baseDTO)
     {
         var op = new Operation { ProcedureName = "DEL_MAINT_PR" };
@@ -42,6 +43,7 @@ public class MaintenanceCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public override T RetrieveById<T>(int id)
     {
         var op = new Operation { ProcedureName = "RET_ID_MAINT_PR" };
@@ -50,6 +52,7 @@ public class MaintenanceCrudFactory : CrudFactory
         return results.Count > 0 ? (T)(object)BuildMaintenance(results[0]) : default!;
     }
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public override List<T> RetrieveAll<T>()
     {
         var op = new Operation { ProcedureName = "RET_ALL_MAINT_PR" };
@@ -67,6 +70,7 @@ public class MaintenanceCrudFactory : CrudFactory
         return results.Select(BuildMaintenance).ToList();
     }
 
+    // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public Maintenance? RetrieveActivePreventive()
     {
         var op = new Operation { ProcedureName = "RET_ACTIVE_PREV_MAINT_PR" };
@@ -74,6 +78,7 @@ public class MaintenanceCrudFactory : CrudFactory
         return results.Count > 0 ? BuildMaintenance(results[0]) : null;
     }
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     public void Complete(int maintenanceId, DateTime actualEndDate, string result, DateTime updated)
     {
         var op = new Operation { ProcedureName = "UPD_COMPLETE_MAINT_PR" };
@@ -84,6 +89,7 @@ public class MaintenanceCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     private static Maintenance BuildMaintenance(Dictionary<string, object> row) => new()
     {
         Id = (int)row["Id"],

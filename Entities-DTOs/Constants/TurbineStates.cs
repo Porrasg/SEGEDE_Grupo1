@@ -1,8 +1,6 @@
 namespace SEGEDE_Grupo1.EntitiesDTOs.Constants;
 
-/// <summary>
-/// Estados de turbinas (§4).
-/// </summary>
+// Estados de turbinas (§4).
 public static class TurbineStates
 {
     public const string Active = "Active";

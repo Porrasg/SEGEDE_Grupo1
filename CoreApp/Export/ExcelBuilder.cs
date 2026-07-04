@@ -3,12 +3,11 @@ using SEGEDE_Grupo1.EntitiesDTOs.Entities;
 
 namespace SEGEDE_Grupo1.CoreApp.Export;
 
-/// <summary>
-/// Constructor de archivos Excel para exportaciones según §20.1.
-/// Utiliza el formato XML Spreadsheet 2003 nativo (sin librerías externas).
-/// </summary>
+// Constructor de archivos Excel para exportaciones según §20.1.
+// Utiliza el formato XML Spreadsheet 2003 nativo (sin librerías externas).
 public class ExcelBuilder
 {
+    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
     public byte[] BuildStatementExcel(AccountStatement s, User? buyer)
     {
         var sb = new StringBuilder();
