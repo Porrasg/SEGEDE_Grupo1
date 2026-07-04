@@ -1,10 +1,43 @@
-﻿@page
+@page
 @model SEGEDE_Grupo1.WebApp.Pages.Admin.DashboardModel
 @{
-    ViewData["Title"] = "Admin Dashboard";
+    ViewData["Title"] = "Panel de Administración";
 }
 
 <div class="container mt-4">
-    <h2>@ViewData["Title"]</h2>
-    <p class="text-muted">Esqueleto de la vista Admin Dashboard segÃºn documento tÃ©cnico Â§27/Â§28.</p>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>@ViewData["Title"]</h2>
+    </div>
+        <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card text-center h-100"><div class="card-body"><h6 class="text-muted">Total Turbinas</h6><h3 id="kpiTotalTurbines">-</h3></div></div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center h-100"><div class="card-body"><h6 class="text-muted">Turbinas Activas</h6><h3 id="kpiActiveTurbines">-</h3></div></div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center h-100"><div class="card-body"><h6 class="text-muted">Inventario Banco Central</h6><h3 id="kpiCbInventory">- MWh</h3></div></div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center h-100"><div class="card-body"><h6 class="text-muted">Capacidad Vigente</h6><h3 id="kpiEffectiveCap">- MWh</h3></div></div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center h-100"><div class="card-body"><h6 class="text-muted">Pronósticos del Mes</h6><h3 id="kpiMonthForecasts">-</h3></div></div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center h-100"><div class="card-body"><h6 class="text-muted">Demanda Total Mes</h6><h3 id="kpiTotalDemand">- MWh</h3></div></div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center h-100"><div class="card-body"><h6 class="text-muted">Total Facturado Mes</h6><h3 id="kpiTotalBilled">- CRC</h3></div></div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center h-100"><div class="card-body"><h6 class="text-muted">Último Flush</h6><h6 id="kpiLastFlush" class="mt-2">-</h6></div></div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header">Resumen Operativo y Comercial</div>
+        <div class="card-body">
+            <p class="text-muted">Gráficos de generación, demanda y recaudación se renderizarán aquí.</p>
+        </div>
+    </div>
 </div>
