@@ -1,8 +1,6 @@
 namespace SEGEDE_Grupo1.EntitiesDTOs.Constants;
 
-/// <summary>
-/// Estados de pronóstico de demanda (§4).
-/// </summary>
+// Estados de pronóstico de demanda (§4).
 public static class ForecastStates
 {
     public const string Pending = "Pending";

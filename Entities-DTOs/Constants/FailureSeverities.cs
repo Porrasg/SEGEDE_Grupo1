@@ -1,8 +1,6 @@
 namespace SEGEDE_Grupo1.EntitiesDTOs.Constants;
 
-/// <summary>
-/// Severidades de falla (§4).
-/// </summary>
+// Severidades de falla (§4).
 public static class FailureSeverities
 {
     public const string Normal = "Normal";

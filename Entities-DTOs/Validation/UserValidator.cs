@@ -3,9 +3,7 @@ using SEGEDE_Grupo1.EntitiesDTOs.Helpers;
 
 namespace SEGEDE_Grupo1.EntitiesDTOs.Validation;
 
-/// <summary>
-/// Validador de usuario (§6.1).
-/// </summary>
+// Validador de usuario (§6.1).
 public static class UserValidator
 {
     private static readonly Regex EmailRegex = new(

@@ -5,13 +5,13 @@ using SEGEDE_Grupo1.EntitiesDTOs.Exceptions;
 
 namespace SEGEDE_Grupo1.CoreApp.External;
 
-/// <summary>
-/// Cliente para la comunicación con el servicio externo de OTP (§13.3).
-/// Lee BaseUrl y ApiKey de variables de entorno o configuración estática al instanciarse sin DI.
-/// </summary>
+// Cliente para la comunicación con el servicio externo de OTP (§13.3).
+// Lee BaseUrl y ApiKey de variables de entorno o configuración estática al instanciarse sin DI.
 public class OtpServiceClient
 {
+    // Propiedad de datos mapeada a la columna de base de datos o parámetro de transferencia.
     public static string BaseUrlSetting { get; set; } = Environment.GetEnvironmentVariable("OtpService:BaseUrl") ?? "https://api.otpservice.local";
+    // Propiedad de datos mapeada a la columna de base de datos o parámetro de transferencia.
     public static string ApiKeySetting { get; set; } = Environment.GetEnvironmentVariable("OtpService:ApiKey") ?? "";
 
     private readonly HttpClient _httpClient;
@@ -32,12 +32,10 @@ public class OtpServiceClient
         _httpClient = httpClient ?? new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
     }
 
-    /// <summary>
-    /// Solicita la generación y envío de un OTP para un correo y tipo de uso específicos.
-    /// </summary>
-    /// <param name="email">Correo del destinatario.</param>
-    /// <param name="usageType">Tipo de uso (ej. Activation, Login, PasswordRecovery).</param>
-    /// <returns>True si la solicitud fue exitosa; de lo contrario, False.</returns>
+    // Solicita la generación y envío de un OTP para un correo y tipo de uso específicos.
+    // Parámetro email: Correo del destinatario.
+    // Parámetro usageType: Tipo de uso (ej. Activation, Login, PasswordRecovery).
+    // Retorna: True si la solicitud fue exitosa; de lo contrario, False.
     public bool RequestOtp(string email, string usageType)
     {
         try
@@ -68,13 +66,11 @@ public class OtpServiceClient
         }
     }
 
-    /// <summary>
-    /// Verifica si el código OTP proporcionado es válido para el correo y tipo de uso.
-    /// </summary>
-    /// <param name="email">Correo del usuario.</param>
-    /// <param name="usageType">Tipo de uso.</param>
-    /// <param name="code">Código OTP de 6 dígitos ingresado por el usuario.</param>
-    /// <returns>True si el código es válido; de lo contrario, False.</returns>
+    // Verifica si el código OTP proporcionado es válido para el correo y tipo de uso.
+    // Parámetro email: Correo del usuario.
+    // Parámetro usageType: Tipo de uso.
+    // Parámetro code: Código OTP de 6 dígitos ingresado por el usuario.
+    // Retorna: True si el código es válido; de lo contrario, False.
     public bool VerifyOtp(string email, string usageType, string code)
     {
         try

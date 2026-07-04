@@ -1,10 +1,9 @@
 namespace SEGEDE_Grupo1.EntitiesDTOs.Exceptions;
 
-/// <summary>
-/// Validación de inputs → HTTP 400 (§5).
-/// </summary>
+// Validación de inputs → HTTP 400 (§5).
 public class ValidationException : Exception
 {
+    // Propiedad de datos mapeada a la columna de base de datos o parámetro de transferencia.
     public string[] Errors { get; }
 
     public ValidationException(string[] errors)

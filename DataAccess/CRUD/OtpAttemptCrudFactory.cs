@@ -4,9 +4,7 @@ using SEGEDE_Grupo1.EntitiesDTOs.Entities;
 
 namespace SEGEDE_Grupo1.DataAccess.CRUD;
 
-/// <summary>
-/// CrudFactory para OtpAttempt → tblOtpAttempts (§12.2).
-/// </summary>
+// CrudFactory para OtpAttempt → tblOtpAttempts (§12.2).
 public class OtpAttemptCrudFactory : CrudFactory
 {
     public override void Create(BaseDTO baseDTO)
@@ -36,6 +34,7 @@ public class OtpAttemptCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Ejecuta el borrado lógico o desactivación del registro en la tabla relacional correspondiente.
     public override void Delete(BaseDTO baseDTO) =>
         throw new NotSupportedException("Delete is not supported for OtpAttempt.");
 

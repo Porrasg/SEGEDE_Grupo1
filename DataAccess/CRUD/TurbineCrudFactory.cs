@@ -4,9 +4,7 @@ using SEGEDE_Grupo1.EntitiesDTOs.Entities;
 
 namespace SEGEDE_Grupo1.DataAccess.CRUD;
 
-/// <summary>
-/// CrudFactory para Turbine → tblTurbines (§12.3).
-/// </summary>
+// CrudFactory para Turbine → tblTurbines (§12.3).
 public class TurbineCrudFactory : CrudFactory
 {
     public override void Create(BaseDTO baseDTO)

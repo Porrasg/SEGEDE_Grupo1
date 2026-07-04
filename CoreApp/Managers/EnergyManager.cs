@@ -7,10 +7,8 @@ using SEGEDE_Grupo1.EntitiesDTOs.Helpers;
 
 namespace SEGEDE_Grupo1.CoreApp.Managers;
 
-/// <summary>
-/// Manager de Energía (§14.5). Instancia fábricas directamente con new sin IoC.
-/// Ejecuta el ciclo de simulación de energía (cada 30s) calculando generación y pérdidas, y actualizando la batería local.
-/// </summary>
+// Manager de Energía (§14.5). Instancia fábricas directamente con new sin IoC.
+// Ejecuta el ciclo de simulación de energía (cada 30s) calculando generación y pérdidas, y actualizando la batería local.
 public class EnergyManager
 {
     private readonly EnergyGenerationLogCrudFactory _genLogCrudFactory = new();
@@ -18,10 +16,8 @@ public class EnergyManager
     private readonly LocalBatteryCrudFactory _localBatteryCrudFactory = new();
     private readonly TurbineCrudFactory _turbineCrudFactory = new();
 
-    /// <summary>
-    /// RF-025/026/027/028 (§17.3): Ejecuta ciclo de simulación de energía en ventana de 30s.
-    /// Calcula tiempo activo e inactivo según fecha del último cambio de estado, genera logs de generación y pérdida, y acumula en la batería.
-    /// </summary>
+    // RF-025/026/027/028 (§17.3): Ejecuta ciclo de simulación de energía en ventana de 30s.
+    // Calcula tiempo activo e inactivo según fecha del último cambio de estado, genera logs de generación y pérdida, y acumula en la batería.
     public void RunSimulationCycle()
     {
         var turbines = _turbineCrudFactory.RetrieveAll<Turbine>();
@@ -121,17 +117,13 @@ public class EnergyManager
         }
     }
 
-    /// <summary>
-    /// RF-030: Retorna el estado actual de la batería local de una turbina.
-    /// </summary>
+    // RF-030: Retorna el estado actual de la batería local de una turbina.
     public LocalBattery RetrieveLocalBattery(int turbineId)
     {
         return _localBatteryCrudFactory.RetrieveByTurbine(turbineId) ?? throw new NotFoundException("Local battery not found for this turbine.");
     }
 
-    /// <summary>
-    /// RF-027: Retorna el historial paginado de logs de generación de una turbina.
-    /// </summary>
+    // RF-027: Retorna el historial paginado de logs de generación de una turbina.
     public PagedResponse<EnergyGenerationLog> RetrieveGenerationHistory(int turbineId, PagedRequest p)
     {
         var all = _genLogCrudFactory.RetrieveByTurbine(turbineId);
@@ -148,9 +140,7 @@ public class EnergyManager
         };
     }
 
-    /// <summary>
-    /// RF-028: Retorna el historial paginado de logs de pérdidas de energía de una turbina.
-    /// </summary>
+    // RF-028: Retorna el historial paginado de logs de pérdidas de energía de una turbina.
     public PagedResponse<EnergyLossLog> RetrieveLossHistory(int turbineId, PagedRequest p)
     {
         var all = _lossLogCrudFactory.RetrieveByTurbine(turbineId);

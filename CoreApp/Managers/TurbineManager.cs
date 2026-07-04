@@ -8,10 +8,8 @@ using SEGEDE_Grupo1.EntitiesDTOs.Helpers;
 
 namespace SEGEDE_Grupo1.CoreApp.Managers;
 
-/// <summary>
-/// Manager de Turbinas (§14.2). Instanciación directa con new sin IoC.
-/// Gestiona registro (con creación de batería local), actualización, transiciones de estado, historial, métricas y verificación de mantenimiento vencido.
-/// </summary>
+// Manager de Turbinas (§14.2). Instanciación directa con new sin IoC.
+// Gestiona registro (con creación de batería local), actualización, transiciones de estado, historial, métricas y verificación de mantenimiento vencido.
 public class TurbineManager
 {
     private readonly TurbineCrudFactory _turbineCrudFactory = new();
@@ -25,9 +23,7 @@ public class TurbineManager
     private readonly NotificationQueueCrudFactory _notificationFactory = new();
     private readonly AuditManager _auditManager = new();
 
-    /// <summary>
-    /// RF-013: Registro de turbina. Crea turbina, su batería local 1:1, log de estado inicial y recalcula capacidad del Banco Central.
-    /// </summary>
+    // RF-013: Registro de turbina. Crea turbina, su batería local 1:1, log de estado inicial y recalcula capacidad del Banco Central.
     public void Register(RegisterTurbineRequest r, int callerUserId)
     {
         if (string.IsNullOrWhiteSpace(r.UniqueCode))
@@ -83,9 +79,7 @@ public class TurbineManager
         _auditManager.LogAction(callerUserId, $"User {callerUserId}", AuditModules.Turbines, AuditActions.Create, "tblTurbines", created.Id, null, $"Registered turbine {created.UniqueCode}");
     }
 
-    /// <summary>
-    /// RF-014: Actualización de campos editables de una turbina.
-    /// </summary>
+    // RF-014: Actualización de campos editables de una turbina.
     public void Update(UpdateTurbineRequest r, int callerUserId)
     {
         var existing = _turbineCrudFactory.RetrieveById<Turbine>(r.TurbineId) ?? throw new NotFoundException("Turbine not found.");
@@ -107,9 +101,7 @@ public class TurbineManager
         _auditManager.LogAction(callerUserId, $"User {callerUserId}", AuditModules.Turbines, AuditActions.Update, "tblTurbines", existing.Id, null, $"Updated turbine {existing.UniqueCode}");
     }
 
-    /// <summary>
-    /// RF-015/016: Cambio de estado de una turbina. Valida transición permitida y recalcula capacidad.
-    /// </summary>
+    // RF-015/016: Cambio de estado de una turbina. Valida transición permitida y recalcula capacidad.
     public void ChangeState(ChangeTurbineStateRequest r, int callerUserId)
     {
         var turbine = _turbineCrudFactory.RetrieveById<Turbine>(r.TurbineId) ?? throw new NotFoundException("Turbine not found.");
@@ -144,25 +136,19 @@ public class TurbineManager
         _auditManager.LogAction(callerUserId, $"User {callerUserId}", AuditModules.Turbines, AuditActions.Update, "tblTurbines", turbine.Id, oldState, r.NewState);
     }
 
-    /// <summary>
-    /// Retorna todas las turbinas registradas.
-    /// </summary>
+    // Retorna todas las turbinas registradas.
     public List<Turbine> RetrieveAll()
     {
         return _turbineCrudFactory.RetrieveAll<Turbine>();
     }
 
-    /// <summary>
-    /// Retorna una turbina por su ID.
-    /// </summary>
+    // Retorna una turbina por su ID.
     public Turbine RetrieveById(int id)
     {
         return _turbineCrudFactory.RetrieveById<Turbine>(id) ?? throw new NotFoundException("Turbine not found.");
     }
 
-    /// <summary>
-    /// RF-021/022: Retorna el historial completo de la turbina (estados, mantenimientos, fallas y energía total).
-    /// </summary>
+    // RF-021/022: Retorna el historial completo de la turbina (estados, mantenimientos, fallas y energía total).
     public TurbineHistoryResponse RetrieveHistory(int turbineId)
     {
         var turbine = _turbineCrudFactory.RetrieveById<Turbine>(turbineId) ?? throw new NotFoundException("Turbine not found.");
@@ -181,9 +167,7 @@ public class TurbineManager
         };
     }
 
-    /// <summary>
-    /// RF-023: Retorna métricas operacionales (DO, IO, MTBF, MTTR).
-    /// </summary>
+    // RF-023: Retorna métricas operacionales (DO, IO, MTBF, MTTR).
     public TurbineMetricsResponse RetrieveMetrics(int turbineId)
     {
         var turbine = _turbineCrudFactory.RetrieveById<Turbine>(turbineId) ?? throw new NotFoundException("Turbine not found.");
@@ -221,9 +205,7 @@ public class TurbineManager
         };
     }
 
-    /// <summary>
-    /// RF-018: Verificación de mantenimiento vencido (> 40 días). Suspende la turbina por incumplimiento y recalcula capacidad.
-    /// </summary>
+    // RF-018: Verificación de mantenimiento vencido (> 40 días). Suspende la turbina por incumplimiento y recalcula capacidad.
     public void CheckOverdueMaintenance()
     {
         var threshold = TimeHelper.NowCR().AddDays(-40);
@@ -273,9 +255,7 @@ public class TurbineManager
         }
     }
 
-    /// <summary>
-    /// Recalcula la capacidad automática del Banco Central sumando la capacidad nominal semanal de todas las turbinas activas.
-    /// </summary>
+    // Recalcula la capacidad automática del Banco Central sumando la capacidad nominal semanal de todas las turbinas activas.
     public void RecalculateCentralBankCapacity()
     {
         var activeTurbines = _turbineCrudFactory.RetrieveAllActive();

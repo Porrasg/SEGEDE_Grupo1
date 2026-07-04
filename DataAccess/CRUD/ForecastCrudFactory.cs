@@ -4,9 +4,7 @@ using SEGEDE_Grupo1.EntitiesDTOs.Entities;
 
 namespace SEGEDE_Grupo1.DataAccess.CRUD;
 
-/// <summary>
-/// CrudFactory para Forecast → tblForecast (§12.16).
-/// </summary>
+// CrudFactory para Forecast → tblForecast (§12.16).
 public class ForecastCrudFactory : CrudFactory
 {
     public override void Create(BaseDTO baseDTO)
@@ -33,6 +31,7 @@ public class ForecastCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Ejecuta el borrado lógico o desactivación del registro en la tabla relacional correspondiente.
     public override void Delete(BaseDTO baseDTO) =>
         throw new NotSupportedException("Use UpdateStatus method to cancel Forecast.");
 

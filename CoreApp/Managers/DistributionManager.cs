@@ -6,10 +6,8 @@ using SEGEDE_Grupo1.EntitiesDTOs.Helpers;
 
 namespace SEGEDE_Grupo1.CoreApp.Managers;
 
-/// <summary>
-/// Manager de Distribución Comercial (§14.9). Instanciación directa con new sin IoC.
-/// Ejecuta el ciclo mensual de distribución de energía bajo semántica ACID (§17.2), manejando escenarios de demanda, inventario, cálculos financieros y notificaciones.
-/// </summary>
+// Manager de Distribución Comercial (§14.9). Instanciación directa con new sin IoC.
+// Ejecuta el ciclo mensual de distribución de energía bajo semántica ACID (§17.2), manejando escenarios de demanda, inventario, cálculos financieros y notificaciones.
 public class DistributionManager
 {
     private readonly CommercialDistributionCrudFactory _commDistFactory = new();
@@ -24,10 +22,8 @@ public class DistributionManager
     private readonly UserCrudFactory _userFactory = new();
     private readonly AuditManager _auditManager = new();
 
-    /// <summary>
-    /// RF-050 a RF-056 (§17.2): Ejecuta el ciclo mensual de distribución comercial. Actor System.
-    /// Valida inventario del Banco Central, asigna energía proporcionalmente en escasez, genera estados de cuenta y encola notificaciones.
-    /// </summary>
+    // RF-050 a RF-056 (§17.2): Ejecuta el ciclo mensual de distribución comercial. Actor System.
+    // Valida inventario del Banco Central, asigna energía proporcionalmente en escasez, genera estados de cuenta y encola notificaciones.
     public void RunMonthlyDistribution(int month, int year)
     {
         var existingDist = _commDistFactory.RetrieveByMonth(month, year);
@@ -227,17 +223,13 @@ public class DistributionManager
         _auditManager.LogAction(null, SystemActor.Name, AuditModules.CentralBank, AuditActions.Execute, "tblCommercialDistribution", createdDist.Id, null, $"Executed distribution {month}/{year} ({scenario})");
     }
 
-    /// <summary>
-    /// Retorna el historial de distribuciones comerciales (requiere rol de Administrador u Operador según capa superior).
-    /// </summary>
+    // Retorna el historial de distribuciones comerciales (requiere rol de Administrador u Operador según capa superior).
     public List<CommercialDistribution> RetrieveHistory()
     {
         return _commDistFactory.RetrieveAll<CommercialDistribution>();
     }
 
-    /// <summary>
-    /// RF-049: Retorna el detalle de distribución por comprador con validación de ownership.
-    /// </summary>
+    // RF-049: Retorna el detalle de distribución por comprador con validación de ownership.
     public List<DistributionDetail> RetrieveDetailByBuyer(int buyerId, int callerUserId, string callerRole)
     {
         if (!string.Equals(callerRole, "Administrator", StringComparison.OrdinalIgnoreCase) && buyerId != callerUserId)

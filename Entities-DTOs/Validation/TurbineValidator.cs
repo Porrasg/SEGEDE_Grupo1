@@ -2,9 +2,7 @@ using SEGEDE_Grupo1.EntitiesDTOs.Helpers;
 
 namespace SEGEDE_Grupo1.EntitiesDTOs.Validation;
 
-/// <summary>
-/// Validador de turbina (§6.2).
-/// </summary>
+// Validador de turbina (§6.2).
 public static class TurbineValidator
 {
     public static ValidationResult Validate(

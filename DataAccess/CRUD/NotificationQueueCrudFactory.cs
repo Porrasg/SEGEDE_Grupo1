@@ -4,9 +4,7 @@ using SEGEDE_Grupo1.EntitiesDTOs.Entities;
 
 namespace SEGEDE_Grupo1.DataAccess.CRUD;
 
-/// <summary>
-/// CrudFactory para NotificationQueue → tblNotificationQueue (§12.22).
-/// </summary>
+// CrudFactory para NotificationQueue → tblNotificationQueue (§12.22).
 public class NotificationQueueCrudFactory : CrudFactory
 {
     public override void Create(BaseDTO baseDTO)
@@ -40,6 +38,7 @@ public class NotificationQueueCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Ejecuta el borrado lógico o desactivación del registro en la tabla relacional correspondiente.
     public override void Delete(BaseDTO baseDTO) =>
         throw new NotSupportedException("Delete is not supported for NotificationQueue.");
 

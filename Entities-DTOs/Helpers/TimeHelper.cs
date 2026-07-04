@@ -1,10 +1,8 @@
 namespace SEGEDE_Grupo1.EntitiesDTOs.Helpers;
 
-/// <summary>
-/// Helper de tiempo con zona horaria America/Costa_Rica (§7.1).
-/// Regla: nunca usar DateTime.Now / DateTime.UtcNow en managers/factories.
-/// Siempre usar TimeHelper.NowCR().
-/// </summary>
+// Helper de tiempo con zona horaria America/Costa_Rica (§7.1).
+// Regla: nunca usar DateTime.Now / DateTime.UtcNow en managers/factories.
+// Siempre usar TimeHelper.NowCR().
 public static class TimeHelper
 {
     private static readonly TimeZoneInfo CR =

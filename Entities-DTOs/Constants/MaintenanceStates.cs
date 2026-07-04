@@ -1,8 +1,6 @@
 namespace SEGEDE_Grupo1.EntitiesDTOs.Constants;
 
-/// <summary>
-/// Estados de mantenimiento (§4).
-/// </summary>
+// Estados de mantenimiento (§4).
 public static class MaintenanceStates
 {
     public const string Scheduled = "Scheduled";

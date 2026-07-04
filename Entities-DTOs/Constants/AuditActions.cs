@@ -1,8 +1,6 @@
 namespace SEGEDE_Grupo1.EntitiesDTOs.Constants;
 
-/// <summary>
-/// Acciones de auditoría (§4).
-/// </summary>
+// Acciones de auditoría (§4).
 public static class AuditActions
 {
     public const string Create = "Create";

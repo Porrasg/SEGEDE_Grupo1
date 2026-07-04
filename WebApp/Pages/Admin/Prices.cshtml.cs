@@ -2,7 +2,7 @@
 
 namespace SEGEDE_Grupo1.WebApp.Pages.Admin;
 
-// TODO: PageModel para Energy Prices consumiendo la Web API REST.
+// Nota arquitectónica: PageModel para Energy Prices consumiendo la Web API REST.
 public class PricesModel : PageModel
 {
     public void OnGet() { }

@@ -6,10 +6,8 @@ using SEGEDE_Grupo1.EntitiesDTOs.Helpers;
 
 namespace SEGEDE_Grupo1.CoreApp.Managers;
 
-/// <summary>
-/// Manager de Dashboards y KPIs (§14.13). Instanciación directa con new sin IoC.
-/// Genera respuestas agregadas para los paneles de control de Administrador, Ingeniero (Operaciones) y Comprador (con validación de ownership).
-/// </summary>
+// Manager de Dashboards y KPIs (§14.13). Instanciación directa con new sin IoC.
+// Genera respuestas agregadas para los paneles de control de Administrador, Ingeniero (Operaciones) y Comprador (con validación de ownership).
 public class DashboardManager
 {
     private readonly TurbineCrudFactory _turbineFactory = new();
@@ -20,9 +18,7 @@ public class DashboardManager
     private readonly MaintenanceCrudFactory _maintenanceFactory = new();
     private readonly DistributionDetailCrudFactory _detailFactory = new();
 
-    /// <summary>
-    /// RF-067: Retorna KPIs totales para el panel de Administrador.
-    /// </summary>
+    // RF-067: Retorna KPIs totales para el panel de Administrador.
     public DashboardAdminResponse GetAdminDashboard()
     {
         var now = TimeHelper.NowCR();
@@ -53,9 +49,7 @@ public class DashboardManager
         };
     }
 
-    /// <summary>
-    /// RF-068 / RN-030: Retorna KPIs operativos para el panel de Ingeniero. Nunca expone datos financieros.
-    /// </summary>
+    // RF-068 / RN-030: Retorna KPIs operativos para el panel de Ingeniero. Nunca expone datos financieros.
     public DashboardOperationsResponse GetOperationsDashboard()
     {
         var now = TimeHelper.NowCR();
@@ -86,9 +80,7 @@ public class DashboardManager
         };
     }
 
-    /// <summary>
-    /// RF-069: Retorna KPIs propios para el panel del Comprador. Las capas superiores verifican el rol/identidad de la sesión antes de invocar este método.
-    /// </summary>
+    // RF-069: Retorna KPIs propios para el panel del Comprador. Las capas superiores verifican el rol/identidad de la sesión antes de invocar este método.
     public DashboardBuyerResponse GetBuyerDashboard(int callerUserId)
     {
         var now = TimeHelper.NowCR();

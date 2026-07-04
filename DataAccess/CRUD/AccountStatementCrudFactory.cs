@@ -4,9 +4,7 @@ using SEGEDE_Grupo1.EntitiesDTOs.Entities;
 
 namespace SEGEDE_Grupo1.DataAccess.CRUD;
 
-/// <summary>
-/// CrudFactory para AccountStatement → tblAccountStatement (§12.21). WORM parcial.
-/// </summary>
+// CrudFactory para AccountStatement → tblAccountStatement (§12.21). WORM parcial.
 public class AccountStatementCrudFactory : CrudFactory
 {
     public override void Create(BaseDTO baseDTO)
@@ -33,9 +31,11 @@ public class AccountStatementCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Invoca el SP de modificación para actualizar los campos operacionales del registro en la base de datos.
     public override void Update(BaseDTO baseDTO) =>
         throw new NotSupportedException("Use UpdateAnnulment method instead (WORM parcial).");
 
+    // Ejecuta el borrado lógico o desactivación del registro en la tabla relacional correspondiente.
     public override void Delete(BaseDTO baseDTO) =>
         throw new NotSupportedException("Delete is not supported for AccountStatement (WORM parcial).");
 

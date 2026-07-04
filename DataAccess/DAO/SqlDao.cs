@@ -3,10 +3,8 @@ using System.Data;
 
 namespace SEGEDE_Grupo1.DataAccess.DAO;
 
-/// <summary>
-/// Singleton DAO para ejecución de Stored Procedures contra Azure SQL Database (§11.1).
-/// Connection string con Encrypt=True, ConnectRetryCount=3, ConnectRetryInterval=10.
-/// </summary>
+// Singleton DAO para ejecución de Stored Procedures contra Azure SQL Database (§11.1).
+// Connection string con Encrypt=True, ConnectRetryCount=3, ConnectRetryInterval=10.
 public class SqlDao
 {
     private static SqlDao? _instance;
@@ -21,25 +19,19 @@ public class SqlDao
                 "Connection string not configured. Call SqlDao.Configure() during startup.");
     }
 
-    /// <summary>
-    /// Obtiene la instancia Singleton del SqlDao.
-    /// </summary>
+    // Obtiene la instancia Singleton del SqlDao.
     public static SqlDao GetInstance() => _instance ??= new SqlDao();
 
-    /// <summary>
-    /// Configura la cadena de conexión antes de usar el DAO.
-    /// Debe llamarse una sola vez durante el startup de la aplicación.
-    /// </summary>
+    // Configura la cadena de conexión antes de usar el DAO.
+    // Debe llamarse una sola vez durante el startup de la aplicación.
     public static void Configure(string connectionString)
     {
         ConnectionStringHolder.ConnectionString = connectionString;
         _instance = null; // Fuerza recreación con nueva cadena
     }
 
-    /// <summary>
-    /// Ejecuta un SP que no retorna resultados (INSERT, UPDATE, DELETE).
-    /// Retorna el número de filas afectadas.
-    /// </summary>
+    // Ejecuta un SP que no retorna resultados (INSERT, UPDATE, DELETE).
+    // Retorna el número de filas afectadas.
     public int ExecuteProcedure(Operation operation)
     {
         using var conn = new SqlConnection(_connectionString);
@@ -49,10 +41,8 @@ public class SqlDao
         return cmd.ExecuteNonQuery();
     }
 
-    /// <summary>
-    /// Ejecuta un SP que retorna un result set.
-    /// Cada fila se mapea a un Dictionary&lt;string, object&gt;.
-    /// </summary>
+    // Ejecuta un SP que retorna un result set.
+    // Cada fila se mapea a un Dictionary&lt;string, object&gt;.
     public List<Dictionary<string, object>> ExecuteQueryProcedure(Operation operation)
     {
         var results = new List<Dictionary<string, object>>();
@@ -76,10 +66,8 @@ public class SqlDao
         return results;
     }
 
-    /// <summary>
-    /// Abre y retorna una conexión para operaciones transaccionales ACID.
-    /// El caller es responsable de cerrar/disponer la conexión.
-    /// </summary>
+    // Abre y retorna una conexión para operaciones transaccionales ACID.
+    // El caller es responsable de cerrar/disponer la conexión.
     public SqlConnection GetOpenConnection()
     {
         var conn = new SqlConnection(_connectionString);
@@ -87,18 +75,14 @@ public class SqlDao
         return conn;
     }
 
-    /// <summary>
-    /// Ejecuta un SP dentro de una transacción existente (INSERT, UPDATE, DELETE).
-    /// </summary>
+    // Ejecuta un SP dentro de una transacción existente (INSERT, UPDATE, DELETE).
     public int ExecuteProcedureInTransaction(Operation operation, SqlConnection conn, SqlTransaction tx)
     {
         using var cmd = CreateCommand(operation, conn, tx);
         return cmd.ExecuteNonQuery();
     }
 
-    /// <summary>
-    /// Ejecuta un SP que retorna resultados dentro de una transacción existente.
-    /// </summary>
+    // Ejecuta un SP que retorna resultados dentro de una transacción existente.
     public List<Dictionary<string, object>> ExecuteQueryInTransaction(
         Operation operation, SqlConnection conn, SqlTransaction tx)
     {
@@ -139,10 +123,9 @@ public class SqlDao
     }
 }
 
-/// <summary>
-/// Holder estático para la cadena de conexión, configurada durante el startup.
-/// </summary>
+// Holder estático para la cadena de conexión, configurada durante el startup.
 internal static class ConnectionStringHolder
 {
+    // Propiedad de datos mapeada a la columna de base de datos o parámetro de transferencia.
     internal static string? ConnectionString { get; set; }
 }

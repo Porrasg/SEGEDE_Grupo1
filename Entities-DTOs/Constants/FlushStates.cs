@@ -1,8 +1,6 @@
 namespace SEGEDE_Grupo1.EntitiesDTOs.Constants;
 
-/// <summary>
-/// Estados de flush (§4).
-/// </summary>
+// Estados de flush (§4).
 public static class FlushStates
 {
     public const string Processing = "Processing";

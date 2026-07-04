@@ -1,8 +1,6 @@
 namespace SEGEDE_Grupo1.EntitiesDTOs.Constants;
 
-/// <summary>
-/// Estados de intentos OTP (§4).
-/// </summary>
+// Estados de intentos OTP (§4).
 public static class OtpAttemptStates
 {
     public const string InProgress = "InProgress";

@@ -4,9 +4,7 @@ using SEGEDE_Grupo1.EntitiesDTOs.Entities;
 
 namespace SEGEDE_Grupo1.DataAccess.CRUD;
 
-/// <summary>
-/// CrudFactory para CentralBankLog → tblCentralBankLog (§12.15).
-/// </summary>
+// CrudFactory para CentralBankLog → tblCentralBankLog (§12.15).
 public class CentralBankLogCrudFactory : CrudFactory
 {
     public override void Create(BaseDTO baseDTO)
@@ -23,9 +21,11 @@ public class CentralBankLogCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Invoca el SP de modificación para actualizar los campos operacionales del registro en la base de datos.
     public override void Update(BaseDTO baseDTO) =>
         throw new NotSupportedException("Update is not supported for CentralBankLog.");
 
+    // Ejecuta el borrado lógico o desactivación del registro en la tabla relacional correspondiente.
     public override void Delete(BaseDTO baseDTO) =>
         throw new NotSupportedException("Delete is not supported for CentralBankLog.");
 

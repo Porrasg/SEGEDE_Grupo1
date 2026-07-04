@@ -2,9 +2,7 @@ using SEGEDE_Grupo1.EntitiesDTOs.Constants;
 
 namespace SEGEDE_Grupo1.EntitiesDTOs.Validation;
 
-/// <summary>
-/// Validador de mantenimiento (§6.3).
-/// </summary>
+// Validador de mantenimiento (§6.3).
 public static class MaintenanceValidator
 {
     private static readonly HashSet<string> ValidTypes = new()

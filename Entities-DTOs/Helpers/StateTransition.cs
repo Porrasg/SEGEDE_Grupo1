@@ -2,10 +2,8 @@ using SEGEDE_Grupo1.EntitiesDTOs.Constants;
 
 namespace SEGEDE_Grupo1.EntitiesDTOs.Helpers;
 
-/// <summary>
-/// Matriz de transición de estados de turbinas (§7.2).
-/// Valida qué cambios de estado son permitidos.
-/// </summary>
+// Matriz de transición de estados de turbinas (§7.2).
+// Valida qué cambios de estado son permitidos.
 public static class StateTransition
 {
     private static readonly Dictionary<string, HashSet<string>> Allowed = new()

@@ -8,10 +8,8 @@ using SEGEDE_Grupo1.EntitiesDTOs.Helpers;
 
 namespace SEGEDE_Grupo1.CoreApp.Managers;
 
-/// <summary>
-/// Manager de Vaciado (Flush) (§14.6). Instanciación directa con new sin IoC.
-/// Ejecuta ciclos de vaciado automático y manual de las baterías locales hacia el Banco Central bajo semántica ACID (§17.2), manejando saturación e idempotencia.
-/// </summary>
+// Manager de Vaciado (Flush) (§14.6). Instanciación directa con new sin IoC.
+// Ejecuta ciclos de vaciado automático y manual de las baterías locales hacia el Banco Central bajo semántica ACID (§17.2), manejando saturación e idempotencia.
 public class FlushManager
 {
     private readonly FlushCrudFactory _flushFactory = new();
@@ -23,25 +21,19 @@ public class FlushManager
     private readonly CentralBankLogCrudFactory _cbLogFactory = new();
     private readonly AuditManager _auditManager = new();
 
-    /// <summary>
-    /// RF-031/033-037 (§17.2): Ejecuta el vaciado automático de baterías al Banco Central. Actor del sistema.
-    /// </summary>
+    // RF-031/033-037 (§17.2): Ejecuta el vaciado automático de baterías al Banco Central. Actor del sistema.
     public void ExecuteAutoFlush()
     {
         PerformFlush(FlushTypes.Automatic, null);
     }
 
-    /// <summary>
-    /// RF-032: Ejecuta un vaciado manual solicitado por un usuario autorizado. Valida que no haya flush activo y que exista energía para vaciar (RN-019).
-    /// </summary>
+    // RF-032: Ejecuta un vaciado manual solicitado por un usuario autorizado. Valida que no haya flush activo y que exista energía para vaciar (RN-019).
     public void ExecuteManualFlush(int callerUserId)
     {
         PerformFlush(FlushTypes.Manual, callerUserId);
     }
 
-    /// <summary>
-    /// RF-031: Retorna la configuración de flush (hora de ejecución y si está activo el modo automático).
-    /// </summary>
+    // RF-031: Retorna la configuración de flush (hora de ejecución y si está activo el modo automático).
     public FlushConfig GetFlushConfig()
     {
         var cfg = _configFactory.RetrieveSingleton();
@@ -52,9 +44,7 @@ public class FlushManager
         return cfg;
     }
 
-    /// <summary>
-    /// RF-031: Actualiza la configuración de flush (requiere rol de Administrador).
-    /// </summary>
+    // RF-031: Actualiza la configuración de flush (requiere rol de Administrador).
     public void UpdateFlushConfig(UpdateFlushConfigRequest r, int callerUserId)
     {
         var existing = GetFlushConfig();
@@ -66,9 +56,7 @@ public class FlushManager
         _auditManager.LogAction(callerUserId, $"User {callerUserId}", AuditModules.CentralBank, AuditActions.Update, "tblFlushConfig", 1, oldVal, newVal);
     }
 
-    /// <summary>
-    /// Retorna el historial paginado de operaciones de flush.
-    /// </summary>
+    // Retorna el historial paginado de operaciones de flush.
     public PagedResponse<Flush> RetrieveFlushHistory(PagedRequest p)
     {
         var all = _flushFactory.RetrieveAll<Flush>();
@@ -85,9 +73,7 @@ public class FlushManager
         };
     }
 
-    /// <summary>
-    /// RF-035: Verifica si existe un flush activo en estado Processing.
-    /// </summary>
+    // RF-035: Verifica si existe un flush activo en estado Processing.
     public Flush? CheckActiveFlush()
     {
         return _flushFactory.RetrieveActive();

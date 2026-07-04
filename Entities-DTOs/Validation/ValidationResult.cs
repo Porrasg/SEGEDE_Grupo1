@@ -2,11 +2,10 @@ using SEGEDE_Grupo1.EntitiesDTOs.Exceptions;
 
 namespace SEGEDE_Grupo1.EntitiesDTOs.Validation;
 
-/// <summary>
-/// Resultado de validación para lógica de negocio (§6).
-/// </summary>
+// Resultado de validación para lógica de negocio (§6).
 public class ValidationResult
 {
+    // Propiedad de datos mapeada a la columna de base de datos o parámetro de transferencia.
     public List<string> Errors { get; } = new();
     public bool IsValid => Errors.Count == 0;
 

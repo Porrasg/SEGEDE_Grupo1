@@ -1,8 +1,6 @@
 namespace SEGEDE_Grupo1.EntitiesDTOs.Constants;
 
-/// <summary>
-/// Tipos de mantenimiento (§4).
-/// </summary>
+// Tipos de mantenimiento (§4).
 public static class MaintenanceTypes
 {
     public const string Preventive = "Preventive";

@@ -1,8 +1,6 @@
 namespace SEGEDE_Grupo1.EntitiesDTOs.Validation;
 
-/// <summary>
-/// Validador de facturación: precios, impuestos y anulaciones (§6.5).
-/// </summary>
+// Validador de facturación: precios, impuestos y anulaciones (§6.5).
 public static class BillingValidator
 {
     public static ValidationResult ValidatePrice(decimal priceCRCPerMWh)

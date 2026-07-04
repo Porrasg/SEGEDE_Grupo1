@@ -2,12 +2,12 @@ using Microsoft.Data.SqlClient;
 
 namespace SEGEDE_Grupo1.DataAccess.DAO;
 
-/// <summary>
-/// Encapsula nombre de Stored Procedure y sus parámetros SQL (§11.2).
-/// </summary>
+// Encapsula nombre de Stored Procedure y sus parámetros SQL (§11.2).
 public class Operation
 {
+    // Propiedad de datos mapeada a la columna de base de datos o parámetro de transferencia.
     public string ProcedureName { get; set; } = string.Empty;
+    // Propiedad de datos mapeada a la columna de base de datos o parámetro de transferencia.
     public List<SqlParameter> Parameters { get; } = new();
 
     public void AddStringParameter(string name, string? value)

@@ -8,19 +8,15 @@ using SEGEDE_Grupo1.EntitiesDTOs.Helpers;
 
 namespace SEGEDE_Grupo1.CoreApp.Managers;
 
-/// <summary>
-/// Manager de Banco Central (§14.7). Instanciación directa con new sin IoC.
-/// Gestiona la consulta del singleton del banco central (inventario y capacidad efectiva), configuración de capacidad manual e historial de movimientos.
-/// </summary>
+// Manager de Banco Central (§14.7). Instanciación directa con new sin IoC.
+// Gestiona la consulta del singleton del banco central (inventario y capacidad efectiva), configuración de capacidad manual e historial de movimientos.
 public class CentralBankManager
 {
     private readonly CentralBankCrudFactory _cbFactory = new();
     private readonly CentralBankLogCrudFactory _logFactory = new();
     private readonly AuditManager _auditManager = new();
 
-    /// <summary>
-    /// RF-038: Retorna el estado actual del Banco Central (inventario actual, capacidad manual, automática y efectiva).
-    /// </summary>
+    // RF-038: Retorna el estado actual del Banco Central (inventario actual, capacidad manual, automática y efectiva).
     public CentralBank Retrieve()
     {
         var cb = _cbFactory.RetrieveSingleton();
@@ -31,10 +27,8 @@ public class CentralBankManager
         return cb;
     }
 
-    /// <summary>
-    /// RF-039: Permite al Administrador establecer o limpiar la capacidad manual del Banco Central.
-    /// Un valor null limpia la capacidad manual, haciendo que la capacidad efectiva sea igual a la automática.
-    /// </summary>
+    // RF-039: Permite al Administrador establecer o limpiar la capacidad manual del Banco Central.
+    // Un valor null limpia la capacidad manual, haciendo que la capacidad efectiva sea igual a la automática.
     public void SetManualCapacity(SetManualCapacityRequest r, int callerUserId)
     {
         if (r.Capacity.HasValue && r.Capacity.Value < 0)
@@ -51,9 +45,7 @@ public class CentralBankManager
         _auditManager.LogAction(callerUserId, $"User {callerUserId}", AuditModules.CentralBank, AuditActions.Update, "tblCentralBank", 1, oldVal, newVal);
     }
 
-    /// <summary>
-    /// RF-043: Retorna el historial paginado de movimientos de inventario del Banco Central (inflows y outflows).
-    /// </summary>
+    // RF-043: Retorna el historial paginado de movimientos de inventario del Banco Central (inflows y outflows).
     public PagedResponse<CentralBankLog> RetrieveLogs(PagedRequest p)
     {
         var all = _logFactory.RetrieveAll<CentralBankLog>();

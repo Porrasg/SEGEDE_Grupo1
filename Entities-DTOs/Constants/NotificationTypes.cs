@@ -1,8 +1,6 @@
 namespace SEGEDE_Grupo1.EntitiesDTOs.Constants;
 
-/// <summary>
-/// Tipos de notificación (§4).
-/// </summary>
+// Tipos de notificación (§4).
 public static class NotificationTypes
 {
     public const string AccountActivation = "AccountActivation";

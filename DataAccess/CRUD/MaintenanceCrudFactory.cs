@@ -4,9 +4,7 @@ using SEGEDE_Grupo1.EntitiesDTOs.Entities;
 
 namespace SEGEDE_Grupo1.DataAccess.CRUD;
 
-/// <summary>
-/// CrudFactory para Maintenance → tblMaintenances (§12.6).
-/// </summary>
+// CrudFactory para Maintenance → tblMaintenances (§12.6).
 public class MaintenanceCrudFactory : CrudFactory
 {
     public override void Create(BaseDTO baseDTO)

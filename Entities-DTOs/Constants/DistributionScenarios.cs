@@ -1,8 +1,6 @@
 namespace SEGEDE_Grupo1.EntitiesDTOs.Constants;
 
-/// <summary>
-/// Escenarios de distribución comercial (§4).
-/// </summary>
+// Escenarios de distribución comercial (§4).
 public static class DistributionScenarios
 {
     public const string ZeroDemand = "ZeroDemand";

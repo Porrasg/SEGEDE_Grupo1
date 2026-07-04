@@ -4,10 +4,8 @@ using SEGEDE_Grupo1.EntitiesDTOs.Entities;
 
 namespace SEGEDE_Grupo1.DataAccess.CRUD;
 
-/// <summary>
-/// CrudFactory para User → tblUsers (§12.1).
-/// 13 SPs: CRUD base + 8 custom.
-/// </summary>
+// CrudFactory para User → tblUsers (§12.1).
+// 13 SPs: CRUD base + 8 custom.
 public class UserCrudFactory : CrudFactory
 {
     public override void Create(BaseDTO baseDTO)

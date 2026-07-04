@@ -7,19 +7,15 @@ using SEGEDE_Grupo1.EntitiesDTOs.Helpers;
 
 namespace SEGEDE_Grupo1.CoreApp.Managers;
 
-/// <summary>
-/// Manager de Mantenimientos (§14.3). Instancia fábricas directamente con new sin IoC.
-/// Aplica RN-010 (simultaneidad de mantenimientos preventivos en la red) y gestiona transiciones de estado de turbinas asociadas.
-/// </summary>
+// Manager de Mantenimientos (§14.3). Instancia fábricas directamente con new sin IoC.
+// Aplica RN-010 (simultaneidad de mantenimientos preventivos en la red) y gestiona transiciones de estado de turbinas asociadas.
 public class MaintenanceManager
 {
     private readonly MaintenanceCrudFactory _maintenanceCrudFactory = new();
     private readonly TurbineCrudFactory _turbineCrudFactory = new();
     private readonly AuditManager _auditManager = new();
 
-    /// <summary>
-    /// RF-017/019: Registra un nuevo mantenimiento. Valida simultaneidad preventiva y cambia estado de turbina a UnderMaintenance.
-    /// </summary>
+    // RF-017/019: Registra un nuevo mantenimiento. Valida simultaneidad preventiva y cambia estado de turbina a UnderMaintenance.
     public void Register(RegisterMaintenanceRequest r, int callerUserId)
     {
         var turbine = _turbineCrudFactory.RetrieveById<Turbine>(r.TurbineId) ?? throw new NotFoundException("Turbine not found.");
@@ -62,9 +58,7 @@ public class MaintenanceManager
         _auditManager.LogAction(callerUserId, $"User {callerUserId}", AuditModules.Maintenances, AuditActions.Create, "tblMaintenances", r.TurbineId, null, $"Registered {r.MaintenanceType} maintenance on turbine {turbine.UniqueCode}");
     }
 
-    /// <summary>
-    /// RF-017: Completa un mantenimiento en curso. Actualiza fecha de último mantenimiento y retorna la turbina a Active.
-    /// </summary>
+    // RF-017: Completa un mantenimiento en curso. Actualiza fecha de último mantenimiento y retorna la turbina a Active.
     public void Complete(CompleteMaintenanceRequest r, int callerUserId)
     {
         var maintenance = _maintenanceCrudFactory.RetrieveById<Maintenance>(r.MaintenanceId) ?? throw new NotFoundException("Maintenance not found.");
@@ -90,9 +84,7 @@ public class MaintenanceManager
         _auditManager.LogAction(callerUserId, $"User {callerUserId}", AuditModules.Maintenances, AuditActions.Update, "tblMaintenances", maintenance.Id, maintenance.Status, MaintenanceStates.Completed);
     }
 
-    /// <summary>
-    /// Cancela un mantenimiento programado. Solo permitido si el estado es Scheduled.
-    /// </summary>
+    // Cancela un mantenimiento programado. Solo permitido si el estado es Scheduled.
     public void Cancel(int maintenanceId, int callerUserId)
     {
         var maintenance = _maintenanceCrudFactory.RetrieveById<Maintenance>(maintenanceId) ?? throw new NotFoundException("Maintenance not found.");
@@ -111,17 +103,13 @@ public class MaintenanceManager
         _auditManager.LogAction(callerUserId, $"User {callerUserId}", AuditModules.Maintenances, AuditActions.Update, "tblMaintenances", maintenance.Id, MaintenanceStates.Scheduled, MaintenanceStates.Cancelled);
     }
 
-    /// <summary>
-    /// Retorna el historial de mantenimientos de una turbina específica.
-    /// </summary>
+    // Retorna el historial de mantenimientos de una turbina específica.
     public List<Maintenance> RetrieveByTurbine(int turbineId)
     {
         return _maintenanceCrudFactory.RetrieveByTurbine(turbineId);
     }
 
-    /// <summary>
-    /// RF-019 / RN-010: Verifica si existe algún mantenimiento preventivo activo en la red.
-    /// </summary>
+    // RF-019 / RN-010: Verifica si existe algún mantenimiento preventivo activo en la red.
     public Maintenance? CheckActivePreventive()
     {
         return _maintenanceCrudFactory.RetrieveActivePreventive();

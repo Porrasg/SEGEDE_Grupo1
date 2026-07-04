@@ -4,9 +4,7 @@ using SEGEDE_Grupo1.EntitiesDTOs.Entities;
 
 namespace SEGEDE_Grupo1.DataAccess.CRUD;
 
-/// <summary>
-/// CrudFactory para LocalBattery → tblLocalBattery (§12.5).
-/// </summary>
+// CrudFactory para LocalBattery → tblLocalBattery (§12.5).
 public class LocalBatteryCrudFactory : CrudFactory
 {
     public override void Create(BaseDTO baseDTO)
@@ -19,9 +17,11 @@ public class LocalBatteryCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    // Invoca el SP de modificación para actualizar los campos operacionales del registro en la base de datos.
     public override void Update(BaseDTO baseDTO) =>
         throw new NotSupportedException("Use UpdateEnergy method instead.");
 
+    // Ejecuta el borrado lógico o desactivación del registro en la tabla relacional correspondiente.
     public override void Delete(BaseDTO baseDTO) =>
         throw new NotSupportedException("Delete is not supported for LocalBattery.");
 

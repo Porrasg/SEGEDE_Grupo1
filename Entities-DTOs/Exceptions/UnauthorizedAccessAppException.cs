@@ -1,10 +1,9 @@
 namespace SEGEDE_Grupo1.EntitiesDTOs.Exceptions;
 
-/// <summary>
-/// Acceso no autorizado → HTTP 403 (§5).
-/// </summary>
+// Acceso no autorizado → HTTP 403 (§5).
 public class UnauthorizedAccessAppException : Exception
 {
+    // Propiedad de datos mapeada a la columna de base de datos o parámetro de transferencia.
     public string? Code { get; }
 
     public UnauthorizedAccessAppException()

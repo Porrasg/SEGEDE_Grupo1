@@ -4,11 +4,10 @@ using SEGEDE_Grupo1.EntitiesDTOs.Entities;
 
 namespace SEGEDE_Grupo1.DataAccess.CRUD;
 
-/// <summary>
-/// CrudFactory para FlushConfig → tblFlushConfig (§12.10). Singleton (Id=1).
-/// </summary>
+// CrudFactory para FlushConfig → tblFlushConfig (§12.10). Singleton (Id=1).
 public class FlushConfigCrudFactory : CrudFactory
 {
+    // Ejecuta el Stored Procedure de creación parametrizado en la base de datos SQL sin utilizar ORM.
     public override void Create(BaseDTO baseDTO) =>
         throw new NotSupportedException("Create is not supported for FlushConfig (Singleton).");
 
@@ -18,6 +17,7 @@ public class FlushConfigCrudFactory : CrudFactory
         UpdateSingleton(c.ExecutionTime, c.IsAutomatic, c.Updated);
     }
 
+    // Ejecuta el borrado lógico o desactivación del registro en la tabla relacional correspondiente.
     public override void Delete(BaseDTO baseDTO) =>
         throw new NotSupportedException("Delete is not supported for FlushConfig (Singleton).");
 
