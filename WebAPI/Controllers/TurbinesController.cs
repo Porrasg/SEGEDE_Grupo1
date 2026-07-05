@@ -61,4 +61,12 @@ public class TurbinesController : ControllerBase
         var m = _turbineManager.RetrieveMetrics(id);
         return Ok(new ApiResponse<TurbineMetricsResponse> { Success = true, Data = m });
     }
+
+    // Función de consulta que recupera el historial operativo y de mantenimiento de una turbina (§14.2).
+    [HttpGet("History/{id:int}")]
+    public IActionResult GetHistory(int id)
+    {
+        var h = _turbineManager.RetrieveHistory(id);
+        return Ok(new ApiResponse<TurbineHistoryResponse> { Success = true, Data = h });
+    }
 }
