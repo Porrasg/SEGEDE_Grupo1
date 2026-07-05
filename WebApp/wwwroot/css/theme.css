@@ -455,3 +455,30 @@
 [data-bs-theme="dark"] ::-webkit-scrollbar-thumb:hover {
   background: var(--sgde-border-hover);
 }
+
+/* ── Dark Theme Glassmorphism & Glowing Accents ──────────────────────── */
+[data-bs-theme="dark"] .card {
+  background-color: rgba(29, 28, 36, 0.88) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
+}
+
+[data-bs-theme="dark"] .kpi-card:hover,
+[data-bs-theme="dark"] .card-interactive:hover {
+  border-color: #00f2fe !important;
+  box-shadow: 0 12px 28px -4px rgba(0, 242, 254, 0.25), 0 4px 12px -2px rgba(0, 0, 0, 0.5);
+}
+
+[data-bs-theme="dark"] .filter-toolbar {
+  background-color: rgba(35, 33, 44, 0.9) !important;
+  backdrop-filter: blur(12px);
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-bs-theme="dark"] .filter-chip.active {
+  background: linear-gradient(135deg, #7A52C4, #4facfe);
+  box-shadow: 0 4px 15px rgba(0, 242, 254, 0.35);
+  border: none;
+}
