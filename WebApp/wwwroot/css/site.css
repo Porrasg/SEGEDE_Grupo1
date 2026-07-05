@@ -5,14 +5,29 @@
    ========================================================================== */
 
 :root {
-  --sgde-bg: #f8f9fa;
-  --sgde-card-bg: #ffffff;
-  --sgde-text: #1a1a1a;
-  --sgde-text-muted: #595959;
-  --sgde-border: #212529;
-  --sgde-border-light: #ced4da;
-  --sgde-accent: #000000;
-  --sgde-hover: #e9ecef;
+  /* ==========================================================================
+     SGDE CoreForge v2.0.0 - Light Theme: "Enterprise Billing"
+     ========================================================================== */
+  --sgde-bg: #F4F3F7;
+  --sgde-card-bg: #FFFFFF;
+  --sgde-surface-elevated: #EBE9F0;
+  --sgde-text: #1C1A22;
+  --sgde-text-muted: #5C5A66;
+  --sgde-border: #DDDCE4;
+  --sgde-border-light: #EBE9F0;
+  --sgde-accent: #1C1A22;
+  --sgde-hover: #EBE9F0;
+  --sgde-shadow: 0 4px 6px rgba(0,0,0,0.05);
+
+  /* Branding / Acciones Principales */
+  --sgde-primary: #5A2CA0;
+  --sgde-primary-hover: #461E82;
+
+  /* Estados de Dominio (Domain States) */
+  --sgde-state-active: #107C62;
+  --sgde-state-damaged: #B91C1C;
+  --sgde-state-maintenance: #D97706;
+  --sgde-state-suspended: #4B5563;
 }
 
 body {
@@ -39,18 +54,18 @@ h1, h2, h3, h4, h5, h6 {
 .card {
   background-color: var(--sgde-card-bg);
   border: 1px solid var(--sgde-border);
-  border-radius: 4px;
-  box-shadow: 2px 2px 0px rgba(33, 37, 41, 0.8);
+  border-radius: 6px;
+  box-shadow: var(--sgde-shadow);
   margin-bottom: 1.25rem;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .card:hover {
-  box-shadow: 3px 3px 0px rgba(0, 0, 0, 1);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
 }
 
 .card-header {
-  background-color: #f1f3f5;
+  background-color: var(--sgde-surface-elevated);
   border-bottom: 1px solid var(--sgde-border);
   font-weight: 700;
   font-size: 0.85rem;
@@ -124,40 +139,52 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0px 0px 0px rgba(0,0,0,0);
 }
 
-/* Botones principales en Negro/Charcoal intenso */
-.btn-primary, .btn-success, .btn-info {
-  background-color: var(--sgde-accent);
-  border-color: var(--sgde-accent);
+/* Botones principales en SGDE CoreForge v2.0.0 Branding */
+.btn-primary {
+  background-color: var(--sgde-primary);
+  border-color: var(--sgde-primary);
   color: #ffffff;
 }
 
-.btn-primary:hover, .btn-success:hover, .btn-info:hover {
-  background-color: #343a40;
-  border-color: #000000;
+.btn-primary:hover {
+  background-color: var(--sgde-primary-hover);
+  border-color: var(--sgde-primary-hover);
   color: #ffffff;
+}
+
+.btn-success {
+  background-color: var(--sgde-state-active);
+  border-color: var(--sgde-state-active);
+  color: #ffffff;
+}
+
+.btn-info {
+  background-color: var(--sgde-surface-elevated);
+  border-color: var(--sgde-border);
+  color: var(--sgde-text);
 }
 
 /* Botones secundarios / contornos */
 .btn-secondary, .btn-outline-secondary, .btn-outline-primary, .btn-outline-info {
-  background-color: #ffffff;
+  background-color: var(--sgde-card-bg);
   border-color: var(--sgde-border);
   color: var(--sgde-text);
 }
 
 .btn-secondary:hover, .btn-outline-secondary:hover, .btn-outline-primary:hover, .btn-outline-info:hover {
-  background-color: #e9ecef;
-  color: #000000;
+  background-color: var(--sgde-hover);
+  color: var(--sgde-accent);
 }
 
-/* Botón de peligro / alerta (gris oscuro con borde remarcado o negro) */
+/* Botón de peligro / alerta usando domainState damaged */
 .btn-danger, .btn-outline-danger {
-  background-color: #2b2b2b;
-  border-color: #000000;
+  background-color: var(--sgde-state-damaged);
+  border-color: var(--sgde-state-damaged);
   color: #ffffff;
 }
 
 .btn-danger:hover, .btn-outline-danger:hover {
-  background-color: #000000;
+  background-color: #991b1b;
   color: #ffffff;
 }
 
@@ -340,22 +367,78 @@ label.form-label {
   margin-bottom: 0.4rem;
 }
 
-/* Alertas con patrón de fondo e icono visual para daltonismo */
+/* Alertas y Badges con estados de dominio SGDE CoreForge v2.0.0 */
 .alert-success {
-  border-left: 6px solid #198754 !important;
+  border-left: 6px solid var(--sgde-state-active) !important;
   background-color: #f0fdf4 !important;
+  color: var(--sgde-text);
 }
 .alert-danger {
-  border-left: 6px solid #dc3545 !important;
+  border-left: 6px solid var(--sgde-state-damaged) !important;
   background-color: #fef2f2 !important;
+  color: var(--sgde-text);
 }
 .alert-warning {
-  border-left: 6px solid #ffc107 !important;
+  border-left: 6px solid var(--sgde-state-maintenance) !important;
   background-color: #fffbeb !important;
+  color: var(--sgde-text);
 }
 .alert-info {
-  border-left: 6px solid #0dcaf0 !important;
+  border-left: 6px solid var(--sgde-primary) !important;
   background-color: #f0f9ff !important;
+  color: var(--sgde-text);
+}
+
+/* Badges con Domain States */
+.badge.bg-success {
+  background-color: var(--sgde-state-active) !important;
+  color: #ffffff !important;
+}
+.badge.bg-danger {
+  background-color: var(--sgde-state-damaged) !important;
+  color: #ffffff !important;
+}
+.badge.bg-warning {
+  background-color: var(--sgde-state-maintenance) !important;
+  color: #000000 !important;
+}
+.badge.bg-secondary {
+  background-color: var(--sgde-state-suspended) !important;
+  color: #ffffff !important;
+}
+
+/* ==========================================================================
+   SGDE CoreForge v2.0.0 - Elevación y Legibilidad en DataTables & Paneles B5
+   ========================================================================== */
+.dataTables_wrapper .dataTables_length select,
+.dataTables_wrapper .dataTables_filter input {
+  background-color: var(--sgde-surface-elevated) !important;
+  border: 1px solid var(--sgde-border) !important;
+  color: var(--sgde-text) !important;
+  border-radius: 4px;
+  padding: 0.35rem 0.6rem;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+  background: var(--sgde-primary) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--sgde-primary) !important;
+  border-radius: 4px;
+  font-weight: bold;
+  box-shadow: var(--sgde-shadow);
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+  background: var(--sgde-surface-elevated) !important;
+  color: var(--sgde-text) !important;
+  border: 1px solid var(--sgde-border) !important;
+}
+
+.table.dataTable {
+  border-collapse: collapse !important;
+  box-shadow: var(--sgde-shadow);
 }
 
 /* Responsive intuitivo en dispositivos móviles */
