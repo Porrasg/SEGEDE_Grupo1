@@ -19,26 +19,6 @@ document.addEventListener("DOMContentLoaded", function () {
         let turbineChartInstance = null;
         let capacityChartInstance = null;
 
-        const btnSeed = document.getElementById("btnSeedData");
-        if (btnSeed) {
-            btnSeed.addEventListener("click", function () {
-                btnSeed.disabled = true;
-                btnSeed.innerHTML = '<span>⏳ Sembrando datos...</span>';
-                apiClient.post("Dashboard/SeedAllTestData", {})
-                    .done(function () {
-                        notify.success("Datos ficticios sembrados/actualizados. Recargando panel...");
-                        loadAdminDashboard();
-                    })
-                    .fail(function (xhr) {
-                        handleApiError(xhr);
-                    })
-                    .always(function () {
-                        btnSeed.disabled = false;
-                        btnSeed.innerHTML = '<span>⚡ Sembrar Datos Ficticios (Pruebas)</span>';
-                    });
-            });
-        }
-
         loadAdminDashboard();
         // Auto-refrescar en tiempo real cada 15 segundos
         setInterval(loadAdminDashboard, 15000);
