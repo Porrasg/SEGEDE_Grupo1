@@ -93,6 +93,14 @@ public class UsersController : ControllerBase
         return Ok(new ApiResponse<object> { Success = true, Message = "Usuario interno creado con éxito." });
     }
 
+    // Endpoint de conveniencia para sembrar/reiniciar usuarios de prueba (Admin, Engineer, Buyer) en local.
+    [HttpPost("SeedDev")]
+    public IActionResult SeedDev()
+    {
+        _userManager.SeedDevUsers();
+        return Ok(new ApiResponse<object> { Success = true, Message = "Usuarios de prueba creados/activados correctamente." });
+    }
+
     // Método manejador que actualiza datos administrativos de un usuario (§14.1).
     [HttpPut("Update")]
     public IActionResult UpdateUser([FromBody] UpdateUserRequest request)

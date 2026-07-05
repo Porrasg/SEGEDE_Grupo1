@@ -235,7 +235,7 @@ public class UserManager
             throw new BusinessException("An account with this email already exists.", "EMAIL_ALREADY_EXISTS");
         }
 
-        string tempPassword = $"SEGEDE_{RandomNumberGenerator.GetInt32(1000, 9999)}!";
+        string tempPassword = !string.IsNullOrWhiteSpace(r.Password) ? r.Password : $"SEGEDE_{RandomNumberGenerator.GetInt32(1000, 9999)}!";
         string passwordHash = PasswordHasher.Hash(tempPassword);
 
         var user = new User
@@ -261,6 +261,57 @@ public class UserManager
             $"Your internal account ({r.Role}) has been created. Your temporary password is: {tempPassword}", true);
 
         _auditManager.LogAction(createdUser.Id, createdUser.Email, AuditModules.Users, AuditActions.Create, "tblUser", createdUser.Id, null, $"Created internal user with role {r.Role}");
+    }
+
+    // Crea o restablece usuarios de prueba (Admin, Engineer, Buyer) activos y autenticados en entorno local.
+    public void SeedDevUsers()
+    {
+        var testUsers = new[]
+        {
+            new { Id = "100000001", First = "Carlos", Last = "Administrador", Email = "admin@segede.local", Role = "Administrator", Pass = "Admin123!" },
+            new { Id = "100000002", First = "Ana", Last = "Ingeniera", Email = "engineer@segede.local", Role = "Engineer", Pass = "Eng123!" },
+            new { Id = "100000003", First = "Juan", Last = "Comprador", Email = "buyer@segede.local", Role = "Buyer", Pass = "Buyer123!" }
+        };
+
+        foreach (var u in testUsers)
+        {
+            try
+            {
+                var existing = _userCrudFactory.RetrieveByEmail(u.Email);
+                string hash = PasswordHasher.Hash(u.Pass);
+                if (existing == null)
+                {
+                    var user = new User
+                    {
+                        Identification = u.Id,
+                        FirstName = u.First,
+                        LastName = u.Last,
+                        BirthDate = new DateTime(1985, 5, 15),
+                        Phone = "88888888",
+                        Email = u.Email,
+                        PhotoUrl = null,
+                        PasswordHash = hash,
+                        Role = u.Role,
+                        Status = "Active",
+                        FailedAttempts = 0,
+                        Created = TimeHelper.NowCR()
+                    };
+                    _userCrudFactory.Create(user);
+                    Console.WriteLine($"[SEED DEV] Creado usuario de prueba: {u.Email} ({u.Role}) / Pass: {u.Pass}");
+                }
+                else
+                {
+                    _userCrudFactory.UpdateStatus(existing.Id, "Active", TimeHelper.NowCR());
+                    _userCrudFactory.UpdatePassword(existing.Id, hash, TimeHelper.NowCR());
+                    _userCrudFactory.ResetFailedAttempts(existing.Id);
+                    Console.WriteLine($"[SEED DEV] Actualizado usuario de prueba: {u.Email} ({u.Role}) / Pass: {u.Pass}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[SEED DEV ERROR] Error al procesar {u.Email}: {ex.Message}");
+            }
+        }
     }
 
     // RF-009: Administrador edita campos administrativos de un usuario.

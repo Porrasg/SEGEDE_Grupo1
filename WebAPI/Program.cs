@@ -1,6 +1,7 @@
 using SEGEDE_Grupo1.DataAccess.DAO;
 using SEGEDE_Grupo1.WebAPI.BackgroundServices;
 using SEGEDE_Grupo1.WebAPI.Middleware;
+using SEGEDE_Grupo1.CoreApp.Managers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,6 +43,15 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.UseSwagger();
     app.UseSwaggerUI();
+
+    try
+    {
+        new UserManager().SeedDevUsers();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[DEV SEED ERROR] {ex.Message}");
+    }
 }
 
 // Redirección automática de la ruta raíz hacia la interfaz visual Swagger para facilitar inspección en el navegador.
