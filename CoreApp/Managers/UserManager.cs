@@ -27,6 +27,12 @@ public class UserManager
     private readonly OtpServiceClient _otpClient = new();
     private readonly AuditManager _auditManager = new();
 
+    // Detecta si el servicio OTP está en modo simulación local (sin servidor externo real).
+    // Cuando es true, se omiten pasos de OTP para permitir pruebas locales sin fricciones.
+    private bool IsLocalSimulation =>
+        string.IsNullOrWhiteSpace(OtpServiceClient.BaseUrlSetting) ||
+        OtpServiceClient.BaseUrlSetting.Contains(".local", StringComparison.OrdinalIgnoreCase);
+
     // RF-001: Registro de comprador. Crea el usuario en estado PendingActivation, genera OTP de activación y encola notificación.
     public void Register(RegisterBuyerRequest r)
     {
@@ -52,7 +58,7 @@ public class UserManager
             PhotoUrl = r.PhotoUrl,
             PasswordHash = passwordHash,
             Role = "Buyer",
-            Status = "PendingActivation",
+            Status = IsLocalSimulation ? "Active" : "PendingActivation",
             FailedAttempts = 0,
             Created = TimeHelper.NowCR()
         };
@@ -60,9 +66,17 @@ public class UserManager
         _userCrudFactory.Create(user);
         var createdUser = _userCrudFactory.RetrieveByEmail(r.Email) ?? throw new BusinessException("User creation failed.");
 
-        CreateAndSendOtp(createdUser.Id, createdUser.Email, OtpUsageTypes.Activation, "Account Activation Code");
+        if (IsLocalSimulation)
+        {
+            // En modo simulación local, la cuenta se activa automáticamente sin OTP.
+            Console.WriteLine($"[DEV] Cuenta auto-activada para {r.Email}. No se requiere OTP en modo local.");
+        }
+        else
+        {
+            CreateAndSendOtp(createdUser.Id, createdUser.Email, OtpUsageTypes.Activation, "Account Activation Code");
+        }
 
-        _auditManager.LogAction(createdUser.Id, createdUser.Email, AuditModules.Users, AuditActions.Create, "tblUser", createdUser.Id, null, "Buyer registered");
+        _auditManager.LogAction(createdUser.Id, createdUser.Email, AuditModules.Users, AuditActions.Create, "tblUser", createdUser.Id, null, IsLocalSimulation ? "Buyer registered (auto-activated, local dev)" : "Buyer registered");
     }
 
     // RF-002: Calcula la edad actual en años a partir de la fecha de nacimiento.
@@ -122,7 +136,14 @@ public class UserManager
             throw new BusinessException("Invalid login credentials.", "INVALID_CREDENTIALS");
         }
 
-        CreateAndSendOtp(user.Id, user.Email, OtpUsageTypes.Login, "Your Login Verification Code");
+        if (!IsLocalSimulation)
+        {
+            CreateAndSendOtp(user.Id, user.Email, OtpUsageTypes.Login, "Your Login Verification Code");
+        }
+        else
+        {
+            Console.WriteLine($"[DEV] Login Step 1 OK para {user.Email}. OTP omitido en modo local.");
+        }
         _auditManager.LogAction(user.Id, user.Email, AuditModules.Users, AuditActions.Execute, "tblUser", user.Id, null, "Step 1 password verified");
     }
 
@@ -131,7 +152,14 @@ public class UserManager
     {
         var user = _userCrudFactory.RetrieveByEmail(r.Email) ?? throw new NotFoundException("User not found.");
 
-        VerifyOtpOrThrow(user.Id, user.Email, OtpUsageTypes.Login, r.OtpCode);
+        if (!IsLocalSimulation)
+        {
+            VerifyOtpOrThrow(user.Id, user.Email, OtpUsageTypes.Login, r.OtpCode);
+        }
+        else
+        {
+            Console.WriteLine($"[DEV] Login Step 2 OTP verificación omitida para {user.Email} en modo local.");
+        }
 
         _userCrudFactory.ResetFailedAttempts(user.Id);
 
@@ -207,7 +235,7 @@ public class UserManager
             throw new BusinessException("An account with this email already exists.", "EMAIL_ALREADY_EXISTS");
         }
 
-        string tempPassword = $"SEGEDE_{RandomNumberGenerator.GetInt32(1000, 9999)}!";
+        string tempPassword = !string.IsNullOrWhiteSpace(r.Password) ? r.Password : $"SEGEDE_{RandomNumberGenerator.GetInt32(1000, 9999)}!";
         string passwordHash = PasswordHasher.Hash(tempPassword);
 
         var user = new User
@@ -233,6 +261,57 @@ public class UserManager
             $"Your internal account ({r.Role}) has been created. Your temporary password is: {tempPassword}", true);
 
         _auditManager.LogAction(createdUser.Id, createdUser.Email, AuditModules.Users, AuditActions.Create, "tblUser", createdUser.Id, null, $"Created internal user with role {r.Role}");
+    }
+
+    // Crea o restablece usuarios de prueba (Admin, Engineer, Buyer) activos y autenticados en entorno local.
+    public void SeedDevUsers()
+    {
+        var testUsers = new[]
+        {
+            new { Id = "100000001", First = "Carlos", Last = "Administrador", Email = "admin@segede.local", Role = "Administrator", Pass = "Admin123!" },
+            new { Id = "100000002", First = "Ana", Last = "Ingeniera", Email = "engineer@segede.local", Role = "Engineer", Pass = "Eng123!" },
+            new { Id = "100000003", First = "Juan", Last = "Comprador", Email = "buyer@segede.local", Role = "Buyer", Pass = "Buyer123!" }
+        };
+
+        foreach (var u in testUsers)
+        {
+            try
+            {
+                var existing = _userCrudFactory.RetrieveByEmail(u.Email);
+                string hash = PasswordHasher.Hash(u.Pass);
+                if (existing == null)
+                {
+                    var user = new User
+                    {
+                        Identification = u.Id,
+                        FirstName = u.First,
+                        LastName = u.Last,
+                        BirthDate = new DateTime(1985, 5, 15),
+                        Phone = "88888888",
+                        Email = u.Email,
+                        PhotoUrl = null,
+                        PasswordHash = hash,
+                        Role = u.Role,
+                        Status = "Active",
+                        FailedAttempts = 0,
+                        Created = TimeHelper.NowCR()
+                    };
+                    _userCrudFactory.Create(user);
+                    Console.WriteLine($"[SEED DEV] Creado usuario de prueba: {u.Email} ({u.Role}) / Pass: {u.Pass}");
+                }
+                else
+                {
+                    _userCrudFactory.UpdateStatus(existing.Id, "Active", TimeHelper.NowCR());
+                    _userCrudFactory.UpdatePassword(existing.Id, hash, TimeHelper.NowCR());
+                    _userCrudFactory.ResetFailedAttempts(existing.Id);
+                    Console.WriteLine($"[SEED DEV] Actualizado usuario de prueba: {u.Email} ({u.Role}) / Pass: {u.Pass}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[SEED DEV ERROR] Error al procesar {u.Email}: {ex.Message}");
+            }
+        }
     }
 
     // RF-009: Administrador edita campos administrativos de un usuario.

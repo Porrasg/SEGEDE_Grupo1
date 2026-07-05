@@ -53,4 +53,10 @@ public class FailureManager
     {
         return _failureCrudFactory.RetrieveByTurbine(turbineId);
     }
+
+    // Retorna todas las fallas reportadas en el parque eólico.
+    public List<Failure> RetrieveAll()
+    {
+        return _failureCrudFactory.RetrieveAll<Failure>();
+    }
 }

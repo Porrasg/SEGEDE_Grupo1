@@ -114,4 +114,10 @@ public class MaintenanceManager
     {
         return _maintenanceCrudFactory.RetrieveActivePreventive();
     }
+
+    // Retorna todos los mantenimientos registrados en el sistema.
+    public List<Maintenance> RetrieveAll()
+    {
+        return _maintenanceCrudFactory.RetrieveAll<Maintenance>();
+    }
 }
