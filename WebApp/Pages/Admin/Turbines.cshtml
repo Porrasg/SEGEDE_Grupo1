@@ -24,3 +24,7 @@
     <!-- Modal Cambio Estado -->
     <div class="modal fade" id="stateModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Cambiar Estado de Turbina</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="stateForm"><div class="mb-3"><label class="form-label">Nuevo Estado</label><select class="form-select" id="newState"></select></div><div class="mb-3"><label class="form-label">Razón / Justificación</label><textarea class="form-control" id="stateReason" required></textarea></div></form></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="button" class="btn btn-primary" id="confirmStateBtn">Confirmar Cambio</button></div></div></div></div>
 </div>
+
+@section Scripts {
+    <script src="~/js/pages-controller/TurbineManagementViewController.js" asp-append-version="true"></script>
+}
