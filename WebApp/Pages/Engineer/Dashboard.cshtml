@@ -13,25 +13,74 @@
         </div>
     <div class="row g-3 mb-4">
         <div class="col-md-3">
-            <div class="card text-center h-100 shadow-sm border-0"><div class="card-body"><h6 class="text-muted">Total Turbinas</h6><h3 id="opTotalTurbines">-</h3></div></div>
+            <div class="card kpi-card h-100 p-3 shadow-sm" data-navigate="/Engineer/Turbines" title="Ver flota de turbinas">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted fw-semibold" style="font-size: var(--sgde-fs-sm);">Total Turbinas</span>
+                    <span class="badge bg-primary bg-opacity-10 text-primary p-2 rounded-circle"><i class="bi bi-grid-3x3-gap-fill fs-5"></i></span>
+                </div>
+                <h2 id="opTotalTurbines" class="fw-bold mb-0">-</h2>
+                <small class="text-muted mt-1 d-block"><i class="bi bi-arrow-right-short"></i> Clic para gestionar</small>
+            </div>
         </div>
         <div class="col-md-3">
-            <div class="card text-center h-100 shadow-sm border-0"><div class="card-body"><h6 class="text-muted">Turbinas Activas</h6><h3 id="opActiveTurbines">-</h3></div></div>
+            <div class="card kpi-card h-100 p-3 shadow-sm" data-navigate="/Engineer/Turbines" title="Ver turbinas activas">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted fw-semibold" style="font-size: var(--sgde-fs-sm);">Turbinas Activas</span>
+                    <span class="badge bg-success bg-opacity-10 text-success p-2 rounded-circle"><i class="bi bi-lightning-charge-fill fs-5"></i></span>
+                </div>
+                <h2 id="opActiveTurbines" class="fw-bold text-success mb-0">-</h2>
+                <small class="text-muted mt-1 d-block"><i class="bi bi-arrow-right-short"></i> Clic para filtrar activas</small>
+            </div>
         </div>
         <div class="col-md-3">
-            <div class="card text-center h-100 shadow-sm border-0"><div class="card-body"><h6 class="text-muted">En Mantenimiento</h6><h3 id="opMaintTurbines">-</h3></div></div>
+            <div class="card kpi-card h-100 p-3 shadow-sm" data-navigate="/Engineer/Maintenances" title="Ver mantenimientos">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted fw-semibold" style="font-size: var(--sgde-fs-sm);">En Mantenimiento</span>
+                    <span class="badge bg-warning bg-opacity-10 text-warning p-2 rounded-circle"><i class="bi bi-tools fs-5"></i></span>
+                </div>
+                <h2 id="opMaintTurbines" class="fw-bold text-warning mb-0">-</h2>
+                <small class="text-muted mt-1 d-block"><i class="bi bi-arrow-right-short"></i> Clic para mantenimientos</small>
+            </div>
         </div>
         <div class="col-md-3">
-            <div class="card text-center h-100 shadow-sm border-0"><div class="card-body"><h6 class="text-muted">Turbinas Dañadas</h6><h3 id="opDamagedTurbines">-</h3></div></div>
+            <div class="card kpi-card h-100 p-3 shadow-sm" data-navigate="/Engineer/Failures" title="Ver fallas de turbinas">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted fw-semibold" style="font-size: var(--sgde-fs-sm);">Turbinas Dañadas</span>
+                    <span class="badge bg-danger bg-opacity-10 text-danger p-2 rounded-circle"><i class="bi bi-exclamation-triangle-fill fs-5"></i></span>
+                </div>
+                <h2 id="opDamagedTurbines" class="fw-bold text-danger mb-0">-</h2>
+                <small class="text-muted mt-1 d-block"><i class="bi bi-arrow-right-short"></i> Clic para registrar fallas</small>
+            </div>
         </div>
         <div class="col-md-4">
-            <div class="card text-center h-100 shadow-sm border-0"><div class="card-body"><h6 class="text-muted">Suspendidas por Incumplimiento</h6><h3 id="opSuspendedTurbines">-</h3></div></div>
+            <div class="card kpi-card h-100 p-3 shadow-sm" data-navigate="/Engineer/Turbines" title="Ver suspendidas">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted fw-semibold" style="font-size: var(--sgde-fs-sm);">Suspendidas por Incumplimiento</span>
+                    <span class="badge bg-secondary bg-opacity-10 text-secondary p-2 rounded-circle"><i class="bi bi-pause-circle fs-5"></i></span>
+                </div>
+                <h2 id="opSuspendedTurbines" class="fw-bold mb-0">-</h2>
+                <small class="text-muted mt-1 d-block"><i class="bi bi-arrow-right-short"></i> Clic para flota</small>
+            </div>
         </div>
         <div class="col-md-4">
-            <div class="card text-center h-100 shadow-sm border-0"><div class="card-body"><h6 class="text-muted">Inventario Banco Central</h6><h3 id="opCbInventory">- MWh</h3></div></div>
+            <div class="card kpi-card h-100 p-3 shadow-sm" data-navigate="/Engineer/CentralBank" title="Ver Banco Central">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted fw-semibold" style="font-size: var(--sgde-fs-sm);">Inventario Banco Central</span>
+                    <span class="badge bg-info bg-opacity-10 text-info p-2 rounded-circle"><i class="bi bi-bank fs-5"></i></span>
+                </div>
+                <h2 id="opCbInventory" class="fw-bold mb-0">- <small class="fs-6 text-muted">MWh</small></h2>
+                <small class="text-muted mt-1 d-block"><i class="bi bi-arrow-right-short"></i> Clic para reservas</small>
+            </div>
         </div>
         <div class="col-md-4">
-            <div class="card text-center h-100 shadow-sm border-0"><div class="card-body"><h6 class="text-muted">Alertas Mantenimiento Vencido</h6><h3 class="text-danger" id="opOverdueAlerts">-</h3></div></div>
+            <div class="card kpi-card h-100 p-3 shadow-sm" data-navigate="/Engineer/Maintenances" title="Ver alertas">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted fw-semibold" style="font-size: var(--sgde-fs-sm);">Alertas Mantenimiento Vencido</span>
+                    <span class="badge bg-danger bg-opacity-10 text-danger p-2 rounded-circle"><i class="bi bi-bell-fill fs-5"></i></span>
+                </div>
+                <h2 class="fw-bold text-danger mb-0" id="opOverdueAlerts">-</h2>
+                <small class="text-muted mt-1 d-block"><i class="bi bi-arrow-right-short"></i> Clic para alertas</small>
+            </div>
         </div>
     </div>
     <div class="row g-4 mb-4">
