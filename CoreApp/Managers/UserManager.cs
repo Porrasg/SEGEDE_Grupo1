@@ -263,14 +263,19 @@ public class UserManager
         _auditManager.LogAction(createdUser.Id, createdUser.Email, AuditModules.Users, AuditActions.Create, "tblUser", createdUser.Id, null, $"Created internal user with role {r.Role}");
     }
 
-    // Crea o restablece usuarios de prueba (Admin, Engineer, Buyer) activos y autenticados en entorno local.
+    // Crea o restablece usuarios de prueba (Admin, Engineer, Buyer y 5 clientes reales de energía) activos en entorno local con historial de 5 años.
     public void SeedDevUsers()
     {
         var testUsers = new[]
         {
-            new { Id = "100000001", First = "Carlos", Last = "Administrador", Email = "admin@segede.local", Role = "Administrator", Pass = "Admin123!" },
-            new { Id = "100000002", First = "Ana", Last = "Ingeniera", Email = "engineer@segede.local", Role = "Engineer", Pass = "Eng123!" },
-            new { Id = "100000003", First = "Juan", Last = "Comprador", Email = "buyer@segede.local", Role = "Buyer", Pass = "Buyer123!" }
+            new { Id = "100000001", First = "Carlos", Last = "Administrador", Email = "admin@segede.local", Role = "Administrator", Pass = "Admin123!", Year = 2021, Month = 1, Day = 10 },
+            new { Id = "100000002", First = "Ana", Last = "Ingeniera", Email = "engineer@segede.local", Role = "Engineer", Pass = "Eng123!", Year = 2021, Month = 1, Day = 10 },
+            new { Id = "100000003", First = "Juan", Last = "Comprador", Email = "buyer@segede.local", Role = "Buyer", Pass = "Buyer123!", Year = 2021, Month = 1, Day = 15 },
+            new { Id = "300000001", First = "ICE", Last = "Costa Rica", Email = "ice@segede.cr", Role = "Buyer", Pass = "Buyer123!", Year = 2021, Month = 1, Day = 15 },
+            new { Id = "300000002", First = "CNFL", Last = "Fuerza y Luz", Email = "cnfl@segede.cr", Role = "Buyer", Pass = "Buyer123!", Year = 2021, Month = 1, Day = 15 },
+            new { Id = "300000003", First = "JASEC", Last = "Cartago", Email = "jasec@segede.cr", Role = "Buyer", Pass = "Buyer123!", Year = 2021, Month = 1, Day = 15 },
+            new { Id = "300000004", First = "ESPH", Last = "Heredia", Email = "esph@segede.cr", Role = "Buyer", Pass = "Buyer123!", Year = 2021, Month = 1, Day = 15 },
+            new { Id = "300000005", First = "COOPELESCA", Last = "San Carlos", Email = "coopelesca@segede.cr", Role = "Buyer", Pass = "Buyer123!", Year = 2021, Month = 1, Day = 15 }
         };
 
         foreach (var u in testUsers)
@@ -279,6 +284,7 @@ public class UserManager
             {
                 var existing = _userCrudFactory.RetrieveByEmail(u.Email);
                 string hash = PasswordHasher.Hash(u.Pass);
+                var createdDate = new DateTime(u.Year, u.Month, u.Day, 8, 0, 0);
                 if (existing == null)
                 {
                     var user = new User
@@ -294,17 +300,17 @@ public class UserManager
                         Role = u.Role,
                         Status = "Active",
                         FailedAttempts = 0,
-                        Created = TimeHelper.NowCR()
+                        Created = createdDate
                     };
                     _userCrudFactory.Create(user);
-                    Console.WriteLine($"[SEED DEV] Creado usuario de prueba: {u.Email} ({u.Role}) / Pass: {u.Pass}");
+                    Console.WriteLine($"[SEED DEV] Creado cliente histórico: {u.Email} ({u.Role}) / Pass: {u.Pass}");
                 }
                 else
                 {
                     _userCrudFactory.UpdateStatus(existing.Id, "Active", TimeHelper.NowCR());
                     _userCrudFactory.UpdatePassword(existing.Id, hash, TimeHelper.NowCR());
                     _userCrudFactory.ResetFailedAttempts(existing.Id);
-                    Console.WriteLine($"[SEED DEV] Actualizado usuario de prueba: {u.Email} ({u.Role}) / Pass: {u.Pass}");
+                    Console.WriteLine($"[SEED DEV] Actualizado cliente histórico: {u.Email} ({u.Role}) / Pass: {u.Pass}");
                 }
             }
             catch (Exception ex)

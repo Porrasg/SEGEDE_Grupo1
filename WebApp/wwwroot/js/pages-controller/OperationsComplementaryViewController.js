@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let allTurbinesMap = {};
 
     // Cargar mapa de turbinas para traducir IDs a Códigos Únicos
-    apiClient.get("Turbines/All").done(function (res) {
+    apiClient.get("Turbines/RetrieveAll").done(function (res) {
         const list = res?.data || res?.Data || [];
         list.forEach(t => {
             allTurbinesMap[t.id || t.Id] = t.uniqueCode || t.UniqueCode || ("Turbina #" + (t.id || t.Id));
@@ -41,13 +41,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!energyTurbineSelect) return;
 
         populateTurbineSelect(energyTurbineSelect, false);
-
-        const btnSim = document.getElementById("btnRunSim");
-        if (btnSim) {
-            btnSim.addEventListener("click", function () {
-                runEnergySimulation(btnSim);
-            });
-        }
 
         energyTurbineSelect.addEventListener("change", function () {
             loadEnergyData(this.value);
@@ -121,26 +114,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 <td>${l.reason || l.Reason || "Pérdida operativa en red"}</td>
             </tr>
         `).join("");
-    }
-
-    function runEnergySimulation(btn) {
-        const origText = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Simulando...';
-
-        apiClient.post("Energy/RunSimulation")
-            .done(function () {
-                notify.success("Ciclo de simulación ejecutado. Generación y pérdidas actualizadas.");
-                const tid = document.getElementById("engEnergyTurbine")?.value;
-                if (tid) loadEnergyData(tid);
-            })
-            .fail(function (xhr) {
-                handleApiError(xhr);
-            })
-            .always(function () {
-                btn.disabled = false;
-                btn.innerHTML = origText;
-            });
     }
 
     // ==========================================
