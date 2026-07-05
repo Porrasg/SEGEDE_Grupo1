@@ -44,4 +44,19 @@ public class BillingController : ControllerBase
         _billingManager.AnnulStatement(request, callerUserId);
         return Ok(new ApiResponse<object> { Success = true, Message = "Estado de cuenta anulado formalmente." });
     }
+
+    // Método manejador que exporta y descarga un estado de cuenta en el formato solicitado (CSV, Excel o HTML/PDF) (§14.10, §20.1).
+    [HttpPost("Export")]
+    public IActionResult Export([FromBody] ExportStatementRequest request, [FromQuery] int callerUserId = 1, [FromQuery] string callerRole = "Buyer")
+    {
+        var fileBytes = _billingManager.ExportStatement(request, callerUserId, callerRole);
+        string contentType = request.Format.ToUpper() switch
+        {
+            "CSV" => "text/csv",
+            "EXCEL" or "XLSX" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            _ => "text/html"
+        };
+        string fileName = $"EstadoCuenta_{request.StatementId}_{request.Format.ToLower()}.{(request.Format.ToUpper() == "EXCEL" ? "xlsx" : request.Format.ToLower())}";
+        return File(fileBytes, contentType, fileName);
+    }
 }

@@ -35,4 +35,12 @@ public class DashboardController : ControllerBase
         var d = _dashboardManager.GetBuyerDashboard(buyerUserId);
         return Ok(new ApiResponse<DashboardBuyerResponse> { Success = true, Data = d });
     }
+
+    // Endpoint para sembrar o restablecer datos ficticios realistas para pruebas de los dashboards en todos los perfiles.
+    [HttpPost("SeedAllTestData")]
+    public IActionResult SeedAllTestData()
+    {
+        new SeederManager().SeedAllDevData();
+        return Ok(new ApiResponse<string> { Success = true, Data = "Siembra de datos funcionales completada exitosamente para todos los perfiles." });
+    }
 }
