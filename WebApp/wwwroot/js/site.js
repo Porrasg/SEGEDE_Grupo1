@@ -4,6 +4,8 @@ document.addEventListener("DOMContentLoaded", function () {
     initSignOut();
     initLandingLogin();
     checkRouteSecurity();
+    initInteractiveFilterChips();
+    initInteractiveCardLinks();
 });
 
 function initNavigation() {
@@ -177,3 +179,64 @@ function checkRouteSecurity() {
         return;
     }
 }
+
+// ── Interactive Filter Chips Helper ────────────────────────────────────
+function initInteractiveFilterChips() {
+    const chips = document.querySelectorAll(".filter-chip");
+    chips.forEach(chip => {
+        chip.addEventListener("click", function () {
+            const container = this.closest(".filter-chips-container");
+            if (container) {
+                container.querySelectorAll(".filter-chip").forEach(c => c.classList.remove("active"));
+            }
+            this.classList.add("active");
+
+            const targetSelector = this.getAttribute("data-target") || "#filterStatus, #opFilterStatus, #statusFilter";
+            const selectEl = document.querySelector(targetSelector);
+            const statusValue = this.getAttribute("data-status");
+
+            if (selectEl) {
+                selectEl.value = statusValue || "";
+                selectEl.dispatchEvent(new Event("change"));
+            } else {
+                // If no select element, check if there is an input search or custom filter callback
+                const searchInput = document.querySelector("#searchTurbine, #opSearchTurbine, #searchInput");
+                if (searchInput) {
+                    searchInput.dispatchEvent(new Event("input"));
+                }
+            }
+        });
+    });
+
+    // Helper for "Limpiar Filtros" button
+    const clearBtn = document.querySelector("#btnClearFilters, .btn-clear-filters");
+    if (clearBtn) {
+        clearBtn.addEventListener("click", function () {
+            const searchInput = document.querySelector("#searchTurbine, #opSearchTurbine, #searchInput");
+            if (searchInput) {
+                searchInput.value = "";
+                searchInput.dispatchEvent(new Event("input"));
+            }
+            const defaultChip = document.querySelector(".filter-chip[data-status='']");
+            if (defaultChip) defaultChip.click();
+        });
+    }
+}
+
+// ── Interactive KPI Card Links Helper ──────────────────────────────────
+function initInteractiveCardLinks() {
+    const interactiveCards = document.querySelectorAll(".kpi-card[data-navigate], .card-interactive[data-navigate], [data-href]");
+    interactiveCards.forEach(card => {
+        card.addEventListener("click", function (e) {
+            // Prevent navigating if user clicked a button or link inside the card
+            if (e.target.tagName === "A" || e.target.tagName === "BUTTON" || e.target.closest("button") || e.target.closest("a")) {
+                return;
+            }
+            const url = this.getAttribute("data-navigate") || this.getAttribute("data-href");
+            if (url) {
+                window.location.href = url;
+            }
+        });
+    });
+}
+
