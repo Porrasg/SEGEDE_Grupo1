@@ -15,30 +15,127 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // ==========================================
     // 1. PANEL PRINCIPAL (/Admin/Dashboard)
-    // ==========================================
     if (document.getElementById("kpiTotalTurbines")) {
-        loadAdminDashboard();
-    }
+        let turbineChartInstance = null;
+        let capacityChartInstance = null;
 
-    function loadAdminDashboard() {
-        apiClient.get("Dashboard/Admin")
-            .done(function (res) {
-                const data = res?.data || res?.Data || {};
-                
-                setText("kpiTotalTurbines", data.totalTurbines ?? data.TotalTurbines ?? 0);
-                setText("kpiActiveTurbines", data.activeTurbines ?? data.ActiveTurbines ?? 0);
-                setText("kpiCbInventory", formatNumber(data.centralBankInventory ?? data.CentralBankInventory ?? 0) + " MWh");
-                setText("kpiEffectiveCap", formatNumber(data.effectiveCapacity ?? data.EffectiveCapacity ?? 0) + " MWh");
-                setText("kpiMonthForecasts", data.monthForecasts ?? data.MonthForecasts ?? 0);
-                setText("kpiTotalDemand", formatNumber(data.monthTotalDemand ?? data.MonthTotalDemand ?? 0) + " MWh");
-                setText("kpiTotalBilled", "₡ " + formatNumber(data.monthTotalBilled ?? data.MonthTotalBilled ?? 0));
-                
-                const flushDate = data.lastFlush || data.LastFlush;
-                setText("kpiLastFlush", flushDate ? new Date(flushDate).toLocaleDateString("es-CR", { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : "Sin registros");
-            })
-            .fail(function (xhr) {
-                handleApiError(xhr);
+        const btnSeed = document.getElementById("btnSeedData");
+        if (btnSeed) {
+            btnSeed.addEventListener("click", function () {
+                btnSeed.disabled = true;
+                btnSeed.innerHTML = '<span>⏳ Sembrando datos...</span>';
+                apiClient.post("Dashboard/SeedAllTestData", {})
+                    .done(function () {
+                        notify.success("Datos ficticios sembrados/actualizados. Recargando panel...");
+                        loadAdminDashboard();
+                    })
+                    .fail(function (xhr) {
+                        handleApiError(xhr);
+                    })
+                    .always(function () {
+                        btnSeed.disabled = false;
+                        btnSeed.innerHTML = '<span>⚡ Sembrar Datos Ficticios (Pruebas)</span>';
+                    });
             });
+        }
+
+        loadAdminDashboard();
+        // Auto-refrescar en tiempo real cada 15 segundos
+        setInterval(loadAdminDashboard, 15000);
+
+        function loadAdminDashboard() {
+            apiClient.get("Dashboard/Admin")
+                .done(function (res) {
+                    const data = res?.data || res?.Data || {};
+                    
+                    const totalT = data.totalTurbines ?? data.TotalTurbines ?? 0;
+                    const activeT = data.activeTurbines ?? data.ActiveTurbines ?? 0;
+                    const cbInv = data.centralBankInventory ?? data.CentralBankInventory ?? 0;
+                    const effCap = data.effectiveCapacity ?? data.EffectiveCapacity ?? 0;
+                    const monthF = data.monthForecasts ?? data.MonthForecasts ?? 0;
+                    const totalDem = data.monthTotalDemand ?? data.MonthTotalDemand ?? 0;
+                    const totalBill = data.monthTotalBilled ?? data.MonthTotalBilled ?? 0;
+
+                    setText("kpiTotalTurbines", totalT);
+                    setText("kpiActiveTurbines", activeT);
+                    setText("kpiCbInventory", formatNumber(cbInv) + " MWh");
+                    setText("kpiEffectiveCap", formatNumber(effCap) + " MWh");
+                    setText("kpiMonthForecasts", monthF);
+                    setText("kpiTotalDemand", formatNumber(totalDem) + " MWh");
+                    setText("kpiTotalBilled", "₡ " + formatNumber(totalBill));
+                    
+                    const flushDate = data.lastFlush || data.LastFlush;
+                    setText("kpiLastFlush", flushDate ? new Date(flushDate).toLocaleDateString("es-CR", { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : "Sin registros");
+
+                    renderAdminCharts(totalT, activeT, cbInv, effCap, totalDem);
+                })
+                .fail(function (xhr) {
+                    handleApiError(xhr);
+                });
+        }
+
+        function renderAdminCharts(totalT, activeT, cbInv, effCap, totalDem) {
+            if (typeof Chart === "undefined") return;
+
+            const inactiveT = Math.max(0, totalT - activeT);
+            const ctxTurbine = document.getElementById("adminTurbineChart")?.getContext("2d");
+            if (ctxTurbine) {
+                if (turbineChartInstance) {
+                    turbineChartInstance.data.datasets[0].data = [activeT, inactiveT];
+                    turbineChartInstance.update();
+                } else {
+                    turbineChartInstance = new Chart(ctxTurbine, {
+                        type: "doughnut",
+                        data: {
+                            labels: ["Activas", "Inactivas / Mantenimiento"],
+                            datasets: [{
+                                data: [activeT, inactiveT],
+                                backgroundColor: ["#107C62", "#D97706"],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { position: "bottom" }
+                            }
+                        }
+                    });
+                }
+            }
+
+            const ctxCap = document.getElementById("adminCapacityChart")?.getContext("2d");
+            if (ctxCap) {
+                if (capacityChartInstance) {
+                    capacityChartInstance.data.datasets[0].data = [cbInv, effCap, totalDem];
+                    capacityChartInstance.update();
+                } else {
+                    capacityChartInstance = new Chart(ctxCap, {
+                        type: "bar",
+                        data: {
+                            labels: ["Inventario Actual", "Capacidad Vigente", "Demanda Mes"],
+                            datasets: [{
+                                label: "Energía (MWh)",
+                                data: [cbInv, effCap, totalDem],
+                                backgroundColor: ["#5A2CA0", "#2563EB", "#B91C1C"],
+                                borderRadius: 6
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                y: { beginAtZero: true }
+                            }
+                        }
+                    });
+                }
+            }
+        }
     }
 
     function setText(id, value) {

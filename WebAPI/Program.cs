@@ -46,7 +46,7 @@ if (app.Environment.IsDevelopment())
 
     try
     {
-        new UserManager().SeedDevUsers();
+        new SeederManager().SeedAllDevData();
     }
     catch (Exception ex)
     {

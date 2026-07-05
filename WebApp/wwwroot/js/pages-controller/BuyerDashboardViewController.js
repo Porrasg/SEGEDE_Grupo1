@@ -18,25 +18,118 @@ document.addEventListener("DOMContentLoaded", function () {
     // 1. PANEL PRINCIPAL (/Buyer/Dashboard)
     // ==========================================
     if (document.getElementById("buyActiveForecasts")) {
-        loadBuyerDashboard();
-    }
+        let buyDemandChartInst = null;
+        let buyBillingChartInst = null;
 
-    function loadBuyerDashboard() {
-        apiClient.get("Dashboard/Buyer?buyerUserId=" + userId)
-            .done(function (res) {
-                const d = res?.data || res?.Data || {};
-
-                setText("buyActiveForecasts", d.activeForecasts ?? d.ActiveForecasts ?? 0);
-                setText("buyMonthReq", formatNumber(d.monthRequestedMWh ?? d.MonthRequestedMWh ?? 0) + " MWh");
-                setText("buyLastAssign", formatNumber(d.lastAssignment ?? d.LastAssignment ?? 0) + " MWh");
-                setText("buyTotalBilled", formatNumber(d.totalBilledAccumulated ?? d.TotalBilledAccumulated ?? 0) + " CRC");
-
-                const dateVal = d.lastStatementDate || d.LastStatementDate;
-                setText("buyLastStmtDate", dateVal ? new Date(dateVal).toLocaleDateString("es-CR") : "Sin registros");
-            })
-            .fail(function (xhr) {
-                handleApiError(xhr);
+        const btnSeedBuy = document.getElementById("btnSeedDataBuy");
+        if (btnSeedBuy) {
+            btnSeedBuy.addEventListener("click", function () {
+                btnSeedBuy.disabled = true;
+                btnSeedBuy.innerHTML = '<span>⏳ Sembrando datos...</span>';
+                apiClient.post("Dashboard/SeedAllTestData", {})
+                    .done(function () {
+                        notify.success("Datos ficticios sembrados/actualizados. Recargando panel...");
+                        loadBuyerDashboard();
+                    })
+                    .fail(function (xhr) {
+                        handleApiError(xhr);
+                    })
+                    .always(function () {
+                        btnSeedBuy.disabled = false;
+                        btnSeedBuy.innerHTML = '<span>⚡ Sembrar Datos Ficticios (Pruebas)</span>';
+                    });
             });
+        }
+
+        loadBuyerDashboard();
+        setInterval(loadBuyerDashboard, 15000);
+
+        function loadBuyerDashboard() {
+            apiClient.get("Dashboard/Buyer?buyerUserId=" + userId)
+                .done(function (res) {
+                    const d = res?.data || res?.Data || {};
+
+                    const reqMWh = d.monthRequestedMWh ?? d.MonthRequestedMWh ?? 0;
+                    const assignMWh = d.lastAssignment ?? d.LastAssignment ?? 0;
+                    const totalBill = d.totalBilledAccumulated ?? d.TotalBilledAccumulated ?? 0;
+                    const activeF = d.activeForecasts ?? d.ActiveForecasts ?? 0;
+
+                    setText("buyActiveForecasts", activeF);
+                    setText("buyMonthReq", formatNumber(reqMWh) + " MWh");
+                    setText("buyLastAssign", formatNumber(assignMWh) + " MWh");
+                    setText("buyTotalBilled", formatNumber(totalBill) + " CRC");
+
+                    const dateVal = d.lastStatementDate || d.LastStatementDate;
+                    setText("buyLastStmtDate", dateVal ? new Date(dateVal).toLocaleDateString("es-CR") : "Sin registros");
+
+                    renderBuyCharts(reqMWh, assignMWh, totalBill);
+                })
+                .fail(function (xhr) {
+                    handleApiError(xhr);
+                });
+        }
+
+        function renderBuyCharts(reqMWh, assignMWh, totalBill) {
+            if (typeof Chart === "undefined") return;
+
+            const ctxDemand = document.getElementById("buyDemandChart")?.getContext("2d");
+            if (ctxDemand) {
+                if (buyDemandChartInst) {
+                    buyDemandChartInst.data.datasets[0].data = [reqMWh, assignMWh];
+                    buyDemandChartInst.update();
+                } else {
+                    buyDemandChartInst = new Chart(ctxDemand, {
+                        type: "bar",
+                        data: {
+                            labels: ["Demanda Solicitada", "Asignación Recibida"],
+                            datasets: [{
+                                label: "Energía (MWh)",
+                                data: [reqMWh, assignMWh],
+                                backgroundColor: ["#2563EB", "#107C62"],
+                                borderRadius: 6
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                y: { beginAtZero: true }
+                            }
+                        }
+                    });
+                }
+            }
+
+            const ctxBill = document.getElementById("buyBillingChart")?.getContext("2d");
+            if (ctxBill) {
+                if (buyBillingChartInst) {
+                    buyBillingChartInst.data.datasets[0].data = [totalBill, Math.max(0, totalBill * 0.15)];
+                    buyBillingChartInst.update();
+                } else {
+                    buyBillingChartInst = new Chart(ctxBill, {
+                        type: "doughnut",
+                        data: {
+                            labels: ["Facturado Pagado", "Impuestos / Pendiente"],
+                            datasets: [{
+                                data: [totalBill, Math.max(0, totalBill * 0.15)],
+                                backgroundColor: ["#5A2CA0", "#D97706"],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { position: "bottom" }
+                            }
+                        }
+                    });
+                }
+            }
+        }
     }
 
     // ==========================================

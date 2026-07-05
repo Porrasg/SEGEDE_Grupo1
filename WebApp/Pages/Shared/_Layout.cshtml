@@ -12,7 +12,7 @@
 </head>
 <body>
     <script>
-        window.SGDE_API_BASE = '@(ViewData["ApiBase"] ?? "https://localhost:7056/api/")';
+        window.SGDE_API_BASE = '@(ViewData["ApiBase"])' || (window.location.protocol === 'http:' ? 'http://localhost:5264/api/' : 'https://localhost:7056/api/');
     </script>
 
     <header>
@@ -38,6 +38,7 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     
     <script src="~/js/session.js" asp-append-version="true"></script>
     <script src="~/js/apiClient.js" asp-append-version="true"></script>

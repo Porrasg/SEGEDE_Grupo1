@@ -1,7 +1,7 @@
 // apiClient.js (§24.1) - Cliente HTTP modular para comunicación AJAX con la Web API
 const apiClient = (function () {
     // Obtiene la base URL configurada en el servidor o utiliza el valor por defecto
-    const BASE = window.SGDE_API_BASE || "https://localhost:7056/api/";
+    const BASE = window.SGDE_API_BASE || (window.location.protocol === 'http:' ? "http://localhost:5264/api/" : "https://localhost:7056/api/");
 
     // Construye la URL completa sumando la ruta relativa al endpoint base
     function url(path) { 
