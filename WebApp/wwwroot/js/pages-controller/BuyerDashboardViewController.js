@@ -21,26 +21,6 @@ document.addEventListener("DOMContentLoaded", function () {
         let buyDemandChartInst = null;
         let buyBillingChartInst = null;
 
-        const btnSeedBuy = document.getElementById("btnSeedDataBuy");
-        if (btnSeedBuy) {
-            btnSeedBuy.addEventListener("click", function () {
-                btnSeedBuy.disabled = true;
-                btnSeedBuy.innerHTML = '<span>⏳ Sembrando datos...</span>';
-                apiClient.post("Dashboard/SeedAllTestData", {})
-                    .done(function () {
-                        notify.success("Datos ficticios sembrados/actualizados. Recargando panel...");
-                        loadBuyerDashboard();
-                    })
-                    .fail(function (xhr) {
-                        handleApiError(xhr);
-                    })
-                    .always(function () {
-                        btnSeedBuy.disabled = false;
-                        btnSeedBuy.innerHTML = '<span>⚡ Sembrar Datos Ficticios (Pruebas)</span>';
-                    });
-            });
-        }
-
         loadBuyerDashboard();
         setInterval(loadBuyerDashboard, 15000);
 

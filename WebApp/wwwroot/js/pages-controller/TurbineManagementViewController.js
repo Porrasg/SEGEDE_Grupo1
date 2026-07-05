@@ -15,15 +15,17 @@ document.addEventListener("DOMContentLoaded", function () {
     // ==========================================
     // 1. LISTADO Y OPERACIÓN (/Engineer/Turbines)
     // ==========================================
-    const turbinesBody = document.getElementById("opTurbinesBody");
+    const turbinesBody = document.getElementById("opTurbinesBody") || document.getElementById("turbinesTableBody");
     if (turbinesBody) {
         let allTurbines = [];
         let selectedTurbineId = null;
 
         loadTurbines();
 
-        const searchInput = document.getElementById("opSearchTurbine");
+        const searchInput = document.getElementById("opSearchTurbine") || document.getElementById("searchTurbine");
+        const filterStatus = document.getElementById("filterStatus");
         if (searchInput) searchInput.addEventListener("input", filterAndRenderTurbines);
+        if (filterStatus) filterStatus.addEventListener("change", filterAndRenderTurbines);
 
         function loadTurbines() {
             turbinesBody.innerHTML = '<tr><td colspan="6" class="text-center"><span class="spinner-border spinner-border-sm" role="status"></span> Cargando turbinas...</td></tr>';
@@ -40,11 +42,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
         function filterAndRenderTurbines() {
             const query = searchInput?.value.toLowerCase().trim() || "";
+            const statusVal = filterStatus?.value || "";
             const filtered = allTurbines.filter(t => {
-                return !query || 
-                    (t.turbineCode || t.Code || "").toLowerCase().includes(query) || 
+                const matchesQuery = !query || 
+                    (t.uniqueCode || t.UniqueCode || t.turbineCode || t.Code || "").toLowerCase().includes(query) || 
                     (t.name || "").toLowerCase().includes(query) || 
                     (t.location || "").toLowerCase().includes(query);
+                const matchesStatus = !statusVal || (t.status || t.Status || t.state || t.State || "").toLowerCase() === statusVal.toLowerCase();
+                return matchesQuery && matchesStatus;
             });
             renderTurbinesTable(filtered);
         }
@@ -56,11 +61,12 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             turbinesBody.innerHTML = turbines.map(t => {
-                const code = t.turbineCode || t.Code || "-";
+                const code = t.uniqueCode || t.UniqueCode || t.turbineCode || t.Code || "-";
                 const name = t.name || "-";
                 const loc = t.location || "-";
                 const cap = Number(t.weeklyNominalCapacity || t.WeeklyNominalCapacity || 0).toLocaleString("es-CR", { minimumFractionDigits: 2 });
-                const stateBadge = getStateBadge(t.state || t.State);
+                const stateVal = t.status || t.Status || t.state || t.State || "";
+                const stateBadge = getStateBadge(stateVal);
 
                 return `
                     <tr>
@@ -70,7 +76,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         <td>${cap}</td>
                         <td>${stateBadge}</td>
                         <td>
-                            <button class="btn btn-sm btn-outline-warning me-1 btn-state" data-id="${t.id}" data-state="${t.state || t.State || ''}" title="Cambiar Estado">
+                            <button class="btn btn-sm btn-outline-warning me-1 btn-state" data-id="${t.id}" data-state="${stateVal}" title="Cambiar Estado">
                                 <i class="bi bi-gear"></i> Estado
                             </button>
                             <a href="/Engineer/TurbineDetail?id=${t.id}" class="btn btn-sm btn-outline-info" title="Ver Detalle Técnico">
@@ -91,14 +97,15 @@ document.addEventListener("DOMContentLoaded", function () {
             if (s === "active") return '<span class="badge bg-success">Activa</span>';
             if (s === "undermaintenance") return '<span class="badge bg-warning text-dark">Mantenimiento</span>';
             if (s === "damaged") return '<span class="badge bg-danger">Dañada / Falla</span>';
-            if (s === "suspended") return '<span class="badge bg-dark">Suspendida</span>';
+            if (s === "suspended" || s === "suspendedfornoncompliance") return '<span class="badge bg-dark">Suspendida</span>';
             return `<span class="badge bg-secondary">${state || "-"}</span>`;
         }
 
-        const stateModalEl = document.getElementById("opStateModal");
+        const stateModalEl = document.getElementById("opStateModal") || document.getElementById("stateModal");
         const stateModal = stateModalEl ? new bootstrap.Modal(stateModalEl) : null;
-        const confirmStateBtn = document.getElementById("opConfirmStateBtn");
-        const stateSelect = document.getElementById("opNewState");
+        const confirmStateBtn = document.getElementById("opConfirmStateBtn") || document.getElementById("confirmStateBtn");
+        const stateSelect = document.getElementById("opNewState") || document.getElementById("newState");
+        const reasonInput = document.getElementById("opStateReason") || document.getElementById("stateReason");
 
         function openStateModal(id, currentState) {
             selectedTurbineId = id;
@@ -107,11 +114,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     <option value="Active">Active (Operación Normal)</option>
                     <option value="UnderMaintenance">UnderMaintenance (En Mantenimiento)</option>
                     <option value="Damaged">Damaged (Falla Técnica)</option>
-                    <option value="Suspended">Suspended (Incumplimiento / Parada)</option>
+                    <option value="SuspendedForNonCompliance">Suspended (Incumplimiento / Parada)</option>
                 `;
                 stateSelect.value = currentState || "Active";
             }
-            const reasonInput = document.getElementById("opStateReason");
             if (reasonInput) reasonInput.value = "";
             stateModal?.show();
         }
@@ -119,7 +125,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (confirmStateBtn) {
             confirmStateBtn.addEventListener("click", function () {
                 const newState = stateSelect?.value;
-                const reason = document.getElementById("opStateReason")?.value.trim();
+                const reason = reasonInput?.value.trim();
 
                 if (!reason) {
                     notify.warning("Por favor ingrese la razón técnica para el cambio de estado.");
@@ -141,7 +147,41 @@ document.addEventListener("DOMContentLoaded", function () {
                     handleApiError(xhr);
                 }).always(function () {
                     confirmStateBtn.disabled = false;
-                    confirmStateBtn.textContent = "Confirmar";
+                    confirmStateBtn.textContent = "Confirmar Cambio";
+                });
+            });
+        }
+
+        const saveTurbineBtn = document.getElementById("saveTurbineBtn");
+        if (saveTurbineBtn) {
+            saveTurbineBtn.addEventListener("click", function () {
+                const dto = {
+                    uniqueCode: document.getElementById("tCode")?.value.trim(),
+                    name: document.getElementById("tName")?.value.trim(),
+                    location: document.getElementById("tLoc")?.value.trim(),
+                    brand: document.getElementById("tBrand")?.value.trim(),
+                    model: document.getElementById("tModel")?.value.trim(),
+                    year: parseInt(document.getElementById("tYear")?.value || 0),
+                    weeklyNominalCapacity: parseFloat(document.getElementById("tCap")?.value || 0)
+                };
+                if (!dto.uniqueCode || !dto.name || !dto.location || !dto.weeklyNominalCapacity) {
+                    notify.warning("Por favor complete los campos obligatorios.");
+                    return;
+                }
+                saveTurbineBtn.disabled = true;
+                saveTurbineBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Guardando...';
+                apiClient.post("Turbines/Register", dto).done(function () {
+                    notify.success("Turbina registrada exitosamente.");
+                    const tModalEl = document.getElementById("turbineModal");
+                    const tModalInst = bootstrap.Modal.getInstance(tModalEl) || (tModalEl ? new bootstrap.Modal(tModalEl) : null);
+                    tModalInst?.hide();
+                    document.getElementById("turbineForm")?.reset();
+                    loadTurbines();
+                }).fail(function (xhr) {
+                    handleApiError(xhr);
+                }).always(function () {
+                    saveTurbineBtn.disabled = false;
+                    saveTurbineBtn.textContent = "Guardar";
                 });
             });
         }
@@ -174,11 +214,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 const statusEl = document.getElementById("engDetStatus");
 
                 if (nameEl) nameEl.textContent = t.name || `Turbina #${t.id || id}`;
-                if (metaEl) metaEl.textContent = `Código: ${t.turbineCode || t.Code || "-"} | Ubicación: ${t.location || "-"} | Capacidad: ${Number(t.weeklyNominalCapacity || t.WeeklyNominalCapacity || 0).toLocaleString("es-CR")} MWh/sem`;
+                if (metaEl) metaEl.textContent = `Código: ${t.uniqueCode || t.UniqueCode || t.turbineCode || t.Code || "-"} | Ubicación: ${t.location || "-"} | Capacidad: ${Number(t.weeklyNominalCapacity || t.WeeklyNominalCapacity || 0).toLocaleString("es-CR")} MWh/sem`;
                 
                 if (statusEl) {
-                    const s = (t.state || t.State || "").toLowerCase();
-                    statusEl.textContent = t.state || t.State || "Unknown";
+                    const st = t.status || t.Status || t.state || t.State || "Unknown";
+                    const s = st.toLowerCase();
+                    statusEl.textContent = st;
                     statusEl.className = "badge fs-6 " + (s === "active" ? "bg-success" : s === "undermaintenance" ? "bg-warning text-dark" : s === "damaged" ? "bg-danger" : "bg-secondary");
                 }
             })

@@ -17,26 +17,6 @@ document.addEventListener("DOMContentLoaded", function () {
         let opTurbinesChartInst = null;
         let opEnergyChartInst = null;
 
-        const btnSeedOp = document.getElementById("btnSeedDataOp");
-        if (btnSeedOp) {
-            btnSeedOp.addEventListener("click", function () {
-                btnSeedOp.disabled = true;
-                btnSeedOp.innerHTML = '<span>⏳ Sembrando datos...</span>';
-                apiClient.post("Dashboard/SeedAllTestData", {})
-                    .done(function () {
-                        notify.success("Datos ficticios sembrados/actualizados. Recargando panel...");
-                        loadOperationsDashboard();
-                    })
-                    .fail(function (xhr) {
-                        handleApiError(xhr);
-                    })
-                    .always(function () {
-                        btnSeedOp.disabled = false;
-                        btnSeedOp.innerHTML = '<span>⚡ Sembrar Datos Ficticios (Pruebas)</span>';
-                    });
-            });
-        }
-
         loadOperationsDashboard();
         setInterval(loadOperationsDashboard, 15000);
 

@@ -48,6 +48,7 @@ public class TurbinesController : ControllerBase
 
     // Función de consulta que obtiene el catálogo completo y paginado de todas las turbinas registradas.
     [HttpGet("RetrieveAll")]
+    [HttpGet("All")]
     public IActionResult RetrieveAll()
     {
         var result = _turbineManager.RetrieveAll();
