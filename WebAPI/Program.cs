@@ -1,6 +1,7 @@
 using SEGEDE_Grupo1.DataAccess.DAO;
 using SEGEDE_Grupo1.WebAPI.BackgroundServices;
 using SEGEDE_Grupo1.WebAPI.Middleware;
+using SEGEDE_Grupo1.CoreApp.Managers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +15,17 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Configuración de CORS para permitir peticiones AJAX desde la WebApp y otros clientes locales.
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
 // Registro de servicios en segundo plano para simulación de energía, notificaciones y auditoría WORM.
 builder.Services.AddHostedService<EnergySimulationJob>();
@@ -31,12 +43,22 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.UseSwagger();
     app.UseSwaggerUI();
+
+    try
+    {
+        new SeederManager().SeedAllDevData();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[DEV SEED ERROR] {ex.Message}");
+    }
 }
 
 // Redirección automática de la ruta raíz hacia la interfaz visual Swagger para facilitar inspección en el navegador.
 app.MapGet("/", () => Results.Redirect("/swagger"));
 
 app.UseHttpsRedirection();
+app.UseCors("AllowAll");
 app.UseAuthorization();
 app.MapControllers();
 

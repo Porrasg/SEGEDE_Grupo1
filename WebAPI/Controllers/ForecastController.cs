@@ -36,4 +36,20 @@ public class ForecastController : ControllerBase
         var result = _forecastManager.RetrieveByMonth(month, year);
         return Ok(new ApiResponse<List<Forecast>> { Success = true, Data = result });
     }
+
+    // Función de consulta que recupera el listado de pronósticos de demanda de un comprador específico (§14.8).
+    [HttpGet("ByBuyer/{buyerId:int}")]
+    public IActionResult GetByBuyer(int buyerId, [FromQuery] int callerUserId = 1, [FromQuery] string callerRole = "Buyer")
+    {
+        var result = _forecastManager.RetrieveByBuyer(buyerId, callerUserId, callerRole);
+        return Ok(new ApiResponse<List<Forecast>> { Success = true, Data = result });
+    }
+
+    // Método manejador que ejecuta la cancelación formal de un pronóstico de demanda futuro.
+    [HttpPost("Cancel/{forecastId:int}")]
+    public IActionResult Cancel(int forecastId, [FromQuery] int callerUserId = 1, [FromQuery] string callerRole = "Buyer")
+    {
+        _forecastManager.Cancel(forecastId, callerUserId, callerRole);
+        return Ok(new ApiResponse<object> { Success = true, Message = "Pronóstico cancelado con éxito." });
+    }
 }

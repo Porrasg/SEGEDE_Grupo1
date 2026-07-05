@@ -28,4 +28,12 @@ public class FailuresController : ControllerBase
         var result = _failureManager.RetrieveByTurbine(turbineId);
         return Ok(new ApiResponse<List<Failure>> { Success = true, Data = result });
     }
+
+    // Función de consulta que retorna el listado global de fallas de todo el parque eólico (§14.4).
+    [HttpGet("All")]
+    public IActionResult GetAll()
+    {
+        var result = _failureManager.RetrieveAll();
+        return Ok(new ApiResponse<List<Failure>> { Success = true, Data = result });
+    }
 }

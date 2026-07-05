@@ -27,4 +27,12 @@ public class DistributionController : ControllerBase
         var result = _distributionManager.RetrieveHistory();
         return Ok(new ApiResponse<List<CommercialDistribution>> { Success = true, Data = result });
     }
+
+    // Función de consulta que recupera el historial de distribuciones y asignaciones energéticas de un comprador específico (§14.9).
+    [HttpGet("ByBuyer/{buyerId:int}")]
+    public IActionResult GetByBuyer(int buyerId, [FromQuery] int callerUserId = 1, [FromQuery] string callerRole = "Buyer")
+    {
+        var result = _distributionManager.RetrieveDetailByBuyer(buyerId, callerUserId, callerRole);
+        return Ok(new ApiResponse<List<DistributionDetail>> { Success = true, Data = result });
+    }
 }

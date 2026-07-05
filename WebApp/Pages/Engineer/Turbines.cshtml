@@ -18,3 +18,7 @@
     <!-- Modal Cambio Estado -->
     <div class="modal fade" id="opStateModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Cambiar Estado Operativo</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="opStateForm"><div class="mb-3"><label class="form-label">Nuevo Estado</label><select class="form-select" id="opNewState"></select></div><div class="mb-3"><label class="form-label">Razón Técnica</label><textarea class="form-control" id="opStateReason" required></textarea></div></form></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="button" class="btn btn-primary" id="opConfirmStateBtn">Confirmar</button></div></div></div></div>
 </div>
+
+@section Scripts {
+    <script src="~/js/pages-controller/TurbineManagementViewController.js" asp-append-version="true"></script>
+}

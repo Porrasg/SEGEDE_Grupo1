@@ -76,4 +76,52 @@ public class UsersController : ControllerBase
         var result = _userManager.RetrieveAll();
         return Ok(new ApiResponse<List<UserSafeResponse>> { Success = true, Data = result });
     }
+
+    // Método manejador que reenvía un código OTP (§14.1).
+    [HttpPost("ResendOtp")]
+    public IActionResult ResendOtp([FromBody] ResendOtpRequest request)
+    {
+        _userManager.ResendOtp(request);
+        return Ok(new ApiResponse<object> { Success = true, Message = "Código OTP reenviado con éxito." });
+    }
+
+    // Método manejador para creación de usuarios internos (Engineer/Admin) por un Administrador (§14.1).
+    [HttpPost("Internal")]
+    public IActionResult CreateInternal([FromBody] CreateInternalUserRequest request)
+    {
+        _userManager.CreateInternal(request);
+        return Ok(new ApiResponse<object> { Success = true, Message = "Usuario interno creado con éxito." });
+    }
+
+    // Endpoint de conveniencia para sembrar/reiniciar usuarios de prueba (Admin, Engineer, Buyer) en local.
+    [HttpPost("SeedDev")]
+    public IActionResult SeedDev()
+    {
+        _userManager.SeedDevUsers();
+        return Ok(new ApiResponse<object> { Success = true, Message = "Usuarios de prueba creados/activados correctamente." });
+    }
+
+    // Método manejador que actualiza datos administrativos de un usuario (§14.1).
+    [HttpPut("Update")]
+    public IActionResult UpdateUser([FromBody] UpdateUserRequest request)
+    {
+        _userManager.UpdateUser(request);
+        return Ok(new ApiResponse<object> { Success = true, Message = "Usuario actualizado correctamente." });
+    }
+
+    // Método manejador para borrado lógico / desactivación de un usuario (§14.1).
+    [HttpPost("Deactivate")]
+    public IActionResult Deactivate([FromBody] DeactivateUserRequest request)
+    {
+        _userManager.Deactivate(request, 1, "Administrator");
+        return Ok(new ApiResponse<object> { Success = true, Message = "Usuario desactivado correctamente." });
+    }
+
+    // Método manejador para reactivación de usuarios inactivos por el Administrador (§14.1).
+    [HttpPost("Reactivate/{id:int}")]
+    public IActionResult Reactivate(int id)
+    {
+        _userManager.Reactivate(id);
+        return Ok(new ApiResponse<object> { Success = true, Message = "Usuario reactivado correctamente." });
+    }
 }
