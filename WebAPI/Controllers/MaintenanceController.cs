@@ -36,4 +36,12 @@ public class MaintenanceController : ControllerBase
         var result = _maintenanceManager.RetrieveByTurbine(turbineId);
         return Ok(new ApiResponse<List<Maintenance>> { Success = true, Data = result });
     }
+
+    // Función de consulta que retorna el listado global de mantenimientos de todas las turbinas (§14.3).
+    [HttpGet("All")]
+    public IActionResult GetAll()
+    {
+        var result = _maintenanceManager.RetrieveAll();
+        return Ok(new ApiResponse<List<Maintenance>> { Success = true, Data = result });
+    }
 }
