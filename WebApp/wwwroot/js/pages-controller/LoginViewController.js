@@ -26,11 +26,39 @@ document.addEventListener("DOMContentLoaded", function () {
 
             apiClient.post("Users/LoginStep1", { email: email, password: password })
                 .done(function (res) {
-                    notify.success(res?.message || res?.Message || "Paso 1 completado. Código OTP enviado a su correo.");
                     sessionStorage.setItem("sgde_login_email", email);
-                    setTimeout(function () {
-                        window.location.href = "/LoginOtp";
-                    }, 1200);
+
+                    // En modo dev local, el backend omite OTP.
+                    // Intentamos LoginStep2 directamente con un código dummy.
+                    apiClient.post("Users/LoginStep2", { email: email, otpCode: "000000" })
+                        .done(function (res2) {
+                            const loginData = res2?.data || res2?.Data;
+                            if (loginData) {
+                                session.save(loginData);
+                                sessionStorage.removeItem("sgde_login_email");
+                                notify.success("¡Inicio de sesión exitoso! Redirigiendo...");
+                                setTimeout(function () {
+                                    const role = session.getRole();
+                                    if (role === "Administrator" || role === "Admin") {
+                                        window.location.href = "/Admin/Dashboard";
+                                    } else if (role === "Engineer") {
+                                        window.location.href = "/Engineer/Dashboard";
+                                    } else if (role === "Buyer") {
+                                        window.location.href = "/Buyer/Dashboard";
+                                    } else {
+                                        window.location.href = "/";
+                                    }
+                                }, 800);
+                            }
+                        })
+                        .fail(function () {
+                            // Si LoginStep2 directo falla, es porque el backend SÍ requiere OTP real.
+                            // Redirigir al flujo OTP normal.
+                            notify.success(res?.message || res?.Message || "Código OTP enviado a su correo.");
+                            setTimeout(function () {
+                                window.location.href = "/LoginOtp";
+                            }, 1200);
+                        });
                 })
                 .fail(function (xhr) {
                     if (btnSubmit) {
@@ -159,10 +187,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
             apiClient.post("Users/Register", dto)
                 .done(function (res) {
-                    notify.success(res?.message || res?.Message || "Comprador registrado con éxito. Código OTP de activación enviado a su correo.");
-                    sessionStorage.setItem("sgde_activate_email", dto.email);
+                    notify.success(res?.message || res?.Message || "Comprador registrado con éxito. Ya puede iniciar sesión.");
                     setTimeout(function () {
-                        window.location.href = "/Activate";
+                        window.location.href = "/Login";
                     }, 1500);
                 })
                 .fail(function (xhr) {

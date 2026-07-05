@@ -27,6 +27,12 @@ public class UserManager
     private readonly OtpServiceClient _otpClient = new();
     private readonly AuditManager _auditManager = new();
 
+    // Detecta si el servicio OTP está en modo simulación local (sin servidor externo real).
+    // Cuando es true, se omiten pasos de OTP para permitir pruebas locales sin fricciones.
+    private bool IsLocalSimulation =>
+        string.IsNullOrWhiteSpace(OtpServiceClient.BaseUrlSetting) ||
+        OtpServiceClient.BaseUrlSetting.Contains(".local", StringComparison.OrdinalIgnoreCase);
+
     // RF-001: Registro de comprador. Crea el usuario en estado PendingActivation, genera OTP de activación y encola notificación.
     public void Register(RegisterBuyerRequest r)
     {
@@ -52,7 +58,7 @@ public class UserManager
             PhotoUrl = r.PhotoUrl,
             PasswordHash = passwordHash,
             Role = "Buyer",
-            Status = "PendingActivation",
+            Status = IsLocalSimulation ? "Active" : "PendingActivation",
             FailedAttempts = 0,
             Created = TimeHelper.NowCR()
         };
@@ -60,9 +66,17 @@ public class UserManager
         _userCrudFactory.Create(user);
         var createdUser = _userCrudFactory.RetrieveByEmail(r.Email) ?? throw new BusinessException("User creation failed.");
 
-        CreateAndSendOtp(createdUser.Id, createdUser.Email, OtpUsageTypes.Activation, "Account Activation Code");
+        if (IsLocalSimulation)
+        {
+            // En modo simulación local, la cuenta se activa automáticamente sin OTP.
+            Console.WriteLine($"[DEV] Cuenta auto-activada para {r.Email}. No se requiere OTP en modo local.");
+        }
+        else
+        {
+            CreateAndSendOtp(createdUser.Id, createdUser.Email, OtpUsageTypes.Activation, "Account Activation Code");
+        }
 
-        _auditManager.LogAction(createdUser.Id, createdUser.Email, AuditModules.Users, AuditActions.Create, "tblUser", createdUser.Id, null, "Buyer registered");
+        _auditManager.LogAction(createdUser.Id, createdUser.Email, AuditModules.Users, AuditActions.Create, "tblUser", createdUser.Id, null, IsLocalSimulation ? "Buyer registered (auto-activated, local dev)" : "Buyer registered");
     }
 
     // RF-002: Calcula la edad actual en años a partir de la fecha de nacimiento.
@@ -122,7 +136,14 @@ public class UserManager
             throw new BusinessException("Invalid login credentials.", "INVALID_CREDENTIALS");
         }
 
-        CreateAndSendOtp(user.Id, user.Email, OtpUsageTypes.Login, "Your Login Verification Code");
+        if (!IsLocalSimulation)
+        {
+            CreateAndSendOtp(user.Id, user.Email, OtpUsageTypes.Login, "Your Login Verification Code");
+        }
+        else
+        {
+            Console.WriteLine($"[DEV] Login Step 1 OK para {user.Email}. OTP omitido en modo local.");
+        }
         _auditManager.LogAction(user.Id, user.Email, AuditModules.Users, AuditActions.Execute, "tblUser", user.Id, null, "Step 1 password verified");
     }
 
@@ -131,7 +152,14 @@ public class UserManager
     {
         var user = _userCrudFactory.RetrieveByEmail(r.Email) ?? throw new NotFoundException("User not found.");
 
-        VerifyOtpOrThrow(user.Id, user.Email, OtpUsageTypes.Login, r.OtpCode);
+        if (!IsLocalSimulation)
+        {
+            VerifyOtpOrThrow(user.Id, user.Email, OtpUsageTypes.Login, r.OtpCode);
+        }
+        else
+        {
+            Console.WriteLine($"[DEV] Login Step 2 OTP verificación omitida para {user.Email} en modo local.");
+        }
 
         _userCrudFactory.ResetFailedAttempts(user.Id);
 

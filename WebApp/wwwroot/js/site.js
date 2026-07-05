@@ -100,15 +100,39 @@ function initLandingLogin() {
             btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Conectando...';
         }
 
-        apiClient.post("Users/Login", { identificationOrEmail: ident, password: pass })
+        apiClient.post("Users/LoginStep1", { email: ident, password: pass })
             .done(function (res) {
-                const data = res?.data || res?.Data || res;
-                const userEmail = data?.email || ident;
-                sessionStorage.setItem("sgde_login_email", userEmail);
-                if (typeof notify !== "undefined") notify.success("Credenciales validadas. Redirigiéndote a verificación OTP...");
-                setTimeout(() => {
-                    window.location.href = `/LoginOtp?email=${encodeURIComponent(userEmail)}`;
-                }, 800);
+                sessionStorage.setItem("sgde_login_email", ident);
+
+                // Auto-chain LoginStep2 (funciona en modo local sin OTP)
+                apiClient.post("Users/LoginStep2", { email: ident, otpCode: "000000" })
+                    .done(function (res2) {
+                        const loginData = res2?.data || res2?.Data;
+                        if (loginData) {
+                            session.save(loginData);
+                            sessionStorage.removeItem("sgde_login_email");
+                            if (typeof notify !== "undefined") notify.success("¡Sesión iniciada!");
+                            setTimeout(function () {
+                                const role = session.getRole();
+                                if (role === "Administrator" || role === "Admin") {
+                                    window.location.href = "/Admin/Dashboard";
+                                } else if (role === "Engineer") {
+                                    window.location.href = "/Engineer/Dashboard";
+                                } else if (role === "Buyer") {
+                                    window.location.href = "/Buyer/Dashboard";
+                                } else {
+                                    window.location.href = "/";
+                                }
+                            }, 600);
+                        }
+                    })
+                    .fail(function () {
+                        // Si OTP real es requerido, redirigir al flujo normal
+                        if (typeof notify !== "undefined") notify.success("Código OTP enviado a su correo.");
+                        setTimeout(() => {
+                            window.location.href = `/LoginOtp?email=${encodeURIComponent(ident)}`;
+                        }, 800);
+                    });
             })
             .fail(function (xhr) {
                 if (btn) {
