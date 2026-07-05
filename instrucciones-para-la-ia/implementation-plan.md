@@ -34,33 +34,40 @@ El proyecto sigue un enfoque de **Arquitectura en Capas (N-Tier Architecture / C
 - [x] Configuración de directrices e ignorados de Git (`.gitignore`).
 - [x] Definición del entorno de seguimiento para la IA (`instrucciones-para-la-ia/`).
 
-### Fase 2: Modelado del Dominio y Acceso a Datos
-- [ ] Definir las entidades de dominio en `Entities-DTOs`.
-- [ ] Crear los DTOs de entrada/salida para cada caso de uso principal.
-- [ ] Configurar el contexto de base de datos (`DbContext` / Conexiones) en `DataAccess`.
-- [ ] Implementar repositorios e interfaces de acceso a datos.
+### Fase 2: Modelado del Dominio y Acceso a Datos (Completada)
+- [x] Definir las entidades de dominio en `Entities-DTOs`.
+- [x] Crear los DTOs de entrada/salida para cada caso de uso principal.
+- [x] Configurar el contexto de base de datos / acceso SQL genérico en `DataAccess`.
+- [x] Implementar repositorios e interfaces de acceso a datos (`CrudFactories`).
 
-### Fase 3: Lógica de Negocio (`CoreApp`)
-- [ ] Implementar interfaces y servicios de negocio.
-- [ ] Agregar validaciones de datos y reglas de negocio en los servicios.
-- [ ] Configurar mapeos entre Entidades y DTOs (ej. AutoMapper o mapeos manuales).
+### Fase 3: Lógica de Negocio (`CoreApp`) (Completada)
+- [x] Implementar interfaces y servicios de negocio (`Managers`).
+- [x] Agregar validaciones de datos y reglas de negocio en los servicios.
+- [x] Configurar mapeos entre Entidades y DTOs y exportaciones (CSV, Excel, HTML).
 
-### Fase 4: Exposición de Servicios (`WebAPI`)
-- [ ] Crear los controladores REST en `Controllers/`.
-- [ ] Configurar inyección de dependencias en `Program.cs`.
-- [ ] Documentar endpoints con Swagger / OpenAPI.
-- [ ] Configurar manejo global de excepciones y logs.
+### Fase 4: Exposición de Servicios (`WebAPI`) (Completada)
+- [x] Crear los 13 controladores REST en `Controllers/`.
+- [x] Configurar servicios e inyección de dependencias en `Program.cs`.
+- [x] Configurar manejo global de excepciones (`ExceptionHandlingMiddleware`) y Background Jobs.
 
-### Fase 5: Interfaz de Usuario (`WebApp`)
-- [ ] Estructurar las vistas / páginas en `Pages/` o interfaz de usuario.
-- [ ] Integrar el consumo de servicios y conexión con el backend.
-- [ ] Aplicar estilos coherentes en `wwwroot/`.
+### Fase 5: Interfaz de Usuario (`WebApp`) (Completada)
+- [x] Estructurar las vistas / páginas en `Pages/` e interfaz de usuario.
+- [x] Implementar infraestructura JavaScript compartida (`apiClient.js`, `session.js`, `notifications.js`, `theme.js`).
+- [x] Integrar el consumo de servicios y conexión con el backend mediante los ViewControllers JS para todas las áreas (Pública, Administrador, Operador/Ingeniero, Comprador).
+- [x] Aplicar y refinar estilos coherentes en `wwwroot/`.
 
 ---
 
 ## 4. Tareas Pendientes Inmediatas
 - [x] Analizar los requerimientos de negocio en `documentacion-raw-data/` y generar el esqueleto inicial sin lógica de negocio funcional ni ORMs.
-- [x] Limpiar las clases de prueba generadas por defecto en los proyectos (`Class1.cs` y `WeatherForecast.cs` marcados como placeholders temporalmente).
+- [x] Limpiar las clases de prueba generadas por defecto en los proyectos (`Class1.cs` y `WeatherForecast.cs`).
 - [x] Conectar referencias jerárquicas entre los proyectos en sus archivos `.csproj`.
-- [ ] **Siguiente paso prioritario:** Implementar los Stored Procedures SQL y el código de acceso a datos en `SqlDao` con `Microsoft.Data.SqlClient` para conectar a Azure SQL Database.
-- [ ] Implementar progresivamente las propiedades y métodos en las clases de `Entities-DTOs`, `DataAccess`, `CoreApp`, `WebAPI` y `WebApp` reemplazando los `TODO`s.
+- [x] Implementar los Stored Procedures SQL y el código de acceso a datos en `SqlDao` con `Microsoft.Data.SqlClient`.
+- [x] Implementar las clases de `Entities-DTOs`, `DataAccess`, `CoreApp` y `WebAPI`.
+- [x] Conectar el flujo de autenticación y registro en `LoginViewController.js` con las 6 vistas públicas y `UsersController`.
+- [x] Conectar el Dashboard y gestión de usuarios del Administrador (`AdminDashboardViewController.js`) con `Admin/Dashboard.cshtml`, `Admin/Users.cshtml` y sus endpoints REST.
+- [x] Conectar el área de Operaciones e Ingeniería (`Engineer`), implementando `OperationsDashboardViewController.js` y `TurbineManagementViewController.js` para monitorizar y gestionar el parque eólico.
+- [x] Conectar el área de Clientes y Compradores (`Buyer`), implementando `BuyerDashboardViewController.js` y `BuyerManagementViewController.js` junto a sus vistas y endpoints REST.
+- [x] Conectar los módulos complementarios de Operaciones y Auditoría (`Energy`, `Maintenances`, `Failures`, `CentralBank`, `FlushHistory`, `Audit`) implementando sus respectivos controladores y endpoints REST.
+- [ ] **Siguiente paso prioritario:** Ejecución en servidor local (`dotnet run`) de `WebAPI` y `WebApp`, verificación de conexión a base de datos e inicio de pruebas E2E en navegador.
+

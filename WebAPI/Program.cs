@@ -15,6 +15,17 @@ builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Configuración de CORS para permitir peticiones AJAX desde la WebApp y otros clientes locales.
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 // Registro de servicios en segundo plano para simulación de energía, notificaciones y auditoría WORM.
 builder.Services.AddHostedService<EnergySimulationJob>();
 builder.Services.AddHostedService<NotificationProcessingJob>();
@@ -37,6 +48,7 @@ if (app.Environment.IsDevelopment())
 app.MapGet("/", () => Results.Redirect("/swagger"));
 
 app.UseHttpsRedirection();
+app.UseCors("AllowAll");
 app.UseAuthorization();
 app.MapControllers();
 

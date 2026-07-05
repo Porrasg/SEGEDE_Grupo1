@@ -289,3 +289,85 @@ h1, h2, h3, h4, h5, h6 {
   color: #000000 !important;
   text-decoration: underline;
 }
+
+/* ==========================================================================
+   ACCESIBILIDAD, ALTO CONTRASTE E INCLUSIVIDAD (DALTONISMO Y PROB. DE VISTA)
+   ========================================================================== */
+
+/* Foco de teclado visible y de alto contraste (WCA AA/AAA) */
+a:focus, button:focus, input:focus, select:focus, textarea:focus, .btn:focus {
+  outline: 3px solid #0056b3 !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.25) !important;
+}
+
+/* Indicadores visuales para daltonismo: NO depender solo del color (rojo/verde) */
+.badge.bg-success, .badge.bg-danger, .badge.bg-warning, .badge.bg-info, .badge.bg-primary {
+  border: 1px solid #000 !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.5px;
+  padding: 0.35em 0.65em !important;
+}
+
+.badge.bg-success::before {
+  content: "✓ ";
+  font-weight: 900;
+}
+
+.badge.bg-danger::before {
+  content: "⚠️ ";
+  font-weight: 900;
+}
+
+.badge.bg-warning::before {
+  content: "★ ";
+  font-weight: 900;
+}
+
+.badge.bg-info::before {
+  content: "ℹ ";
+  font-weight: 900;
+}
+
+/* Mejoras de legibilidad para problemas de visión */
+body, .table tbody td, .form-control, .form-select, .btn {
+  font-size: 1rem !important;
+}
+
+label.form-label {
+  font-weight: 700;
+  color: var(--sgde-text);
+  margin-bottom: 0.4rem;
+}
+
+/* Alertas con patrón de fondo e icono visual para daltonismo */
+.alert-success {
+  border-left: 6px solid #198754 !important;
+  background-color: #f0fdf4 !important;
+}
+.alert-danger {
+  border-left: 6px solid #dc3545 !important;
+  background-color: #fef2f2 !important;
+}
+.alert-warning {
+  border-left: 6px solid #ffc107 !important;
+  background-color: #fffbeb !important;
+}
+.alert-info {
+  border-left: 6px solid #0dcaf0 !important;
+  background-color: #f0f9ff !important;
+}
+
+/* Responsive intuitivo en dispositivos móviles */
+@media (max-width: 768px) {
+  .card {
+    margin-bottom: 1rem;
+  }
+  .table-responsive {
+    border: 1px solid var(--sgde-border);
+  }
+  .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+}

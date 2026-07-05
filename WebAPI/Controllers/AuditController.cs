@@ -20,6 +20,22 @@ public class AuditController : ControllerBase
         return Ok(new ApiResponse<PagedResponse<AuditLog>> { Success = true, Data = result });
     }
 
+    // Función de consulta que retorna la bitácora paginada de eventos por usuario.
+    [HttpGet("ByUser")]
+    public IActionResult GetByUser([FromQuery] int userId, [FromQuery] int page = 1, [FromQuery] int pageSize = 50)
+    {
+        var result = _auditManager.RetrieveByUser(userId, new PagedRequest { Page = page, PageSize = pageSize });
+        return Ok(new ApiResponse<PagedResponse<AuditLog>> { Success = true, Data = result });
+    }
+
+    // Función de consulta que retorna la bitácora en un rango de fechas con filtrado RN-030.
+    [HttpGet("ByDateRange")]
+    public IActionResult GetByDateRange([FromQuery] DateTime from, [FromQuery] DateTime to, [FromQuery] string callerRole = "Administrator", [FromQuery] int page = 1, [FromQuery] int pageSize = 50)
+    {
+        var result = _auditManager.RetrieveByDateRange(from, to, callerRole, new PagedRequest { Page = page, PageSize = pageSize });
+        return Ok(new ApiResponse<PagedResponse<AuditLog>> { Success = true, Data = result });
+    }
+
     // Método manejador que archiva en frío los registros de auditoría antiguos respetando el modelo WORM.
     [HttpPost("ArchiveColdRecords")]
     public IActionResult ArchiveColdRecords()
