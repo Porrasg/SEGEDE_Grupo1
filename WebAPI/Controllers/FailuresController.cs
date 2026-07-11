@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SEGEDE_Grupo1.CoreApp.Managers;
 using SEGEDE_Grupo1.EntitiesDTOs.DTOs;
@@ -9,15 +10,16 @@ namespace SEGEDE_Grupo1.WebAPI.Controllers;
 // Controlador REST para el registro de averías, alertas de seguridad y paradas de emergencia (§14.4).
 [ApiController]
 [Route("api/[controller]")]
-public class FailuresController : ControllerBase
+[Authorize(Roles = "Administrator,Engineer")]
+public class FailuresController : SgdeControllerBase
 {
     private readonly FailureManager _failureManager = new();
 
     // Método manejador que registra una falla o incidente operativo cambiando la turbina a estado Damaged.
     [HttpPost("Register")]
-    public IActionResult Register([FromBody] RegisterFailureRequest request, [FromQuery] int callerUserId = 1)
+    public IActionResult Register([FromBody] RegisterFailureRequest request)
     {
-        _failureManager.Register(request, callerUserId);
+        _failureManager.Register(request, CallerUserId);
         return Ok(new ApiResponse<object> { Success = true, Message = "Falla reportada con éxito. Turbina detenida por seguridad." });
     }
 
