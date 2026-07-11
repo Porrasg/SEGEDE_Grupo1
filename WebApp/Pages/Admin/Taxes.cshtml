@@ -15,14 +15,14 @@
                 <div class="card-body">
                     <form id="taxForm">
                         <div class="mb-3">
+                            <label class="form-label">Nombre del Impuesto</label>
+                            <input type="text" class="form-control" id="taxName" required value="IVA" placeholder="ej. IVA">
+                        </div>
+                        <div class="mb-3">
                             <label class="form-label">Porcentaje de Impuesto (%)</label>
                             <input type="number" step="0.01" class="form-control" id="taxValue" required placeholder="ej. 13.00">
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Fecha de Inicio de Vigencia</label>
-                            <input type="date" class="form-control" id="taxDate" required>
-                        </div>
-                        <p class="text-muted small">Al guardar, la tasa impositiva anterior se cerrará automáticamente.</p>
+                        <p class="text-muted small">El nuevo impuesto aplica de inmediato; la tasa vigente anterior se cierra automáticamente en ese momento.</p>
                         <button type="submit" class="btn btn-primary">Registrar Impuesto</button>
                     </form>
                 </div>
@@ -41,3 +41,7 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="~/js/pages-controller/BillingConfigViewController.js" asp-append-version="true"></script>
+}

@@ -38,16 +38,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                 sessionStorage.removeItem("sgde_login_email");
                                 notify.success("¡Inicio de sesión exitoso! Redirigiendo...");
                                 setTimeout(function () {
-                                    const role = session.getRole();
-                                    if (role === "Administrator" || role === "Admin") {
-                                        window.location.href = "/Admin/Dashboard";
-                                    } else if (role === "Engineer") {
-                                        window.location.href = "/Engineer/Dashboard";
-                                    } else if (role === "Buyer") {
-                                        window.location.href = "/Buyer/Dashboard";
-                                    } else {
-                                        window.location.href = "/";
-                                    }
+                                    window.location.href = dashboardUrlForRole(session.getRole()) || "/";
                                 }, 800);
                             }
                         })
@@ -108,16 +99,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         notify.success("¡Inicio de sesión exitoso! Redirigiendo...");
 
                         setTimeout(function () {
-                            const role = session.getRole();
-                            if (role === "Administrator" || role === "Admin") {
-                                window.location.href = "/Admin/Dashboard";
-                            } else if (role === "Engineer") {
-                                window.location.href = "/Engineer/Dashboard";
-                            } else if (role === "Buyer") {
-                                window.location.href = "/Buyer/Dashboard";
-                            } else {
-                                window.location.href = "/";
-                            }
+                            window.location.href = dashboardUrlForRole(session.getRole()) || "/";
                         }, 1000);
                     } else {
                         notify.error("No se recibieron datos de sesión válidos.");
@@ -187,9 +169,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
             apiClient.post("Users/Register", dto)
                 .done(function (res) {
-                    notify.success(res?.message || res?.Message || "Comprador registrado con éxito. Ya puede iniciar sesión.");
+                    notify.success(res?.message || res?.Message || "Comprador registrado con éxito. Active su cuenta con el código enviado a su correo.");
+                    sessionStorage.setItem("sgde_activate_email", dto.email);
                     setTimeout(function () {
-                        window.location.href = "/Login";
+                        window.location.href = "/Activate";
                     }, 1500);
                 })
                 .fail(function (xhr) {
