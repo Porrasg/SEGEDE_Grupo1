@@ -11,3 +11,4 @@ public class BaseDTO
     // Propiedad de datos mapeada a la columna de base de datos o parámetro de transferencia.
     public DateTime? Updated { get; set; }
 }
+

@@ -36,7 +36,7 @@ public class TurbineCrudFactory : CrudFactory
         op.AddStringParameter("@Brand", t.Brand);
         op.AddStringParameter("@Model", t.Model);
         op.AddDecimalParameter("@WeeklyNominalCapacity", t.WeeklyNominalCapacity);
-        op.AddDateTimeParameter("@Updated", t.Updated);
+        op.AddDateTimeParameter("@Updated", t.Updated ?? DateTime.Now);
         sqlDao.ExecuteProcedure(op);
     }
 
