@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SEGEDE_Grupo1.CoreApp.Managers;
 using SEGEDE_Grupo1.EntitiesDTOs.DTOs;
@@ -8,7 +9,8 @@ namespace SEGEDE_Grupo1.WebAPI.Controllers;
 // Controlador REST para la simulación de generación, cálculo de pérdidas e inventario de baterías locales (§14.5).
 [ApiController]
 [Route("api/[controller]")]
-public class EnergyController : ControllerBase
+[Authorize(Roles = "Administrator,Engineer")]
+public class EnergyController : SgdeControllerBase
 {
     private readonly EnergyManager _energyManager = new();
 

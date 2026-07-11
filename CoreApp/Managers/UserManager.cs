@@ -13,7 +13,7 @@ using SEGEDE_Grupo1.EntitiesDTOs.Validation;
 namespace SEGEDE_Grupo1.CoreApp.Managers;
 
 // Manager de Usuarios (§14.1). Respetando la arquitectura, instancia fábricas directamente con new sin IoC.
-// Aplica validaciones de seguridad, control de intentos fallidos (bloqueo a los 3 intentos), flujos OTP y ownership.
+// Aplica validaciones de seguridad, control de intentos fallidos (bloqueo a los 5 intentos), flujos OTP y ownership.
 public class UserManager
 {
     // Propiedad de datos mapeada a la columna de base de datos o parámetro de transferencia.
@@ -127,11 +127,11 @@ public class UserManager
         if (!isPasswordValid)
         {
             _userCrudFactory.IncrementFailedAttempts(user.Id);
-            if (user.FailedAttempts + 1 >= 3)
+            if (user.FailedAttempts + 1 >= 5)
             {
                 _userCrudFactory.BlockUser(user.Id, TimeHelper.NowCR(), TimeHelper.NowCR());
                 _auditManager.LogAction(user.Id, user.Email, AuditModules.Users, AuditActions.Block, "tblUser", user.Id, "Active", "Blocked");
-                throw new BusinessException("User account blocked after 3 consecutive failed login attempts.", "USER_BLOCKED");
+                throw new BusinessException("User account blocked after 5 consecutive failed login attempts.", "USER_BLOCKED");
             }
             throw new BusinessException("Invalid login credentials.", "INVALID_CREDENTIALS");
         }

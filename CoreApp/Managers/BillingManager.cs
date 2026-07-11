@@ -5,6 +5,7 @@ using SEGEDE_Grupo1.EntitiesDTOs.DTOs.Requests;
 using SEGEDE_Grupo1.EntitiesDTOs.Entities;
 using SEGEDE_Grupo1.EntitiesDTOs.Exceptions;
 using SEGEDE_Grupo1.EntitiesDTOs.Helpers;
+using SEGEDE_Grupo1.EntitiesDTOs.Validation;
 
 namespace SEGEDE_Grupo1.CoreApp.Managers;
 
@@ -26,10 +27,7 @@ public class BillingManager
     // RF-057: Establecer un nuevo precio por MWh. Cierra el precio activo vigente (manejado por el SP de inserción) y registra el nuevo.
     public void SetPrice(SetPriceRequest r, int callerUserId)
     {
-        if (r.PriceCRCPerMWh <= 0)
-        {
-            throw new BusinessException("Price must be greater than zero.", "INVALID_PRICE");
-        }
+        BillingValidator.ValidatePrice(r.PriceCRCPerMWh).ThrowIfInvalid();
 
         var now = TimeHelper.NowCR();
         var oldPrice = _priceFactory.RetrieveActive();
@@ -57,10 +55,7 @@ public class BillingManager
     // RF-058: Establecer un nuevo impuesto. Valida que sea fracción entre 0 y 1 (ej. 0.13), cierra el anterior y crea el nuevo.
     public void SetTax(SetTaxRequest r, int callerUserId)
     {
-        if (r.Percentage < 0 || r.Percentage > 1)
-        {
-            throw new BusinessException("Tax percentage must be between 0 and 1 (fraction).", "INVALID_TAX");
-        }
+        BillingValidator.ValidateTax(r.Percentage).ThrowIfInvalid();
 
         if (string.IsNullOrWhiteSpace(r.Name))
         {
@@ -91,6 +86,12 @@ public class BillingManager
         return _taxFactory.RetrieveAll<Tax>();
     }
 
+    // RF-065/072: Retorna la bitácora completa de exportaciones (evidencia WORM, Admin/Exports en v2 §85).
+    public List<ExportLog> RetrieveExportLogs()
+    {
+        return _exportLogFactory.RetrieveAll<ExportLog>();
+    }
+
     // RF-064: Retorna estados de cuenta. Si buyerId es null, retorna todos (Administrador/Ingeniero); si se especifica buyerId, verifica ownership.
     public List<AccountStatement> RetrieveStatements(int? buyerId, int callerUserId, string callerRole)
     {
@@ -115,10 +116,7 @@ public class BillingManager
     // RF-062: Anula un estado de cuenta. Valida que exista motivo, marca Status=Annulled sin tocar valores financieros.
     public void AnnulStatement(AnnulStatementRequest r, int callerUserId)
     {
-        if (string.IsNullOrWhiteSpace(r.Reason))
-        {
-            throw new BusinessException("Annulment reason is required.", "MISSING_REASON");
-        }
+        BillingValidator.ValidateAnnulment(r.Reason).ThrowIfInvalid();
 
         var stmt = _statementFactory.RetrieveById<AccountStatement>(r.StatementId) ?? throw new NotFoundException("Account statement not found.");
 

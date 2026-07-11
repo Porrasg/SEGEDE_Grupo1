@@ -115,16 +115,7 @@ function initLandingLogin() {
                             sessionStorage.removeItem("sgde_login_email");
                             if (typeof notify !== "undefined") notify.success("¡Sesión iniciada!");
                             setTimeout(function () {
-                                const role = session.getRole();
-                                if (role === "Administrator" || role === "Admin") {
-                                    window.location.href = "/Admin/Dashboard";
-                                } else if (role === "Engineer") {
-                                    window.location.href = "/Engineer/Dashboard";
-                                } else if (role === "Buyer") {
-                                    window.location.href = "/Buyer/Dashboard";
-                                } else {
-                                    window.location.href = "/";
-                                }
+                                window.location.href = dashboardUrlForRole(session.getRole()) || "/";
                             }, 600);
                         }
                     })
@@ -150,13 +141,31 @@ function initLandingLogin() {
     });
 }
 
+// Destino del dashboard según el rol de la sesión activa (usado por la regla A1.1 de la adenda v3: logo/raíz redirige por rol).
+function dashboardUrlForRole(role) {
+    if (role === "Administrator" || role === "Admin") return "/Admin/Dashboard";
+    if (role === "Engineer") return "/Engineer/Dashboard";
+    if (role === "Buyer") return "/Buyer/Dashboard";
+    return null;
+}
+
 function checkRouteSecurity() {
     const path = window.location.pathname.toLowerCase();
     const isLoggedIn = !session.isExpired() && session.getToken();
     const role = session.getRole();
 
+    // Regla A1.1: la raíz ("/" o "/Index") redirige de inmediato al dashboard del rol si hay sesión válida.
+    // Sin sesión, se muestra la landing normalmente (no fuerza /Login).
+    if (path === "/" || path === "/index") {
+        if (isLoggedIn) {
+            const target = dashboardUrlForRole(role);
+            if (target) window.location.href = target;
+        }
+        return;
+    }
+
     // Páginas públicas que no requieren validación de rol
-    if (path === "/" || path === "/index" || path.startsWith("/login") || path.startsWith("/register") || path.startsWith("/recover") || path.startsWith("/reset") || path.startsWith("/activate") || path.startsWith("/accessdenied")) {
+    if (path.startsWith("/login") || path.startsWith("/register") || path.startsWith("/recover") || path.startsWith("/reset") || path.startsWith("/activate") || path.startsWith("/accessdenied")) {
         return;
     }
 

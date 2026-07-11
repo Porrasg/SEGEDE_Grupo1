@@ -32,3 +32,7 @@
     <!-- Modal Detalle Auditoría -->
     <div class="modal fade" id="auditModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Detalle de Cambios de Auditoría</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="row"><div class="col-md-6"><h6>Valor Anterior</h6><pre class="bg-light p-2 border" id="audPrev" style="max-height: 300px; overflow: auto;">---</pre></div><div class="col-md-6"><h6>Nuevo Valor</h6><pre class="bg-light p-2 border" id="audNew" style="max-height: 300px; overflow: auto;">---</pre></div></div></div></div></div></div>
 </div>
+
+@section Scripts {
+    <script src="~/js/pages-controller/AdminAuditViewController.js" asp-append-version="true"></script>
+}

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SEGEDE_Grupo1.CoreApp.Managers;
 using SEGEDE_Grupo1.EntitiesDTOs.DTOs;
@@ -9,15 +10,17 @@ namespace SEGEDE_Grupo1.WebAPI.Controllers;
 // Controlador REST para la ejecución de flushes y traslados ACID desde baterías locales al Banco Central (§14.6).
 [ApiController]
 [Route("api/[controller]")]
-public class FlushController : ControllerBase
+[Authorize(Roles = "Administrator,Engineer")]
+public class FlushController : SgdeControllerBase
 {
     private readonly FlushManager _flushManager = new();
 
-    // Método manejador que ejecuta de forma transaccional un flush manual trasladando energía al Banco Central.
+    // Método manejador que ejecuta de forma transaccional un flush manual trasladando energía al Banco Central. Solo Admin.
+    [Authorize(Roles = "Administrator")]
     [HttpPost("ExecuteManual")]
-    public IActionResult ExecuteManual([FromQuery] int callerUserId = 1)
+    public IActionResult ExecuteManual()
     {
-        _flushManager.ExecuteManualFlush(callerUserId);
+        _flushManager.ExecuteManualFlush(CallerUserId);
         return Ok(new ApiResponse<object> { Success = true, Message = "Flush transaccional ejecutado hacia el Banco Central." });
     }
 
@@ -29,11 +32,12 @@ public class FlushController : ControllerBase
         return Ok(new ApiResponse<FlushConfig> { Success = true, Data = c });
     }
 
-    // Método manejador que actualiza la configuración horaria y de frecuencia para la ejecución de flushes.
+    // Método manejador que actualiza la configuración horaria y de frecuencia para la ejecución de flushes. Solo Admin.
+    [Authorize(Roles = "Administrator")]
     [HttpPut("Config")]
-    public IActionResult UpdateConfig([FromBody] UpdateFlushConfigRequest request, [FromQuery] int callerUserId = 1)
+    public IActionResult UpdateConfig([FromBody] UpdateFlushConfigRequest request)
     {
-        _flushManager.UpdateFlushConfig(request, callerUserId);
+        _flushManager.UpdateFlushConfig(request, CallerUserId);
         return Ok(new ApiResponse<object> { Success = true, Message = "Configuración de flush actualizada con éxito." });
     }
 

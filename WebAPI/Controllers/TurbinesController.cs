@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SEGEDE_Grupo1.CoreApp.Managers;
 using SEGEDE_Grupo1.EntitiesDTOs.DTOs;
@@ -8,33 +9,37 @@ using SEGEDE_Grupo1.EntitiesDTOs.Entities;
 namespace SEGEDE_Grupo1.WebAPI.Controllers;
 
 // Controlador REST para la administración del catálogo de turbinas, telemetría y cambios de estado (§14.2).
+// Solo Admin/Engineer interactúan con este dominio (Buyer no tiene páginas de turbinas).
 [ApiController]
 [Route("api/[controller]")]
-public class TurbinesController : ControllerBase
+[Authorize(Roles = "Administrator,Engineer")]
+public class TurbinesController : SgdeControllerBase
 {
     private readonly TurbineManager _turbineManager = new();
 
-    // Método manejador que procesa el registro e incorporación de una nueva turbina al parque de generación.
+    // Método manejador que procesa el registro e incorporación de una nueva turbina al parque de generación. Solo Admin (TRB-07).
+    [Authorize(Roles = "Administrator")]
     [HttpPost("Register")]
-    public IActionResult Register([FromBody] RegisterTurbineRequest request, [FromQuery] int callerUserId = 1)
+    public IActionResult Register([FromBody] RegisterTurbineRequest request)
     {
-        _turbineManager.Register(request, callerUserId);
+        _turbineManager.Register(request, CallerUserId);
         return Ok(new ApiResponse<object> { Success = true, Message = "Turbina registrada con éxito en el sistema." });
     }
 
-    // Método manejador que procesa la actualización de características y capacidad nominal de una turbina.
+    // Método manejador que procesa la actualización de características y capacidad nominal de una turbina. Solo Admin.
+    [Authorize(Roles = "Administrator")]
     [HttpPut("Update")]
-    public IActionResult Update([FromBody] UpdateTurbineRequest request, [FromQuery] int callerUserId = 1)
+    public IActionResult Update([FromBody] UpdateTurbineRequest request)
     {
-        _turbineManager.Update(request, callerUserId);
+        _turbineManager.Update(request, CallerUserId);
         return Ok(new ApiResponse<object> { Success = true, Message = "Datos de la turbina actualizados." });
     }
 
     // Método manejador que ejecuta la transición de estado operativo de la turbina registrando su historial.
     [HttpPost("ChangeState")]
-    public IActionResult ChangeState([FromBody] ChangeTurbineStateRequest request, [FromQuery] int callerUserId = 1)
+    public IActionResult ChangeState([FromBody] ChangeTurbineStateRequest request)
     {
-        _turbineManager.ChangeState(request, callerUserId);
+        _turbineManager.ChangeState(request, CallerUserId);
         return Ok(new ApiResponse<object> { Success = true, Message = "Cambio de estado operativo ejecutado con éxito." });
     }
 

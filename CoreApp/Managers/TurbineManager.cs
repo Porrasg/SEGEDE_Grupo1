@@ -5,6 +5,7 @@ using SEGEDE_Grupo1.EntitiesDTOs.DTOs.Responses;
 using SEGEDE_Grupo1.EntitiesDTOs.Entities;
 using SEGEDE_Grupo1.EntitiesDTOs.Exceptions;
 using SEGEDE_Grupo1.EntitiesDTOs.Helpers;
+using SEGEDE_Grupo1.EntitiesDTOs.Validation;
 
 namespace SEGEDE_Grupo1.CoreApp.Managers;
 
@@ -26,10 +27,7 @@ public class TurbineManager
     // RF-013: Registro de turbina. Crea turbina, su batería local 1:1, log de estado inicial y recalcula capacidad del Banco Central.
     public void Register(RegisterTurbineRequest r, int callerUserId)
     {
-        if (string.IsNullOrWhiteSpace(r.UniqueCode))
-            throw new BusinessException("Unique code is required.", "INVALID_CODE");
-        if (r.WeeklyNominalCapacity <= 0)
-            throw new BusinessException("Weekly nominal capacity must be greater than zero.", "INVALID_CAPACITY");
+        TurbineValidator.Validate(r.UniqueCode, r.Name, r.Location, r.Brand, r.Model, r.Year, r.WeeklyNominalCapacity).ThrowIfInvalid();
 
         var existing = _turbineCrudFactory.RetrieveByCode(r.UniqueCode);
         if (existing != null)
@@ -84,8 +82,7 @@ public class TurbineManager
     {
         var existing = _turbineCrudFactory.RetrieveById<Turbine>(r.TurbineId) ?? throw new NotFoundException("Turbine not found.");
 
-        if (r.WeeklyNominalCapacity <= 0)
-            throw new BusinessException("Weekly nominal capacity must be greater than zero.", "INVALID_CAPACITY");
+        TurbineValidator.Validate(existing.UniqueCode, r.Name, r.Location, r.Brand, r.Model, existing.Year, r.WeeklyNominalCapacity).ThrowIfInvalid();
 
         existing.Name = r.Name;
         existing.Location = r.Location;

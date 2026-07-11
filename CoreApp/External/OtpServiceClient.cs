@@ -61,11 +61,9 @@ public class OtpServiceClient
             var response = _httpClient.Send(request);
             return response.IsSuccessStatusCode;
         }
-        catch
+        catch (Exception ex) when (ex is not BusinessException)
         {
-            // En caso de fallo de red en desarrollo/contingencia, caemos a modo simulación para permitir continuar el flujo.
-            Console.WriteLine($"[OTP SERVICE FALLBACK] No se pudo conectar a {_baseUrl}. Modo simulación activado para {email}.");
-            return true;
+            throw new BusinessException($"No se pudo contactar al proveedor externo de OTP ({_baseUrl}).", "OTP_SERVICE_UNAVAILABLE");
         }
     }
 
