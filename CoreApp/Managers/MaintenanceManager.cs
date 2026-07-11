@@ -4,6 +4,7 @@ using SEGEDE_Grupo1.EntitiesDTOs.DTOs.Requests;
 using SEGEDE_Grupo1.EntitiesDTOs.Entities;
 using SEGEDE_Grupo1.EntitiesDTOs.Exceptions;
 using SEGEDE_Grupo1.EntitiesDTOs.Helpers;
+using SEGEDE_Grupo1.EntitiesDTOs.Validation;
 
 namespace SEGEDE_Grupo1.CoreApp.Managers;
 
@@ -18,6 +19,8 @@ public class MaintenanceManager
     // RF-017/019: Registra un nuevo mantenimiento. Valida simultaneidad preventiva y cambia estado de turbina a UnderMaintenance.
     public void Register(RegisterMaintenanceRequest r, int callerUserId)
     {
+        MaintenanceValidator.Validate(r.MaintenanceType, r.EstimatedStartDate, r.EstimatedEndDate).ThrowIfInvalid();
+
         var turbine = _turbineCrudFactory.RetrieveById<Turbine>(r.TurbineId) ?? throw new NotFoundException("Turbine not found.");
 
         if (string.Equals(r.MaintenanceType, MaintenanceTypes.Preventive, StringComparison.OrdinalIgnoreCase))

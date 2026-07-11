@@ -368,27 +368,31 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         function deactivateUser(id) {
-            if (!confirm("¿Está seguro de que desea desactivar este usuario?")) return;
-            apiClient.post("Users/Deactivate", { userId: parseInt(id), cancelForecasts: true })
-                .done(function () {
-                    notify.success("Usuario desactivado correctamente.");
-                    loadUsers();
-                })
-                .fail(function (xhr) {
-                    handleApiError(xhr);
-                });
+            notify.confirm("¿Está seguro de que desea desactivar este usuario?", { dangerous: true, confirmText: "Desactivar" }).then(function (ok) {
+                if (!ok) return;
+                apiClient.post("Users/Deactivate", { userId: parseInt(id), cancelForecasts: true })
+                    .done(function () {
+                        notify.success("Usuario desactivado correctamente.");
+                        loadUsers();
+                    })
+                    .fail(function (xhr) {
+                        handleApiError(xhr);
+                    });
+            });
         }
 
         function reactivateUser(id) {
-            if (!confirm("¿Desea reactivar este usuario?")) return;
-            apiClient.post(`Users/Reactivate/${id}`)
-                .done(function () {
-                    notify.success("Usuario reactivado con éxito.");
-                    loadUsers();
-                })
-                .fail(function (xhr) {
-                    handleApiError(xhr);
-                });
+            notify.confirm("¿Desea reactivar este usuario?", { confirmText: "Reactivar" }).then(function (ok) {
+                if (!ok) return;
+                apiClient.post(`Users/Reactivate/${id}`)
+                    .done(function () {
+                        notify.success("Usuario reactivado con éxito.");
+                        loadUsers();
+                    })
+                    .fail(function (xhr) {
+                        handleApiError(xhr);
+                    });
+            });
         }
     }
 });

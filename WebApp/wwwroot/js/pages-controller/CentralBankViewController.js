@@ -19,13 +19,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // ==========================================
     if (document.getElementById("cbInv")) {
         loadCentralBankStatus();
-
-        const btnManual = document.getElementById("btnManualFlush");
-        if (btnManual) {
-            btnManual.addEventListener("click", function () {
-                executeManualFlush(btnManual);
-            });
-        }
     }
 
     function loadCentralBankStatus() {
@@ -84,27 +77,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 </tr>
             `;
         }).join("");
-    }
-
-    function executeManualFlush(btn) {
-        if (!confirm("¿Confirma la ejecución transaccional de un Flush Manual en todas las baterías locales con carga disponible?")) return;
-
-        const origText = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Trasladando...';
-
-        apiClient.post("Flush/ExecuteManual?callerUserId=" + userId)
-            .done(function () {
-                notify.success("Traslado ACID (Flush) completado. Inventario del Banco Central actualizado.");
-                loadCentralBankStatus();
-            })
-            .fail(function (xhr) {
-                handleApiError(xhr);
-            })
-            .always(function () {
-                btn.disabled = false;
-                btn.innerHTML = origText;
-            });
     }
 
     // ==========================================

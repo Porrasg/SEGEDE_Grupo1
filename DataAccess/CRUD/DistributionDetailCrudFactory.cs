@@ -1,3 +1,4 @@
+using Microsoft.Data.SqlClient;
 using SEGEDE_Grupo1.DataAccess.DAO;
 using SEGEDE_Grupo1.EntitiesDTOs;
 using SEGEDE_Grupo1.EntitiesDTOs.Entities;
@@ -42,6 +43,22 @@ public class DistributionDetailCrudFactory : CrudFactory
     // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public override List<T> RetrieveAll<T>() =>
         throw new NotSupportedException("RetrieveAll is not supported for DistributionDetail.");
+
+    // --- Overload transaccional (§37.25) ---
+
+    public void Create(BaseDTO baseDTO, SqlConnection conn, SqlTransaction tx)
+    {
+        var d = (DistributionDetail)baseDTO;
+        var op = new Operation { ProcedureName = "CRE_DIST_DTL_PR" };
+        op.AddIntParameter("@DistributionId", d.DistributionId);
+        op.AddIntParameter("@BuyerId", d.BuyerId);
+        op.AddIntParameter("@ForecastId", d.ForecastId);
+        op.AddDecimalParameter("@RequestedMWh", d.RequestedMWh);
+        op.AddDecimalParameter("@AssignedMWh", d.AssignedMWh);
+        op.AddDecimalParameter("@UnsuppliedDemand", d.UnsuppliedDemand);
+        op.AddDateTimeParameter("@Created", d.Created);
+        sqlDao.ExecuteProcedureInTransaction(op, conn, tx);
+    }
 
     // --- Custom methods ---
 
