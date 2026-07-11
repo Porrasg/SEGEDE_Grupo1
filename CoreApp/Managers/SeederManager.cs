@@ -26,6 +26,7 @@ public class SeederManager
     private readonly FailureCrudFactory _failureFactory = new();
     private readonly FlushSnapshotCrudFactory _snapshotFactory = new();
     private readonly CentralBankLogCrudFactory _cbLogFactory = new();
+    private readonly FlushConfigCrudFactory _flushConfigFactory = new();
 
     public void SeedAllDevData()
     {
@@ -37,8 +38,9 @@ public class SeederManager
             // 1. Usuarios e instituciones cliente (ICE, CNFL, JASEC, ESPH, COOPELESCA)
             new UserManager().SeedDevUsers();
 
-            // 2. Banco Central, Precios e Impuestos históricos
+            // 2. Banco Central, Configuración de Flush, Precios e Impuestos históricos
             SeedCentralBank(now);
+            SeedFlushConfig(now);
             SeedPricesAndTaxes(now);
 
             // 3. Turbinas reales de Costa Rica, baterías y log de generación
@@ -65,13 +67,7 @@ public class SeederManager
             var cb = _cbFactory.RetrieveSingleton();
             if (cb == null)
             {
-                var newCb = new CentralBank
-                {
-                    CurrentInventory = 285400.50m,
-                    AutomaticCapacity = 450000.00m,
-                    Created = new DateTime(2021, 1, 1, 0, 0, 0)
-                };
-                _cbFactory.Create(newCb);
+                _cbFactory.InitializeSingleton(285400.50m, 450000.00m, new DateTime(2021, 1, 1, 0, 0, 0));
                 cb = _cbFactory.RetrieveSingleton();
             }
             else
@@ -89,6 +85,22 @@ public class SeederManager
         catch (Exception ex)
         {
             Console.WriteLine($"[SEEDER] Error en Banco Central: {ex.Message}");
+        }
+    }
+
+    private void SeedFlushConfig(DateTime now)
+    {
+        try
+        {
+            var cfg = _flushConfigFactory.RetrieveSingleton();
+            if (cfg == null)
+            {
+                _flushConfigFactory.InitializeSingleton(new TimeSpan(0, 0, 0), true, new DateTime(2021, 1, 1, 0, 0, 0));
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[SEEDER] Error en Configuración de Flush: {ex.Message}");
         }
     }
 
@@ -127,7 +139,8 @@ public class SeederManager
                 _taxFactory.Create(new Tax
                 {
                     Name = "IVA Energía",
-                    Percentage = 13m,
+                    Percentage = 0.13m,
+                    ValidFrom = new DateTime(2021, 1, 1),
                     IsActive = true,
                     Created = new DateTime(2021, 1, 1)
                 });
@@ -358,7 +371,7 @@ public class SeederManager
                                 Year = year,
                                 AssignedMWh = assignedMWh,
                                 UnitPrice = unitPrice,
-                                TaxPercentage = 13m,
+                                TaxPercentage = 0.13m,
                                 Subtotal = subtotal,
                                 TaxAmount = taxAmount,
                                 Total = total,
