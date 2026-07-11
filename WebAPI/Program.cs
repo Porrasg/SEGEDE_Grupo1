@@ -1,3 +1,6 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using SEGEDE_Grupo1.DataAccess.DAO;
 using SEGEDE_Grupo1.WebAPI.BackgroundServices;
 using SEGEDE_Grupo1.WebAPI.Middleware;
@@ -14,7 +17,34 @@ SqlDao.Configure(connectionString);
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    var bearerScheme = new Microsoft.OpenApi.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.ParameterLocation.Header,
+        Description = "Ingrese únicamente el token JWT (sin el prefijo 'Bearer ')."
+    };
+    options.AddSecurityDefinition("Bearer", bearerScheme);
+});
+
+// Autenticación JWT Bearer (§10/§54): valida los tokens emitidos por JwtHelper.GenerateToken usando la misma clave simétrica.
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(UserManager.JwtSecret)),
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+builder.Services.AddAuthorization();
 
 // Configuración de CORS para permitir peticiones AJAX desde la WebApp y otros clientes locales.
 builder.Services.AddCors(options =>
@@ -59,6 +89,7 @@ app.MapGet("/", () => Results.Redirect("/swagger"));
 
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 

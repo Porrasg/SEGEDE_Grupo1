@@ -7,6 +7,7 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>@ViewData["Title"]</h2>
+        <a href="/Admin/Flush" class="btn btn-outline-secondary btn-sm"><i class="bi bi-water"></i> Ir a Control de Flush</a>
     </div>
         <div class="row g-4 mb-4">
         <div class="col-md-4">
@@ -36,3 +37,7 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="~/js/pages-controller/AdminCentralBankViewController.js" asp-append-version="true"></script>
+}

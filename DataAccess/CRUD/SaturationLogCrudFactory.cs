@@ -1,3 +1,4 @@
+using Microsoft.Data.SqlClient;
 using SEGEDE_Grupo1.DataAccess.DAO;
 using SEGEDE_Grupo1.EntitiesDTOs;
 using SEGEDE_Grupo1.EntitiesDTOs.Entities;
@@ -41,6 +42,21 @@ public class SaturationLogCrudFactory : CrudFactory
     // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public override List<T> RetrieveAll<T>() =>
         throw new NotSupportedException("RetrieveAll is not supported for SaturationLog.");
+
+    // --- Overload transaccional (§37.25) ---
+
+    public void Create(BaseDTO baseDTO, SqlConnection conn, SqlTransaction tx)
+    {
+        var s = (SaturationLog)baseDTO;
+        var op = new Operation { ProcedureName = "CRE_SAT_LOG_PR" };
+        op.AddIntParameter("@FlushId", s.FlushId);
+        op.AddDecimalParameter("@PreviousInventory", s.PreviousInventory);
+        op.AddDecimalParameter("@NewInventory", s.NewInventory);
+        op.AddDecimalParameter("@ExcessEnergy", s.ExcessEnergy);
+        op.AddDateTimeParameter("@EventDate", s.EventDate);
+        op.AddDateTimeParameter("@Created", s.Created);
+        sqlDao.ExecuteProcedureInTransaction(op, conn, tx);
+    }
 
     // --- Custom methods ---
 

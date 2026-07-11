@@ -1,3 +1,4 @@
+using Microsoft.Data.SqlClient;
 using SEGEDE_Grupo1.DataAccess.DAO;
 using SEGEDE_Grupo1.EntitiesDTOs;
 using SEGEDE_Grupo1.EntitiesDTOs.Entities;
@@ -114,6 +115,26 @@ public class ForecastCrudFactory : CrudFactory
         op.AddIntParameter("@StartYear", startYear);
         op.AddDateTimeParameter("@Updated", updated);
         sqlDao.ExecuteProcedure(op);
+    }
+
+    // --- Overloads transaccionales (§37.25, ciclo ACID de Distribución Comercial) ---
+
+    public void UpdateStatus(int id, string status, DateTime updated, SqlConnection conn, SqlTransaction tx)
+    {
+        var op = new Operation { ProcedureName = "UPD_STATUS_FORECAST_PR" };
+        op.AddIntParameter("@Id", id);
+        op.AddStringParameter("@Status", status);
+        op.AddDateTimeParameter("@Updated", updated);
+        sqlDao.ExecuteProcedureInTransaction(op, conn, tx);
+    }
+
+    public void BlockMonth(int month, int year, DateTime updated, SqlConnection conn, SqlTransaction tx)
+    {
+        var op = new Operation { ProcedureName = "BLOCK_MONTH_FORECAST_PR" };
+        op.AddIntParameter("@Month", month);
+        op.AddIntParameter("@Year", year);
+        op.AddDateTimeParameter("@Updated", updated);
+        sqlDao.ExecuteProcedureInTransaction(op, conn, tx);
     }
 
     // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.

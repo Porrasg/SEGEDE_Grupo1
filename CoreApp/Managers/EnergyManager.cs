@@ -123,6 +123,19 @@ public class EnergyManager
         return _localBatteryCrudFactory.RetrieveByTurbine(turbineId) ?? throw new NotFoundException("Local battery not found for this turbine.");
     }
 
+    // Simulator Panel (adenda v3 §131.2): permite forzar la carga de una batería local para reproducir
+    // escenarios de prueba (saturación próxima, batería vacía) sin esperar ciclos de generación reales.
+    public void SetLocalBatteryCharge(int turbineId, decimal storedEnergy)
+    {
+        if (storedEnergy < 0)
+        {
+            throw new BusinessException("Battery charge cannot be negative.", "INVALID_BATTERY_CHARGE");
+        }
+
+        var battery = _localBatteryCrudFactory.RetrieveByTurbine(turbineId) ?? throw new NotFoundException("Local battery not found for this turbine.");
+        _localBatteryCrudFactory.UpdateEnergy(battery.Id, storedEnergy, TimeHelper.NowCR());
+    }
+
     // RF-027: Retorna el historial paginado de logs de generación de una turbina.
     public PagedResponse<EnergyGenerationLog> RetrieveGenerationHistory(int turbineId, PagedRequest p)
     {

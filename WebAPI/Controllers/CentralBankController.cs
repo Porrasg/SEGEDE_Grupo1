@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SEGEDE_Grupo1.CoreApp.Managers;
 using SEGEDE_Grupo1.EntitiesDTOs.DTOs;
+using SEGEDE_Grupo1.EntitiesDTOs.DTOs.Requests;
 using SEGEDE_Grupo1.EntitiesDTOs.Entities;
 
 namespace SEGEDE_Grupo1.WebAPI.Controllers;
@@ -8,7 +10,8 @@ namespace SEGEDE_Grupo1.WebAPI.Controllers;
 // Controlador REST para consultar el inventario global del Banco Central y bitácora de saturación (§14.7).
 [ApiController]
 [Route("api/[controller]")]
-public class CentralBankController : ControllerBase
+[Authorize(Roles = "Administrator,Engineer")]
+public class CentralBankController : SgdeControllerBase
 {
     private readonly CentralBankManager _centralBankManager = new();
 
@@ -26,5 +29,15 @@ public class CentralBankController : ControllerBase
     {
         var result = _centralBankManager.RetrieveLogs(new PagedRequest { Page = page, PageSize = pageSize });
         return Ok(new ApiResponse<PagedResponse<CentralBankLog>> { Success = true, Data = result });
+    }
+
+    // Método manejador que fija manualmente la capacidad efectiva del Banco Central (CB-01/CB-02). Solo Admin.
+    // Ruta faltante detectada en la auditoría de v2 §53 — CentralBankManager.SetManualCapacity ya existía sin endpoint que lo expusiera.
+    [Authorize(Roles = "Administrator")]
+    [HttpPut("ManualCapacity")]
+    public IActionResult SetManualCapacity([FromBody] SetManualCapacityRequest request)
+    {
+        _centralBankManager.SetManualCapacity(request, CallerUserId);
+        return Ok(new ApiResponse<object> { Success = true, Message = "Capacidad manual del Banco Central actualizada." });
     }
 }

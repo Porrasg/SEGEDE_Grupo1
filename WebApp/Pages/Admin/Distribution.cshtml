@@ -7,6 +7,7 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>@ViewData["Title"]</h2>
+        <a href="/Admin/Statements" class="btn btn-outline-secondary btn-sm"><i class="bi bi-file-earmark-text"></i> Ver Estados de Cuenta</a>
     </div>
         <div class="d-flex justify-content-between mb-3">
         <div class="d-flex gap-2">
@@ -32,3 +33,7 @@
         <tbody id="distDetailsBody"><tr><td colspan="5" class="text-center">Sin datos de distribución para este mes...</td></tr></tbody>
     </table>
 </div>
+
+@section Scripts {
+    <script src="~/js/pages-controller/DistributionViewController.js" asp-append-version="true"></script>
+}
