@@ -37,7 +37,7 @@ public class NotificationQueueCrudFactory : CrudFactory
         op.AddIntParameter("@Attempts", n.Attempts);
         op.AddNullableDateTimeParameter("@NextAttempt", n.NextAttempt);
         op.AddNullableDateTimeParameter("@SentDate", n.SentDate);
-        op.AddDateTimeParameter("@Updated", n.Updated);
+        op.AddDateTimeParameter("@Updated", n.Updated ?? DateTime.Now);
         sqlDao.ExecuteProcedure(op);
     }
 

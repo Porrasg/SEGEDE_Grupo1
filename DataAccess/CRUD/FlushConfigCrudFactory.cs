@@ -15,7 +15,7 @@ public class FlushConfigCrudFactory : CrudFactory
     public override void Update(BaseDTO baseDTO)
     {
         var c = (FlushConfig)baseDTO;
-        UpdateSingleton(c.ExecutionTime, c.IsAutomatic, c.Updated);
+        UpdateSingleton(c.ExecutionTime, c.IsAutomatic, c.Updated ?? DateTime.Now);
     }
 
     // Ejecuta el borrado lógico o desactivación del registro en la tabla relacional correspondiente.

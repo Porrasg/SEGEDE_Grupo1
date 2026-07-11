@@ -32,7 +32,7 @@ public class OtpAttemptCrudFactory : CrudFactory
         op.AddIntParameter("@ResendCount", otp.ResendCount);
         op.AddIntParameter("@FailedAttempts", otp.FailedAttempts);
         op.AddStringParameter("@Status", otp.Status);
-        op.AddDateTimeParameter("@Updated", otp.Updated);
+        op.AddDateTimeParameter("@Updated", otp.Updated ?? DateTime.Now);
         sqlDao.ExecuteProcedure(op);
     }
 
