@@ -37,6 +37,17 @@ public class CentralBankCrudFactory : CrudFactory
         return results.Count > 0 ? BuildCentralBank(results[0]) : null;
     }
 
+    // Inicialización única e idempotente de la fila singleton (Id=1). No usar Create(): está bloqueado a propósito
+    // para impedir inserciones fuera de este flujo de arranque/seed (§12.14, Singleton).
+    public void InitializeSingleton(decimal currentInventory, decimal automaticCapacity, DateTime created)
+    {
+        var op = new Operation { ProcedureName = "INIT_CENT_BANK_PR" };
+        op.AddDecimalParameter("@CurrentInventory", currentInventory);
+        op.AddDecimalParameter("@AutomaticCapacity", automaticCapacity);
+        op.AddDateTimeParameter("@Created", created);
+        sqlDao.ExecuteProcedure(op);
+    }
+
     // Función encargada de modificar y actualizar los campos operacionales de registros existentes.
     public void UpdateInventory(decimal currentInventory, DateTime updated)
     {
