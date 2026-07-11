@@ -1,3 +1,4 @@
+using Microsoft.Data.SqlClient;
 using SEGEDE_Grupo1.DataAccess.DAO;
 using SEGEDE_Grupo1.EntitiesDTOs;
 using SEGEDE_Grupo1.EntitiesDTOs.Entities;
@@ -45,6 +46,22 @@ public class CentralBankLogCrudFactory : CrudFactory
         var op = new Operation { ProcedureName = "RET_ALL_CB_LOG_PR" };
         var results = sqlDao.ExecuteQueryProcedure(op);
         return results.Select(r => (T)(object)BuildLog(r)).ToList();
+    }
+
+    // --- Overload transaccional (§37.25) ---
+
+    public void Create(BaseDTO baseDTO, SqlConnection conn, SqlTransaction tx)
+    {
+        var l = (CentralBankLog)baseDTO;
+        var op = new Operation { ProcedureName = "CRE_CB_LOG_PR" };
+        op.AddStringParameter("@MovementType", l.MovementType);
+        op.AddDecimalParameter("@Amount", l.Amount);
+        op.AddDecimalParameter("@ResultingInventory", l.ResultingInventory);
+        op.AddNullableIntParameter("@FlushId", l.FlushId);
+        op.AddNullableIntParameter("@DistributionId", l.DistributionId);
+        op.AddDateTimeParameter("@EventDate", l.EventDate);
+        op.AddDateTimeParameter("@Created", l.Created);
+        sqlDao.ExecuteProcedureInTransaction(op, conn, tx);
     }
 
     // --- Custom methods ---

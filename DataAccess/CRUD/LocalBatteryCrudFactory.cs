@@ -1,3 +1,4 @@
+using Microsoft.Data.SqlClient;
 using SEGEDE_Grupo1.DataAccess.DAO;
 using SEGEDE_Grupo1.EntitiesDTOs;
 using SEGEDE_Grupo1.EntitiesDTOs.Entities;
@@ -68,6 +69,24 @@ public class LocalBatteryCrudFactory : CrudFactory
     {
         var op = new Operation { ProcedureName = "RET_ALL_NONEMPTY_LOCAL_BAT_PR" };
         var results = sqlDao.ExecuteQueryProcedure(op);
+        return results.Select(BuildBattery).ToList();
+    }
+
+    // --- Overloads transaccionales (§37.25) ---
+
+    public void UpdateEnergy(int id, decimal storedEnergy, DateTime updated, SqlConnection conn, SqlTransaction tx)
+    {
+        var op = new Operation { ProcedureName = "UPD_ENERGY_LOCAL_BAT_PR" };
+        op.AddIntParameter("@Id", id);
+        op.AddDecimalParameter("@StoredEnergy", storedEnergy);
+        op.AddDateTimeParameter("@Updated", updated);
+        sqlDao.ExecuteProcedureInTransaction(op, conn, tx);
+    }
+
+    public List<LocalBattery> RetrieveAllNonEmpty(SqlConnection conn, SqlTransaction tx)
+    {
+        var op = new Operation { ProcedureName = "RET_ALL_NONEMPTY_LOCAL_BAT_PR" };
+        var results = sqlDao.ExecuteQueryInTransaction(op, conn, tx);
         return results.Select(BuildBattery).ToList();
     }
 

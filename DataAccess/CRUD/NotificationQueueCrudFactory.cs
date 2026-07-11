@@ -1,3 +1,4 @@
+using Microsoft.Data.SqlClient;
 using SEGEDE_Grupo1.DataAccess.DAO;
 using SEGEDE_Grupo1.EntitiesDTOs;
 using SEGEDE_Grupo1.EntitiesDTOs.Entities;
@@ -56,6 +57,26 @@ public class NotificationQueueCrudFactory : CrudFactory
     // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public override List<T> RetrieveAll<T>() =>
         throw new NotSupportedException("Use RetrieveByUser or RetrievePending for NotificationQueue.");
+
+    // --- Overload transaccional (§37.25) ---
+
+    public void Create(BaseDTO baseDTO, SqlConnection conn, SqlTransaction tx)
+    {
+        var n = (NotificationQueue)baseDTO;
+        var op = new Operation { ProcedureName = "CRE_NOTIF_PR" };
+        op.AddIntParameter("@UserId", n.UserId);
+        op.AddStringParameter("@RecipientEmail", n.RecipientEmail);
+        op.AddStringParameter("@NotificationType", n.NotificationType);
+        op.AddStringParameter("@Subject", n.Subject);
+        op.AddStringParameter("@Body", n.Body);
+        op.AddBoolParameter("@IsCritical", n.IsCritical);
+        op.AddStringParameter("@Status", n.Status);
+        op.AddIntParameter("@Attempts", n.Attempts);
+        op.AddNullableDateTimeParameter("@NextAttempt", n.NextAttempt);
+        op.AddNullableDateTimeParameter("@SentDate", n.SentDate);
+        op.AddDateTimeParameter("@Created", n.Created);
+        sqlDao.ExecuteProcedureInTransaction(op, conn, tx);
+    }
 
     // --- Custom methods ---
 

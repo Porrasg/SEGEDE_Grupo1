@@ -163,6 +163,28 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ── Entrada suave de contenido por página (Enmienda 3 v3 — feedback visual) ── */
+@keyframes sgde-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+main > .container,
+main > .container-fluid {
+  animation: sgde-fade-in var(--sgde-transition-default) ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  main > .container,
+  main > .container-fluid {
+    animation: none;
+  }
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--sgde-font-heading);
   color: var(--sgde-heading);
@@ -914,4 +936,36 @@ main[role="main"] {
     text-align: left !important;
     margin-bottom: var(--sgde-space-3);
   }
+}
+
+
+/* ==========================================================================
+   COMPONENT: SweetAlert2 (alertas y confirmaciones — Enmienda 3/4 v3)
+   SweetAlert2 renderiza fuera del árbol de Bootstrap, así que se estiliza
+   explícitamente con los mismos tokens semánticos del resto del sistema.
+   ========================================================================== */
+
+.swal2-popup.sgde-swal-light,
+.swal2-popup.sgde-swal-dark {
+  font-family: var(--sgde-font-body);
+  border-radius: var(--sgde-radius-lg);
+  box-shadow: var(--sgde-shadow-md);
+}
+
+.swal2-popup.sgde-swal-light {
+  background-color: var(--sgde-surface-card);
+  color: var(--sgde-body);
+}
+
+.swal2-popup.sgde-swal-light .swal2-title,
+.swal2-popup.sgde-swal-light .swal2-html-container {
+  color: var(--sgde-body);
+}
+
+.swal2-popup.sgde-swal-light.swal2-toast {
+  border: 1px solid var(--sgde-border);
+}
+
+.swal2-timer-progress-bar {
+  background: var(--sgde-primary) !important;
 }
