@@ -312,6 +312,20 @@
   color: #FFFFFF !important;
 }
 
+/* Bootstrap no remapea bg-info/bg-light por tema; sin esto, .text-dark (que SÍ se
+   vuelve blanco en modo oscuro, ver regla de .text-dark más abajo) queda como texto
+   casi invisible sobre estos fondos claros fijos. */
+[data-bs-theme="dark"] .badge.bg-info {
+  background-color: var(--sgde-primary) !important;
+  color: #FFFFFF !important;
+}
+
+[data-bs-theme="dark"] .badge.bg-light {
+  background-color: var(--sgde-surface-elevated) !important;
+  color: var(--sgde-body) !important;
+  border-color: var(--sgde-border) !important;
+}
+
 /* Domain badges in dark mode */
 [data-bs-theme="dark"] .badge-domain-active {
   background-color: var(--sgde-state-active-bg);
@@ -481,4 +495,34 @@
   background: linear-gradient(135deg, #7A52C4, #4facfe);
   box-shadow: 0 4px 15px rgba(0, 242, 254, 0.35);
   border: none;
+}
+
+/* ── SweetAlert2 (modo oscuro) ─────────────────────────────────────────── */
+.swal2-popup.sgde-swal-dark {
+  background-color: var(--sgde-surface-card);
+  color: var(--sgde-body);
+  border: 1px solid var(--sgde-border);
+}
+
+.swal2-popup.sgde-swal-dark .swal2-title,
+.swal2-popup.sgde-swal-dark .swal2-html-container {
+  color: var(--sgde-body);
+}
+
+.swal2-popup.sgde-swal-dark .swal2-icon.swal2-warning {
+  border-color: var(--sgde-state-maintenance);
+  color: var(--sgde-state-maintenance);
+}
+
+.swal2-popup.sgde-swal-dark .swal2-icon.swal2-error {
+  border-color: var(--sgde-state-damaged);
+  color: var(--sgde-state-damaged);
+}
+
+.swal2-popup.sgde-swal-dark .swal2-icon.swal2-success .swal2-success-ring {
+  border-color: var(--sgde-state-active);
+}
+
+[data-bs-theme="dark"] .swal2-backdrop-show {
+  background: rgba(0, 0, 0, 0.6);
 }

@@ -33,6 +33,16 @@ public class MaintenanceController : SgdeControllerBase
         return Ok(new ApiResponse<object> { Success = true, Message = "Mantenimiento completado y turbina reactivada." });
     }
 
+    // Método manejador que cancela un mantenimiento programado (solo permitido en estado Scheduled). Operado por Engineer.
+    // Ruta faltante detectada al revisar OperationsComplementaryViewController.js — MaintenanceManager.Cancel ya existía sin endpoint.
+    [Authorize(Roles = "Engineer")]
+    [HttpPost("Cancel/{maintenanceId:int}")]
+    public IActionResult Cancel(int maintenanceId)
+    {
+        _maintenanceManager.Cancel(maintenanceId, CallerUserId);
+        return Ok(new ApiResponse<object> { Success = true, Message = "Mantenimiento cancelado con éxito." });
+    }
+
     // Función de consulta que lista el historial de mantenimientos de una turbina en específico.
     [HttpGet("ByTurbine/{turbineId:int}")]
     public IActionResult GetByTurbine(int turbineId)

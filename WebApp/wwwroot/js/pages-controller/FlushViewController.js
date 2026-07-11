@@ -81,24 +81,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (manualBtn) {
         manualBtn.addEventListener("click", function () {
-            if (!confirm("¿Ejecutar el flush manual ahora? Esta acción trasladará toda la energía disponible de las baterías locales al Banco Central y no se puede deshacer.")) return;
+            notify.confirm("¿Ejecutar el flush manual ahora? Esta acción trasladará toda la energía disponible de las baterías locales al Banco Central y no se puede deshacer.", { dangerous: true, confirmText: "Ejecutar flush" }).then(function (ok) {
+                if (!ok) return;
+                manualBtn.disabled = true;
+                const original = manualBtn.innerHTML;
+                manualBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Ejecutando...';
+                if (statusBadge) { statusBadge.textContent = "En ejecución"; statusBadge.className = "badge bg-warning text-dark"; }
 
-            manualBtn.disabled = true;
-            const original = manualBtn.innerHTML;
-            manualBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Ejecutando...';
-            if (statusBadge) { statusBadge.textContent = "En ejecución"; statusBadge.className = "badge bg-warning text-dark"; }
-
-            apiClient.post("Flush/ExecuteManual", {})
-                .done(function () {
-                    notify.success("Flush ejecutado con éxito hacia el Banco Central.");
-                    loadHistory();
-                })
-                .fail(function (xhr) { handleApiError(xhr); })
-                .always(function () {
-                    manualBtn.disabled = false;
-                    manualBtn.innerHTML = original;
-                    if (statusBadge) { statusBadge.textContent = "Inactivo"; statusBadge.className = "badge bg-success"; }
-                });
+                apiClient.post("Flush/ExecuteManual", {})
+                    .done(function () {
+                        notify.success("Flush ejecutado con éxito hacia el Banco Central.");
+                        loadHistory();
+                    })
+                    .fail(function (xhr) { handleApiError(xhr); })
+                    .always(function () {
+                        manualBtn.disabled = false;
+                        manualBtn.innerHTML = original;
+                        if (statusBadge) { statusBadge.textContent = "Inactivo"; statusBadge.className = "badge bg-success"; }
+                    });
+            });
         });
     }
 });

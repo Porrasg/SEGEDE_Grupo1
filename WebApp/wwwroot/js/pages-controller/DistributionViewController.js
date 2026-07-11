@@ -108,22 +108,23 @@ document.addEventListener("DOMContentLoaded", function () {
             const month = parseInt(monthSelect.value);
             const year = parseInt(yearInput?.value || now.getFullYear());
 
-            if (!confirm(`¿Ejecutar la distribución comercial de ${month}/${year}? Esta acción cierra el período, genera estados de cuenta y no se puede deshacer.`)) return;
+            notify.confirm(`¿Ejecutar la distribución comercial de ${month}/${year}? Esta acción cierra el período, genera estados de cuenta y no se puede deshacer.`, { dangerous: true, confirmText: "Ejecutar distribución" }).then(function (ok) {
+                if (!ok) return;
+                executeBtn.disabled = true;
+                const original = executeBtn.innerHTML;
+                executeBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Ejecutando...';
 
-            executeBtn.disabled = true;
-            const original = executeBtn.innerHTML;
-            executeBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Ejecutando...';
-
-            apiClient.post(`Distribution/ExecuteMonthly?month=${month}&year=${year}`, {})
-                .done(function () {
-                    notify.success("Distribución comercial ejecutada con éxito.");
-                    consultDistribution();
-                })
-                .fail(function (xhr) { handleApiError(xhr); })
-                .always(function () {
-                    executeBtn.disabled = false;
-                    executeBtn.innerHTML = original;
-                });
+                apiClient.post(`Distribution/ExecuteMonthly?month=${month}&year=${year}`, {})
+                    .done(function () {
+                        notify.success("Distribución comercial ejecutada con éxito.");
+                        consultDistribution();
+                    })
+                    .fail(function (xhr) { handleApiError(xhr); })
+                    .always(function () {
+                        executeBtn.disabled = false;
+                        executeBtn.innerHTML = original;
+                    });
+            });
         });
     }
 });

@@ -75,4 +75,13 @@ public class TurbinesController : SgdeControllerBase
         var h = _turbineManager.RetrieveHistory(id);
         return Ok(new ApiResponse<TurbineHistoryResponse> { Success = true, Data = h });
     }
+
+    // Método manejador que fuerza la verificación de mantenimiento vencido (RF-018, Simulator Panel §131.4).
+    // Ruta faltante detectada al construir el Simulator Panel — TurbineManager.CheckOverdueMaintenance ya existía sin endpoint.
+    [HttpPost("CheckOverdueMaintenance")]
+    public IActionResult CheckOverdueMaintenanceEndpoint()
+    {
+        _turbineManager.CheckOverdueMaintenance();
+        return Ok(new ApiResponse<object> { Success = true, Message = "Verificación de mantenimiento vencido ejecutada." });
+    }
 }

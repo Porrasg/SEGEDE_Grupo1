@@ -132,11 +132,7 @@ function initLandingLogin() {
                     btn.disabled = false;
                     btn.innerHTML = originalText;
                 }
-                if (typeof handleApiError === "function") {
-                    handleApiError(xhr);
-                } else {
-                    alert("Error al iniciar sesión: Verifique sus credenciales.");
-                }
+                handleApiError(xhr);
             });
     });
 }

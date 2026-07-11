@@ -169,16 +169,17 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         function cancelForecast(id) {
-            if (!confirm("¿Está seguro que desea cancelar este pronóstico de demanda?")) return;
-
-            apiClient.post("Forecast/Cancel/" + id)
-                .done(function () {
-                    notify.info("Pronóstico cancelado.");
-                    loadForecasts();
-                })
-                .fail(function (xhr) {
-                    handleApiError(xhr);
-                });
+            notify.confirm("¿Está seguro que desea cancelar este pronóstico de demanda?", { dangerous: true, confirmText: "Cancelar pronóstico" }).then(function (ok) {
+                if (!ok) return;
+                apiClient.post("Forecast/Cancel/" + id)
+                    .done(function () {
+                        notify.info("Pronóstico cancelado.");
+                        loadForecasts();
+                    })
+                    .fail(function (xhr) {
+                        handleApiError(xhr);
+                    });
+            });
         }
     }
 

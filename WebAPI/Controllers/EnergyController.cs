@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SEGEDE_Grupo1.CoreApp.Managers;
 using SEGEDE_Grupo1.EntitiesDTOs.DTOs;
+using SEGEDE_Grupo1.EntitiesDTOs.DTOs.Requests;
 using SEGEDE_Grupo1.EntitiesDTOs.Entities;
 
 namespace SEGEDE_Grupo1.WebAPI.Controllers;
@@ -20,6 +21,14 @@ public class EnergyController : SgdeControllerBase
     {
         _energyManager.RunSimulationCycle();
         return Ok(new ApiResponse<object> { Success = true, Message = "Ciclo de simulación de energía ejecutado correctamente." });
+    }
+
+    // Método manejador que fuerza la carga de la batería local de una turbina (Simulator Panel, adenda v3 §131.2).
+    [HttpPost("SetBatteryCharge")]
+    public IActionResult SetBatteryCharge([FromBody] SetBatteryChargeRequest request)
+    {
+        _energyManager.SetLocalBatteryCharge(request.TurbineId, request.StoredEnergy);
+        return Ok(new ApiResponse<object> { Success = true, Message = "Carga de batería local actualizada." });
     }
 
     // Función de consulta que obtiene el estado actual y nivel de carga de la batería local de una turbina.
