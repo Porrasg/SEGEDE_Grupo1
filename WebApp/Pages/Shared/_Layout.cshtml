@@ -22,15 +22,27 @@
         <partial name="_Navbar" />
     </header>
 
-    <div class="container-fluid px-4">
-        <main role="main" class="pb-5">
-            @RenderBody()
-        </main>
+    <!-- Flex-grow wrapper: pushes footer to bottom on short pages -->
+    <div class="site-content-wrapper">
+        <div class="container-fluid px-4 pt-4">
+            <main role="main" class="pb-5">
+                @RenderBody()
+            </main>
+        </div>
     </div>
 
-    <footer class="border-top py-3 text-center mt-auto" style="background-color: var(--sgde-surface-card); border-color: var(--sgde-border) !important; color: var(--sgde-text-muted);">
-        <div class="container">
-            <small class="fw-semibold">&copy; 2026 — SGDE (Sistema de Gestión y Distribución de Energía) — Arquitectura N-Tier</small>
+    <footer class="site-footer">
+        <div class="site-footer__accent"></div>
+        <div class="container py-3">
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
+                <small class="fw-semibold">
+                    <i class="bi bi-lightning-charge-fill me-1" style="color: var(--sgde-primary);"></i>
+                    &copy; 2026 — SGDE (Sistema de Gestión y Distribución de Energía)
+                </small>
+                <small class="text-muted">
+                    Arquitectura N-Tier · CoreForge Technologies
+                </small>
+            </div>
         </div>
     </footer>
 

@@ -138,8 +138,18 @@ public class UsersController : SgdeControllerBase
         return Ok(new ApiResponse<object> { Success = true, Message = "Usuario actualizado correctamente." });
     }
 
+    // Método manejador para que el Buyer autenticado edite su propio perfil (RF-010, §14.1). Ownership implícito: siempre opera sobre CallerUserId.
+    [Authorize(Roles = "Administrator,Engineer,Buyer")]
+    [HttpPut("UpdateProfile")]
+    public IActionResult UpdateProfile([FromBody] UpdateProfileRequest request)
+    {
+        _userManager.UpdateProfile(request, CallerUserId);
+        return Ok(new ApiResponse<object> { Success = true, Message = "Perfil actualizado correctamente." });
+    }
+
     // Método manejador para borrado lógico / desactivación de un usuario (§14.1).
-    [Authorize(Roles = "Administrator")]
+    // Buyer permitido: el manager valida ownership (solo puede desactivar su propia cuenta).
+    [Authorize(Roles = "Administrator,Buyer")]
     [HttpPost("Deactivate")]
     public IActionResult Deactivate([FromBody] DeactivateUserRequest request)
     {
