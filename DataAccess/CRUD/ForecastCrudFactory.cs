@@ -30,7 +30,7 @@ public class ForecastCrudFactory : CrudFactory
         op.AddIntParameter("@Id", f.Id);
         op.AddDecimalParameter("@AmountMWh", f.AmountMWh);
         op.AddStringParameter("@Status", f.Status);
-        op.AddDateTimeParameter("@Updated", f.Updated);
+        op.AddDateTimeParameter("@Updated", f.Updated ?? DateTime.Now);
         sqlDao.ExecuteProcedure(op);
     }
 
