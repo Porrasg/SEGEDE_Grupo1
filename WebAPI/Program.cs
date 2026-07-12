@@ -9,9 +9,21 @@ using SEGEDE_Grupo1.CoreApp.Managers;
 var builder = WebApplication.CreateBuilder(args);
 
 // Configuración de cadena de conexión a base de datos relacional para ADO.NET sin ORM (§11.1).
-string connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+string connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? "Server=tcp:segede-sql-server.database.windows.net,1433;Initial Catalog=SEGEDE_DB;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
 SqlDao.Configure(connectionString);
+
+// Puente configuración → variables de entorno para los managers sin DI (NotificationManager lee
+// "Smtp:*" y OtpServiceClient lee "OtpService:*" vía Environment.GetEnvironmentVariable).
+// Así las credenciales viven en appsettings.Development.json (gitignored) y no en archivos versionados.
+foreach (var key in new[] { "Smtp:Host", "Smtp:Port", "Smtp:User", "Smtp:Password", "Smtp:FromAddress", "Smtp:EnableSsl", "OtpService:BaseUrl", "OtpService:ApiKey" })
+{
+    var value = builder.Configuration[key];
+    if (!string.IsNullOrWhiteSpace(value))
+    {
+        Environment.SetEnvironmentVariable(key, value);
+    }
+}
 
 // Add services to the container.
 builder.Services.AddControllers();

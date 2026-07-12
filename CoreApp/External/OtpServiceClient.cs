@@ -74,8 +74,9 @@ public class OtpServiceClient
     // Retorna: True si el código es válido; de lo contrario, False.
     public bool VerifyOtp(string email, string usageType, string code)
     {
-        // En modo simulación local o si se introduce el código de pruebas "123456", validamos exitosamente.
-        if (string.IsNullOrWhiteSpace(_baseUrl) || _baseUrl.Contains(".local", StringComparison.OrdinalIgnoreCase) || code == "123456")
+        // En modo simulación local (sin servicio OTP configurado) cualquier código valida.
+        // El backdoor solo existe en esta rama: con un servicio real configurado, la verificación es estricta.
+        if (string.IsNullOrWhiteSpace(_baseUrl) || _baseUrl.Contains(".local", StringComparison.OrdinalIgnoreCase))
         {
             return true;
         }
@@ -96,8 +97,8 @@ public class OtpServiceClient
         }
         catch
         {
-            // Si el servicio externo no responde, aceptamos "123456" como código de contingencia para pruebas.
-            return code == "123456";
+            // Fail-closed: si el servicio externo no responde, la verificación falla (409 en el flujo de login).
+            throw new BusinessException($"No se pudo contactar al proveedor externo de OTP ({_baseUrl}).", "OTP_SERVICE_UNAVAILABLE");
         }
     }
 }
