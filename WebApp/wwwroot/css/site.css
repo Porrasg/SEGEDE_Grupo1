@@ -158,15 +158,55 @@ body {
   font-family: var(--sgde-font-body);
   font-size: var(--sgde-fs-base);
   line-height: var(--sgde-lh-base);
-  margin-bottom: var(--sgde-space-6);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Sticky footer: flex column pushes footer to bottom */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin: 0;
 }
 
-/* ── Entrada suave de contenido por página (Enmienda 3 v3 — feedback visual) ── */
+/* Flex-grow wrapper: absorbs remaining vertical space */
+.site-content-wrapper {
+  flex: 1 0 auto;
+}
+
+/* ── Site Footer (sticky via flexbox) ─────────────────────────────────── */
+.site-footer {
+  flex-shrink: 0;
+  background-color: var(--sgde-surface-card);
+  border-top: 1px solid var(--sgde-border);
+  color: var(--sgde-text-muted);
+  margin-top: auto;
+  position: relative;
+}
+
+.site-footer__accent {
+  height: 3px;
+  background: linear-gradient(90deg, var(--sgde-primary), #00b4d8, var(--sgde-state-active));
+}
+
+/* ── Page Header (title + subtitle) ──────────────────────────────────── */
+.page-header {
+  margin-bottom: var(--sgde-space-5);
+}
+
+.page-header h2 {
+  margin-bottom: var(--sgde-space-1);
+}
+
+.page-header .page-subtitle {
+  color: var(--sgde-text-muted);
+  font-size: var(--sgde-fs-sm);
+  font-weight: var(--sgde-fw-regular);
+  margin: 0;
+}
+
+/* ── Entrada suave de contenido por página ── */
 @keyframes sgde-fade-in {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 main > .container,
@@ -630,7 +670,16 @@ table.dataTable thead th {
    COMPONENT: Modals
    ========================================================================== */
 
+.modal {
+  z-index: 1060 !important;
+}
+
+.modal-backdrop {
+  z-index: 1050 !important;
+}
+
 .modal-content {
+
   background-color: var(--sgde-modal-bg);
   border: 1px solid var(--sgde-modal-border);
   border-radius: var(--sgde-radius-lg);
@@ -899,12 +948,12 @@ textarea:focus-visible,
 
 /* ── Page Load Entry Animation ───────────────────────────────────────── */
 @keyframes fadeInSlideUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 main[role="main"] {
-  animation: fadeInSlideUp 350ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeInSlideUp 350ms ease-out;
 }
 
 
@@ -926,7 +975,8 @@ main[role="main"] {
     border-radius: var(--sgde-radius-md);
   }
 
-  .btn {
+  /* Only expand buttons that are NOT inside tables or btn-groups */
+  .btn:not(td .btn):not(.btn-group .btn):not(.filter-toolbar .btn) {
     width: 100%;
     margin-bottom: var(--sgde-space-2);
   }
@@ -935,6 +985,15 @@ main[role="main"] {
   .dataTables_wrapper .dataTables_length {
     text-align: left !important;
     margin-bottom: var(--sgde-space-3);
+  }
+
+  .filter-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-chips-container {
+    justify-content: center;
   }
 }
 
