@@ -19,7 +19,7 @@
 GO
 CREATE PROCEDURE CRE_USER_PR
     @Identification VARCHAR(12), @FirstName VARCHAR(150), @LastName VARCHAR(150),
-    @BirthDate DATE, @Phone VARCHAR(20), @Email VARCHAR(250), @PhotoUrl VARCHAR(500) = NULL,
+    @BirthDate DATE, @Phone VARCHAR(20), @Email VARCHAR(250), @PhotoUrl VARCHAR(MAX) = NULL,
     @PasswordHash VARCHAR(512), @Role VARCHAR(30), @Status VARCHAR(30), @Created DATETIME2
 AS
 BEGIN
@@ -94,7 +94,7 @@ BEGIN
 END
 GO
 CREATE PROCEDURE UPD_PROFILE_USER_PR
-    @Id INT, @Phone VARCHAR(20), @PhotoUrl VARCHAR(500) = NULL, @PasswordHash VARCHAR(512) = NULL, @Updated DATETIME2
+    @Id INT, @Phone VARCHAR(20), @PhotoUrl VARCHAR(MAX) = NULL, @PasswordHash VARCHAR(512) = NULL, @Updated DATETIME2
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -125,14 +125,19 @@ GO
 /* ============================================================================
    OTP ATTEMPTS
    ============================================================================ */
+/* NOTA (2026-07-11): @OtpCode y @CodeExpiration son opcionales para mantener compatibilidad
+   entre ramas del equipo: la rama Yorzeth no los envía (el código vive en el servicio OTP
+   externo, §13.3) y otra rama del equipo sí los persiste. Las columnas se agregaron a
+   tblOtpAttempts directamente en la BD compartida por esa otra rama. */
 CREATE PROCEDURE CRE_OTP_ATTEMPT_PR
-    @UserId INT, @UsageType VARCHAR(20), @ResendCount INT, @FailedAttempts INT, @Status VARCHAR(15),
+    @UserId INT, @UsageType NVARCHAR(50), @OtpCode NVARCHAR(6) = NULL, @CodeExpiration DATETIME2 = NULL,
+    @ResendCount INT, @FailedAttempts INT, @Status NVARCHAR(20),
     @StartDate DATETIME2, @WindowExpiration DATETIME2, @Created DATETIME2
 AS
 BEGIN
     SET NOCOUNT ON;
-    INSERT INTO tblOtpAttempts (UserId, UsageType, ResendCount, FailedAttempts, Status, StartDate, WindowExpiration, Created)
-    VALUES (@UserId, @UsageType, @ResendCount, @FailedAttempts, @Status, @StartDate, @WindowExpiration, @Created);
+    INSERT INTO tblOtpAttempts (UserId, UsageType, OtpCode, CodeExpiration, ResendCount, FailedAttempts, Status, StartDate, WindowExpiration, Created)
+    VALUES (@UserId, @UsageType, @OtpCode, @CodeExpiration, @ResendCount, @FailedAttempts, @Status, @StartDate, @WindowExpiration, @Created);
 END
 GO
 CREATE PROCEDURE UPD_OTP_ATTEMPT_PR @Id INT, @ResendCount INT, @FailedAttempts INT, @Status VARCHAR(15), @Updated DATETIME2
@@ -783,7 +788,7 @@ GO
    FORECAST
    ============================================================================ */
 CREATE PROCEDURE CRE_FORECAST_PR
-    @BuyerId INT, @Month TINYINT, @Year SMALLINT, @AmountMWh DECIMAL(18,4), @Status VARCHAR(15), @Created DATETIME2
+    @BuyerId INT, @Month INT, @Year INT, @AmountMWh DECIMAL(18,4), @Status VARCHAR(15), @Created DATETIME2
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -819,14 +824,14 @@ BEGIN
     SELECT * FROM tblForecast WHERE BuyerId=@BuyerId ORDER BY Year DESC, Month DESC;
 END
 GO
-CREATE PROCEDURE RET_BY_MONTH_FORECAST_PR @Month TINYINT, @Year SMALLINT
+CREATE PROCEDURE RET_BY_MONTH_FORECAST_PR @Month INT, @Year INT
 AS
 BEGIN
     SET NOCOUNT ON;
     SELECT * FROM tblForecast WHERE Month=@Month AND Year=@Year;
 END
 GO
-CREATE PROCEDURE RET_ACTIVE_BY_BUYER_MONTH_FORECAST_PR @BuyerId INT, @Month TINYINT, @Year SMALLINT
+CREATE PROCEDURE RET_ACTIVE_BY_BUYER_MONTH_FORECAST_PR @BuyerId INT, @Month INT, @Year INT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -840,7 +845,7 @@ BEGIN
     UPDATE tblForecast SET Status=@Status, Updated=@Updated WHERE Id=@Id;
 END
 GO
-CREATE PROCEDURE BLOCK_MONTH_FORECAST_PR @Month TINYINT, @Year SMALLINT, @Updated DATETIME2
+CREATE PROCEDURE BLOCK_MONTH_FORECAST_PR @Month INT, @Year INT, @Updated DATETIME2
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -848,7 +853,7 @@ BEGIN
     WHERE Month=@Month AND Year=@Year AND Status IN ('Pending','Modified');
 END
 GO
-CREATE PROCEDURE CANCEL_BEYOND_3M_FORECAST_PR @BuyerId INT, @StartMonth TINYINT, @StartYear SMALLINT, @Updated DATETIME2
+CREATE PROCEDURE CANCEL_BEYOND_3M_FORECAST_PR @BuyerId INT, @StartMonth INT, @StartYear INT, @Updated DATETIME2
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -864,7 +869,7 @@ GO
    COMMERCIAL DISTRIBUTION
    ============================================================================ */
 CREATE PROCEDURE CRE_COMM_DIST_PR
-    @Month TINYINT, @Year SMALLINT, @ExecutionDate DATETIME2, @AvailableInventory DECIMAL(18,4),
+    @Month INT, @Year INT, @ExecutionDate DATETIME2, @AvailableInventory DECIMAL(18,4),
     @TotalDemand DECIMAL(18,4), @DistributedEnergy DECIMAL(18,4), @RoundingResidual DECIMAL(18,4),
     @Scenario VARCHAR(20), @Created DATETIME2
 AS
@@ -888,7 +893,7 @@ BEGIN
     SELECT * FROM tblCommercialDistribution ORDER BY Year DESC, Month DESC;
 END
 GO
-CREATE PROCEDURE RET_BY_MONTH_COMM_DIST_PR @Month TINYINT, @Year SMALLINT
+CREATE PROCEDURE RET_BY_MONTH_COMM_DIST_PR @Month INT, @Year INT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -1023,7 +1028,7 @@ GO
    ACCOUNT STATEMENT (WORM parcial)
    ============================================================================ */
 CREATE PROCEDURE CRE_ACCT_STMT_PR
-    @BuyerId INT, @DistributionId INT, @ForecastId INT, @Month TINYINT, @Year SMALLINT,
+    @BuyerId INT, @DistributionId INT, @ForecastId INT, @Month INT, @Year INT,
     @AssignedMWh DECIMAL(18,4), @UnitPrice DECIMAL(18,4), @TaxPercentage DECIMAL(18,4),
     @Subtotal DECIMAL(18,4), @TaxAmount DECIMAL(18,4), @Total DECIMAL(18,4), @Status VARCHAR(10),
     @RevisionNumber INT, @ParentId INT = NULL, @AnnulmentReason VARCHAR(500) = NULL, @IssueDate DATETIME2, @Created DATETIME2
@@ -1071,7 +1076,7 @@ BEGIN
     UPDATE tblAccountStatement SET Status=@Status, AnnulmentReason=@AnnulmentReason, Updated=@Updated WHERE Id=@Id;
 END
 GO
-CREATE PROCEDURE RET_CURRENT_VERSION_ACCT_STMT_PR @BuyerId INT, @Month TINYINT, @Year SMALLINT
+CREATE PROCEDURE RET_CURRENT_VERSION_ACCT_STMT_PR @BuyerId INT, @Month INT, @Year INT
 AS
 BEGIN
     SET NOCOUNT ON;
