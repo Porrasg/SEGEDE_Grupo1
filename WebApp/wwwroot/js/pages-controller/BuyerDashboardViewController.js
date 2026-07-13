@@ -134,42 +134,75 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    // Foto nueva seleccionada en el perfil (data-URL base64, redimensionada en el cliente).
+    let profilePhotoDataUrl = null;
+
     function loadBuyerProfile() {
         apiClient.get("Users/" + userId)
             .done(function (res) {
                 const u = res?.data || res?.Data || {};
-                setText("profName", u.name || u.Name || "Comprador SGDE");
+                const fullName = [u.firstName || u.FirstName, u.lastName || u.LastName].filter(Boolean).join(" ");
+                setText("profName", fullName || "Comprador SGDE");
                 setText("profEmail", u.email || u.Email || "-");
                 setText("profId", u.identification || u.Identification || "-");
-                
+
                 const created = u.created || u.Created;
                 setText("profDate", created ? new Date(created).toLocaleDateString("es-CR") : "-");
 
                 const phoneInput = document.getElementById("pPhone");
-                if (phoneInput) phoneInput.value = u.phoneNumber || u.PhoneNumber || "";
+                if (phoneInput) phoneInput.value = u.phone || u.Phone || "";
+
+                const photo = u.photoUrl || u.PhotoUrl;
+                const imgEl = document.getElementById("profilePhoto");
+                if (photo && imgEl) imgEl.src = photo;
             })
             .fail(function (xhr) {
                 handleApiError(xhr);
             });
     }
 
+    // Redimensiona la foto elegida (máx. 256px) y muestra preview inmediato en el avatar.
+    const pPhotoInput = document.getElementById("pPhoto");
+    if (pPhotoInput) {
+        pPhotoInput.addEventListener("change", function () {
+            const file = this.files?.[0];
+            if (!file) { profilePhotoDataUrl = null; return; }
+            const img = new Image();
+            img.onload = function () {
+                const MAX = 256;
+                const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+                const canvas = document.createElement("canvas");
+                canvas.width = Math.round(img.width * scale);
+                canvas.height = Math.round(img.height * scale);
+                canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+                profilePhotoDataUrl = canvas.toDataURL("image/jpeg", 0.82);
+                URL.revokeObjectURL(img.src);
+                const imgEl = document.getElementById("profilePhoto");
+                if (imgEl) imgEl.src = profilePhotoDataUrl;
+            };
+            img.onerror = function () {
+                URL.revokeObjectURL(img.src);
+                notify.error("No se pudo leer la imagen seleccionada.");
+            };
+            img.src = URL.createObjectURL(file);
+        });
+    }
+
     function updateProfile() {
         const phone = document.getElementById("pPhone")?.value.trim();
-        const currPass = document.getElementById("pCurrPass")?.value;
         const newPass = document.getElementById("pNewPass")?.value;
 
         const submitBtn = document.querySelector("#profileForm button[type='submit']");
         if (submitBtn) {
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Guardando...';
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
         }
 
-        apiClient.put("Users/Update", {
-            userId: parseInt(userId),
-            phoneNumber: phone,
-            currentPassword: currPass || null,
-            newPassword: newPass || null,
-            role: "Buyer"
+        // Users/UpdateProfile opera siempre sobre el usuario autenticado (ownership implícito en el backend).
+        apiClient.put("Users/UpdateProfile", {
+            phone: phone,
+            photoUrl: profilePhotoDataUrl,
+            newPassword: newPass || null
         }).done(function () {
             notify.success("Datos de perfil y seguridad actualizados.");
             if (document.getElementById("pCurrPass")) document.getElementById("pCurrPass").value = "";

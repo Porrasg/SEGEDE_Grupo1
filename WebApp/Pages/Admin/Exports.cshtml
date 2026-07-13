@@ -12,7 +12,11 @@
         <input type="text" class="form-control" id="exportSearch" placeholder="Buscar por usuario o formato..." style="max-width: 300px;">
     </div>
     <table class="table table-striped">
-        <thead><tr><th>ID</th><th>Fecha/Hora</th><th>Usuario</th><th>Rol</th><th>Tipo Exportación</th><th>Formato</th><th>Registros</th></tr></thead>
-        <tbody id="exportsBody"><tr><td colspan="7" class="text-center">Cargando bitácora de exportaciones...</td></tr></tbody>
+        <thead><tr><th>ID</th><th>Fecha/Hora</th><th>Usuario</th><th>Rol</th><th>Tipo Exportación</th><th>Formato</th></tr></thead>
+        <tbody id="exportsBody"><tr><td colspan="6" class="text-center">Cargando bitácora de exportaciones...</td></tr></tbody>
     </table>
 </div>
+
+@section Scripts {
+    <script src="~/js/pages-controller/AdminExportsViewController.js" asp-append-version="true"></script>
+}

@@ -14,4 +14,7 @@
   <Folder Name="/4_WebApp/">
     <Project Path="WebApp/WebApp.csproj" />
   </Folder>
+  <Folder Name="/5_OtpService/">
+    <Project Path="OtpService/OtpService.csproj" />
+  </Folder>
 </Solution>

@@ -84,11 +84,22 @@ public class ExceptionHandlingMiddleware
         await context.Response.WriteAsync(jsonResponse);
     }
 
-    // Función de cálculo aritmético y lógico para determinar si un código de error representa un conflicto de recursos (HTTP 409).
+    // Códigos de negocio que representan un conflicto de estado/recurso y deben mapear a HTTP 409.
+    private static readonly HashSet<string> ConflictCodes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "OTP_SERVICE_UNAVAILABLE",
+        "FLUSH_IN_PROGRESS",
+        "DISTRIBUTION_ALREADY_EXECUTED",
+        "ALREADY_ANNULLED"
+    };
+
+    // Determina si un código de error representa un conflicto de recursos (HTTP 409),
+    // por lista explícita o por convención de nombre (EXISTS/CONFLICT/DUPLICATE).
     private static bool IsConflictCode(string? code)
     {
         if (string.IsNullOrEmpty(code)) return false;
-        return code.Contains("EXISTS", StringComparison.OrdinalIgnoreCase) ||
+        return ConflictCodes.Contains(code) ||
+               code.Contains("EXISTS", StringComparison.OrdinalIgnoreCase) ||
                code.Contains("CONFLICT", StringComparison.OrdinalIgnoreCase) ||
                code.Contains("DUPLICATE", StringComparison.OrdinalIgnoreCase);
     }
