@@ -22,9 +22,16 @@
                             <label class="form-label">Código de Activación (6 dígitos)</label>
                             <input type="text" class="form-control text-center fs-4" id="actOtp" maxlength="6" required>
                         </div>
-                        <div class="d-grid">
+                        <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-success">Activar Cuenta</button>
+                            <button type="button" class="btn btn-outline-secondary" id="resendActivationBtn">
+                                <i class="bi bi-arrow-repeat" aria-hidden="true"></i> Reenviar código
+                            </button>
                         </div>
+                        <p class="text-muted small mt-3 mb-0">
+                            ¿El código expiró o no llegó? Reenvía uno nuevo. También puedes volver a
+                            registrarte con el mismo correo mientras la cuenta no esté activada.
+                        </p>
                     </form>
                 </div>
             </div>

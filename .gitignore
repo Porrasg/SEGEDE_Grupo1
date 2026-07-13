@@ -111,3 +111,11 @@ Desktop.ini
 ############################################################
 instrucciones-para-la-ia/
 scratch/
+guia y memoria para la ia/
+
+############################################################
+# Graphify (grafo de conocimiento local para la IA)
+############################################################
+graphify-out/
+CLAUDE.md
+.claude/

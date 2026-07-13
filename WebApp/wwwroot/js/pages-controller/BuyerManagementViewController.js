@@ -169,16 +169,17 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         function cancelForecast(id) {
-            if (!confirm("¿Está seguro que desea cancelar este pronóstico de demanda?")) return;
-
-            apiClient.post("Forecast/Cancel/" + id)
-                .done(function () {
-                    notify.info("Pronóstico cancelado.");
-                    loadForecasts();
-                })
-                .fail(function (xhr) {
-                    handleApiError(xhr);
-                });
+            notify.confirm("¿Está seguro que desea cancelar este pronóstico de demanda?", { dangerous: true, confirmText: "Cancelar pronóstico" }).then(function (ok) {
+                if (!ok) return;
+                apiClient.post("Forecast/Cancel/" + id)
+                    .done(function () {
+                        notify.info("Pronóstico cancelado.");
+                        loadForecasts();
+                    })
+                    .fail(function (xhr) {
+                        handleApiError(xhr);
+                    });
+            });
         }
     }
 
@@ -239,6 +240,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         <td>${badge}</td>
                         <td>
                             <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-primary btn-view-stmt" data-idx="${list.indexOf(s)}" title="Ver Detalle"><i class="bi bi-eye"></i></button>
                                 <button class="btn btn-outline-danger btn-export" data-id="${id}" data-fmt="PDF" title="Descargar PDF/HTML">PDF</button>
                                 <button class="btn btn-outline-success btn-export" data-id="${id}" data-fmt="Excel" title="Descargar Excel">XLSX</button>
                                 <button class="btn btn-outline-secondary btn-export" data-id="${id}" data-fmt="CSV" title="Descargar CSV">CSV</button>
@@ -251,6 +253,31 @@ document.addEventListener("DOMContentLoaded", function () {
             stmtsBody.querySelectorAll(".btn-export").forEach(btn => {
                 btn.addEventListener("click", () => downloadStatement(btn.getAttribute("data-id"), btn.getAttribute("data-fmt"), btn));
             });
+            stmtsBody.querySelectorAll(".btn-view-stmt").forEach(btn => {
+                btn.addEventListener("click", () => showStatementDetail(list[parseInt(btn.getAttribute("data-idx"))]));
+            });
+        }
+
+        const viewModalEl = document.getElementById("buyStmtViewModal");
+        const viewModal = viewModalEl ? new bootstrap.Modal(viewModalEl) : null;
+
+        function showStatementDetail(s) {
+            if (!s) return;
+            const m = s.month || s.Month;
+            const y = s.year || s.Year;
+            const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+            setText("vsPeriod", `${monthsEs[m] || m} ${y} (Revisión ${s.revisionNumber || s.RevisionNumber || 0})`);
+            setText("vsAssigned", Number(s.assignedMWh || s.AssignedMWh || 0).toLocaleString("es-CR", { minimumFractionDigits: 2 }) + " MWh");
+            setText("vsUnitPrice", "₡" + Number(s.unitPrice || s.UnitPrice || 0).toLocaleString("es-CR", { minimumFractionDigits: 2 }));
+            setText("vsSubtotal", "₡" + Number(s.subtotal || s.Subtotal || 0).toLocaleString("es-CR", { minimumFractionDigits: 2 }));
+            setText("vsTax", `₡${Number(s.taxAmount || s.TaxAmount || 0).toLocaleString("es-CR", { minimumFractionDigits: 2 })} (${(Number(s.taxPercentage || s.TaxPercentage || 0) * 100).toFixed(1)}%)`);
+            setText("vsTotal", "₡" + Number(s.total || s.Total || 0).toLocaleString("es-CR", { minimumFractionDigits: 2 }));
+            const status = s.status || s.Status || "Issued";
+            const statusEl = document.getElementById("vsStatus");
+            if (statusEl) statusEl.innerHTML = status === "Issued" ? '<span class="badge bg-success">Emitido</span>' : '<span class="badge bg-danger">Anulado</span>';
+            setText("vsAnnulReason", s.annulmentReason || s.AnnulmentReason || "-");
+            setText("vsIssueDate", new Date(s.issueDate || s.IssueDate).toLocaleString("es-CR"));
+            viewModal?.show();
         }
 
         function downloadStatement(id, format, btn) {

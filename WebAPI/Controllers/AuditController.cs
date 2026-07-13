@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SEGEDE_Grupo1.CoreApp.Managers;
 using SEGEDE_Grupo1.EntitiesDTOs.DTOs;
@@ -6,17 +7,19 @@ using SEGEDE_Grupo1.EntitiesDTOs.Entities;
 namespace SEGEDE_Grupo1.WebAPI.Controllers;
 
 // Controlador REST para consultar la bitácora inmutable WORM y gestionar el archivo en frío de auditoría (§14.12).
+// Engineer accede pero el módulo Billing queda excluido internamente por RN-030 (AuditManager usa el callerRole real).
 [ApiController]
 [Route("api/[controller]")]
-public class AuditController : ControllerBase
+[Authorize(Roles = "Administrator,Engineer")]
+public class AuditController : SgdeControllerBase
 {
     private readonly AuditManager _auditManager = new();
 
     // Función de consulta que retorna la bitácora paginada de eventos de seguridad por módulo.
     [HttpGet("ByModule")]
-    public IActionResult GetByModule([FromQuery] string module, [FromQuery] string callerRole = "Administrator", [FromQuery] int page = 1, [FromQuery] int pageSize = 50)
+    public IActionResult GetByModule([FromQuery] string module, [FromQuery] int page = 1, [FromQuery] int pageSize = 50)
     {
-        var result = _auditManager.RetrieveByModule(module, callerRole, new PagedRequest { Page = page, PageSize = pageSize });
+        var result = _auditManager.RetrieveByModule(module, CallerRole, new PagedRequest { Page = page, PageSize = pageSize });
         return Ok(new ApiResponse<PagedResponse<AuditLog>> { Success = true, Data = result });
     }
 
@@ -30,13 +33,14 @@ public class AuditController : ControllerBase
 
     // Función de consulta que retorna la bitácora en un rango de fechas con filtrado RN-030.
     [HttpGet("ByDateRange")]
-    public IActionResult GetByDateRange([FromQuery] DateTime from, [FromQuery] DateTime to, [FromQuery] string callerRole = "Administrator", [FromQuery] int page = 1, [FromQuery] int pageSize = 50)
+    public IActionResult GetByDateRange([FromQuery] DateTime from, [FromQuery] DateTime to, [FromQuery] int page = 1, [FromQuery] int pageSize = 50)
     {
-        var result = _auditManager.RetrieveByDateRange(from, to, callerRole, new PagedRequest { Page = page, PageSize = pageSize });
+        var result = _auditManager.RetrieveByDateRange(from, to, CallerRole, new PagedRequest { Page = page, PageSize = pageSize });
         return Ok(new ApiResponse<PagedResponse<AuditLog>> { Success = true, Data = result });
     }
 
-    // Método manejador que archiva en frío los registros de auditoría antiguos respetando el modelo WORM.
+    // Método manejador que archiva en frío los registros de auditoría antiguos respetando el modelo WORM. Solo Admin.
+    [Authorize(Roles = "Administrator")]
     [HttpPost("ArchiveColdRecords")]
     public IActionResult ArchiveColdRecords()
     {

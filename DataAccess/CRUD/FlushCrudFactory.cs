@@ -1,3 +1,4 @@
+using Microsoft.Data.SqlClient;
 using SEGEDE_Grupo1.DataAccess.DAO;
 using SEGEDE_Grupo1.EntitiesDTOs;
 using SEGEDE_Grupo1.EntitiesDTOs.Entities;
@@ -78,6 +79,42 @@ public class FlushCrudFactory : CrudFactory
         var op = new Operation { ProcedureName = "RET_ACTIVE_FLUSH_PR" };
         var results = sqlDao.ExecuteQueryProcedure(op);
         return results.Count > 0 ? BuildFlush(results[0]) : null;
+    }
+
+    // --- Overloads transaccionales (§37.25, contratos de bloqueo del ciclo de Flush ACID) ---
+
+    public void Create(BaseDTO baseDTO, SqlConnection conn, SqlTransaction tx)
+    {
+        var f = (Flush)baseDTO;
+        var op = new Operation { ProcedureName = "CRE_FLUSH_PR" };
+        op.AddStringParameter("@ExecutionType", f.ExecutionType);
+        op.AddStringParameter("@Status", f.Status);
+        op.AddNullableIntParameter("@UserId", f.UserId);
+        op.AddDecimalParameter("@TotalTransferredEnergy", f.TotalTransferredEnergy);
+        op.AddDecimalParameter("@SaturationLoss", f.SaturationLoss);
+        op.AddDateTimeParameter("@StartDate", f.StartDate);
+        op.AddNullableDateTimeParameter("@EndDate", f.EndDate);
+        op.AddDateTimeParameter("@Created", f.Created);
+        sqlDao.ExecuteProcedureInTransaction(op, conn, tx);
+    }
+
+    public Flush? RetrieveActive(SqlConnection conn, SqlTransaction tx)
+    {
+        var op = new Operation { ProcedureName = "RET_ACTIVE_FLUSH_PR" };
+        var results = sqlDao.ExecuteQueryInTransaction(op, conn, tx);
+        return results.Count > 0 ? BuildFlush(results[0]) : null;
+    }
+
+    public void UpdateStatus(int id, string status, DateTime? endDate, decimal totalTransferredEnergy, decimal saturationLoss, DateTime updated, SqlConnection conn, SqlTransaction tx)
+    {
+        var op = new Operation { ProcedureName = "UPD_STATUS_FLUSH_PR" };
+        op.AddIntParameter("@Id", id);
+        op.AddStringParameter("@Status", status);
+        op.AddNullableDateTimeParameter("@EndDate", endDate);
+        op.AddDecimalParameter("@TotalTransferredEnergy", totalTransferredEnergy);
+        op.AddDecimalParameter("@SaturationLoss", saturationLoss);
+        op.AddDateTimeParameter("@Updated", updated);
+        sqlDao.ExecuteProcedureInTransaction(op, conn, tx);
     }
 
     // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.

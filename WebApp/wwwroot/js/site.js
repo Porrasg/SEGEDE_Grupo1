@@ -1,4 +1,15 @@
 // site.js (§29.2, §29.3) - Control global de navegación, estética intuitiva, roles y seguridad
+
+// Escapa datos de usuario antes de interpolarlos en innerHTML (defensa contra XSS almacenado).
+// Se expone global porque site.js se carga antes que todos los *ViewController.js (ver _Layout).
+function escapeHtml(value) {
+    if (value === null || value === undefined) return "";
+    return String(value).replace(/[&<>"']/g, function (c) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+}
+window.escapeHtml = escapeHtml;
+
 document.addEventListener("DOMContentLoaded", function () {
     initNavigation();
     initSignOut();
@@ -115,16 +126,7 @@ function initLandingLogin() {
                             sessionStorage.removeItem("sgde_login_email");
                             if (typeof notify !== "undefined") notify.success("¡Sesión iniciada!");
                             setTimeout(function () {
-                                const role = session.getRole();
-                                if (role === "Administrator" || role === "Admin") {
-                                    window.location.href = "/Admin/Dashboard";
-                                } else if (role === "Engineer") {
-                                    window.location.href = "/Engineer/Dashboard";
-                                } else if (role === "Buyer") {
-                                    window.location.href = "/Buyer/Dashboard";
-                                } else {
-                                    window.location.href = "/";
-                                }
+                                window.location.href = dashboardUrlForRole(session.getRole()) || "/";
                             }, 600);
                         }
                     })
@@ -141,13 +143,17 @@ function initLandingLogin() {
                     btn.disabled = false;
                     btn.innerHTML = originalText;
                 }
-                if (typeof handleApiError === "function") {
-                    handleApiError(xhr);
-                } else {
-                    alert("Error al iniciar sesión: Verifique sus credenciales.");
-                }
+                handleApiError(xhr);
             });
     });
+}
+
+// Destino del dashboard según el rol de la sesión activa (usado por la regla A1.1 de la adenda v3: logo/raíz redirige por rol).
+function dashboardUrlForRole(role) {
+    if (role === "Administrator" || role === "Admin") return "/Admin/Dashboard";
+    if (role === "Engineer") return "/Engineer/Dashboard";
+    if (role === "Buyer") return "/Buyer/Dashboard";
+    return null;
 }
 
 function checkRouteSecurity() {
@@ -155,8 +161,18 @@ function checkRouteSecurity() {
     const isLoggedIn = !session.isExpired() && session.getToken();
     const role = session.getRole();
 
+    // Regla A1.1: la raíz ("/" o "/Index") redirige de inmediato al dashboard del rol si hay sesión válida.
+    // Sin sesión, se muestra la landing normalmente (no fuerza /Login).
+    if (path === "/" || path === "/index") {
+        if (isLoggedIn) {
+            const target = dashboardUrlForRole(role);
+            if (target) window.location.href = target;
+        }
+        return;
+    }
+
     // Páginas públicas que no requieren validación de rol
-    if (path === "/" || path === "/index" || path.startsWith("/login") || path.startsWith("/register") || path.startsWith("/recover") || path.startsWith("/reset") || path.startsWith("/activate") || path.startsWith("/accessdenied")) {
+    if (path.startsWith("/login") || path.startsWith("/register") || path.startsWith("/recover") || path.startsWith("/reset") || path.startsWith("/activate") || path.startsWith("/accessdenied")) {
         return;
     }
 
@@ -239,4 +255,77 @@ function initInteractiveCardLinks() {
         });
     });
 }
+
+/**
+ * ============================================================================
+ * SGDE Core — Role-Based UI Access Controller (Vanilla JavaScript)
+ * ============================================================================
+ */
+class RoleAccessController {
+    constructor() {
+        this.storageKey = 'userRole';
+        this.defaultRole = 'guest';
+    }
+
+    getCurrentRoles() {
+        const sessionRole = typeof session !== 'undefined' ? session.getRole() : null;
+        const storedValue = sessionRole || sessionStorage.getItem(this.storageKey) || this.defaultRole;
+        return storedValue
+            .toLowerCase()
+            .split(',')
+            .map(r => r.trim())
+            .filter(r => r.length > 0);
+    }
+
+    applyUIFiltering() {
+        const activeRoles = this.getCurrentRoles();
+        const restrictedElements = document.querySelectorAll('[data-roles]');
+
+        restrictedElements.forEach(element => {
+            const allowedRolesAttr = element.getAttribute('data-roles');
+            if (!allowedRolesAttr) return;
+
+            const allowedRoles = allowedRolesAttr
+                .toLowerCase()
+                .split(',')
+                .map(r => r.trim());
+
+            const hasAccess = allowedRoles.some(role => activeRoles.includes(role));
+
+            if (hasAccess) {
+                element.classList.remove('d-none');
+            } else {
+                element.classList.add('d-none');
+            }
+        });
+
+        this.updateSidebarUserProfile(activeRoles);
+    }
+
+    updateSidebarUserProfile(activeRoles) {
+        const badgeEl = document.getElementById('sidebarUserRoleBadge');
+        const nameEl = document.getElementById('sidebarUserName');
+        if (badgeEl && activeRoles.length > 0) {
+            badgeEl.textContent = activeRoles[0].toUpperCase();
+        }
+        if (nameEl && typeof session !== 'undefined') {
+            const email = session.getEmail() || sessionStorage.getItem('sgde_login_email') || 'Usuario Sesión';
+            nameEl.textContent = email;
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const rbacController = new RoleAccessController();
+    rbacController.applyUIFiltering();
+
+    window.SGDE_RBAC = {
+        refresh: () => rbacController.applyUIFiltering(),
+        setRole: (newRole) => {
+            sessionStorage.setItem('userRole', newRole);
+            rbacController.applyUIFiltering();
+        }
+    };
+});
+
 

@@ -1,4 +1,6 @@
+using System.Data;
 using SEGEDE_Grupo1.DataAccess.CRUD;
+using SEGEDE_Grupo1.DataAccess.DAO;
 using SEGEDE_Grupo1.EntitiesDTOs.Constants;
 using SEGEDE_Grupo1.EntitiesDTOs.DTOs;
 using SEGEDE_Grupo1.EntitiesDTOs.DTOs.Requests;
@@ -53,7 +55,7 @@ public class FlushManager
 
         _configFactory.UpdateSingleton(r.ExecutionTime, r.IsAutomatic, TimeHelper.NowCR());
 
-        _auditManager.LogAction(callerUserId, $"User {callerUserId}", AuditModules.CentralBank, AuditActions.Update, "tblFlushConfig", 1, oldVal, newVal);
+        _auditManager.LogAction(callerUserId, $"User {callerUserId}", AuditModules.Flush, AuditActions.Update, "tblFlushConfig", 1, oldVal, newVal);
     }
 
     // Retorna el historial paginado de operaciones de flush.
@@ -103,23 +105,40 @@ public class FlushManager
         }
 
         var now = TimeHelper.NowCR();
-        var flush = new Flush
-        {
-            ExecutionType = executionType,
-            Status = FlushStates.Processing,
-            UserId = userId,
-            TotalTransferredEnergy = 0m,
-            SaturationLoss = 0m,
-            StartDate = now,
-            EndDate = null,
-            Created = now
-        };
 
-        _flushFactory.Create(flush);
-        var createdFlush = _flushFactory.RetrieveActive() ?? throw new BusinessException("Failed to initiate flush transaction.");
+        // Ciclo ACID real (§37.25/§60.1): una única transacción con aislamiento Serializable envuelve
+        // la creación del Flush, sus snapshots, el ajuste del Banco Central y el vaciado de baterías.
+        // Ante cualquier fallo, se revierte todo el lote — no queda ningún registro "Processing" huérfano.
+        using var conn = SqlDao.GetInstance().GetOpenConnection();
+        using var tx = conn.BeginTransaction(IsolationLevel.Serializable);
 
         try
         {
+            // Re-chequeo dentro de la transacción Serializable: la comprobación previa (CheckActiveFlush)
+            // ocurre fuera de la transacción y no impide una carrera entre dos flushes concurrentes.
+            // Bajo Serializable, este SELECT adquiere locks de rango que serializan la creación del flush,
+            // evitando dos registros "Processing" simultáneos que drenarían las baterías dos veces.
+            var alreadyActive = _flushFactory.RetrieveActive(conn, tx);
+            if (alreadyActive != null)
+            {
+                throw new BusinessException("A flush operation is already currently in progress.", "FLUSH_IN_PROGRESS");
+            }
+
+            var flush = new Flush
+            {
+                ExecutionType = executionType,
+                Status = FlushStates.Processing,
+                UserId = userId,
+                TotalTransferredEnergy = 0m,
+                SaturationLoss = 0m,
+                StartDate = now,
+                EndDate = null,
+                Created = now
+            };
+
+            _flushFactory.Create(flush, conn, tx);
+            var createdFlush = _flushFactory.RetrieveActive(conn, tx) ?? throw new BusinessException("Failed to initiate flush transaction.");
+
             decimal totalSnapshotEnergy = 0m;
             var snapshots = new List<FlushSnapshot>();
 
@@ -136,12 +155,12 @@ public class FlushManager
                     EventDate = now,
                     Created = now
                 };
-                _snapshotFactory.Create(snap);
+                _snapshotFactory.Create(snap, conn, tx);
                 snapshots.Add(snap);
                 totalSnapshotEnergy += b.StoredEnergy;
             }
 
-            var cb = _cbFactory.RetrieveSingleton() ?? throw new NotFoundException("Central Bank not found.");
+            var cb = _cbFactory.RetrieveSingleton(conn, tx) ?? throw new NotFoundException("Central Bank not found.");
             decimal ia = cb.CurrentInventory;
             decimal et = totalSnapshotEnergy;
             decimal cmbc = cb.EffectiveCapacity;
@@ -165,14 +184,14 @@ public class FlushManager
                     EventDate = now,
                     Created = now
                 };
-                _satLogFactory.Create(satLog);
+                _satLogFactory.Create(satLog, conn, tx);
             }
             else
             {
                 finalInv = ia + et;
             }
 
-            _cbFactory.UpdateInventory(finalInv, now);
+            _cbFactory.UpdateInventory(finalInv, now, conn, tx);
 
             if (transferred > 0)
             {
@@ -186,22 +205,31 @@ public class FlushManager
                     EventDate = now,
                     Created = now
                 };
-                _cbLogFactory.Create(cbLog);
+                _cbLogFactory.Create(cbLog, conn, tx);
             }
 
             foreach (var snap in snapshots)
             {
-                _batteryFactory.UpdateEnergy(snap.LocalBatteryId, 0m, now);
+                _batteryFactory.UpdateEnergy(snap.LocalBatteryId, 0m, now, conn, tx);
             }
 
-            _flushFactory.UpdateStatus(createdFlush.Id, FlushStates.Completed, now, transferred, ps, now);
+            _flushFactory.UpdateStatus(createdFlush.Id, FlushStates.Completed, now, transferred, ps, now, conn, tx);
 
-            _auditManager.LogAction(userId, userId.HasValue ? $"User {userId}" : SystemActor.Name, AuditModules.CentralBank, AuditActions.Execute, "tblFlush", createdFlush.Id, FlushStates.Processing, FlushStates.Completed);
+            tx.Commit();
+
+            _auditManager.LogAction(userId, userId.HasValue ? $"User {userId}" : SystemActor.Name, AuditModules.Flush, AuditActions.Execute, "tblFlush", createdFlush.Id, FlushStates.Processing, FlushStates.Completed);
+        }
+        catch (BusinessException)
+        {
+            // Errores de negocio esperados (p.ej. FLUSH_IN_PROGRESS por carrera): revertir y
+            // propagar tal cual para conservar su código HTTP (409) — no son fallos de ejecución.
+            try { tx.Rollback(); } catch { /* la conexión pudo cerrarse antes del rollback */ }
+            throw;
         }
         catch (Exception ex)
         {
-            _flushFactory.UpdateStatus(createdFlush.Id, FlushStates.Failed, TimeHelper.NowCR(), 0m, 0m, TimeHelper.NowCR());
-            _auditManager.LogAction(userId, userId.HasValue ? $"User {userId}" : SystemActor.Name, AuditModules.CentralBank, AuditActions.Execute, "tblFlush", createdFlush.Id, FlushStates.Processing, FlushStates.Failed);
+            try { tx.Rollback(); } catch { /* la conexión pudo cerrarse antes del rollback */ }
+            _auditManager.LogAction(userId, userId.HasValue ? $"User {userId}" : SystemActor.Name, AuditModules.Flush, AuditActions.Execute, "tblFlush", 0, FlushStates.Processing, FlushStates.Failed);
             throw new BusinessException($"Flush execution failed: {ex.Message}", "FLUSH_FAILED");
         }
     }
