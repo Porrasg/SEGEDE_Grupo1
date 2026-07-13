@@ -68,9 +68,17 @@ public class NotificationManager
                     };
                     using var mail = new MailMessage(from, notif.RecipientEmail, notif.Subject, notif.Body);
                     client.Send(mail);
+                    sentSuccess = true;
                 }
-                // Si host está vacío, estamos en entorno local/test sin SMTP configurado → asumimos envío exitoso por simulación.
-                sentSuccess = true;
+                else
+                {
+                    // Host vacío: solo se simula éxito en desarrollo. En producción es una mala
+                    // configuración y NO debe marcarse como enviada (se reintenta / marca Failed).
+                    bool isDev = string.Equals(
+                        Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
+                        "Development", StringComparison.OrdinalIgnoreCase);
+                    sentSuccess = isDev;
+                }
             }
             catch
             {

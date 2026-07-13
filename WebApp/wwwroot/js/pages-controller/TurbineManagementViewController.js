@@ -75,9 +75,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 return `
                     <tr>
-                        <td class="fw-bold">${code}</td>
-                        <td>${name}</td>
-                        <td>${loc}</td>
+                        <td class="fw-bold">${escapeHtml(code)}</td>
+                        <td>${escapeHtml(name)}</td>
+                        <td>${escapeHtml(loc)}</td>
                         <td>${cap}</td>
                         <td>${stateBadge}</td>
                         <td>
@@ -314,7 +314,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             <td>${new Date(s.changeDate || s.ChangeDate).toLocaleString("es-CR")}</td>
                             <td><span class="badge bg-secondary">${s.previousState || s.PreviousState || "-"}</span></td>
                             <td><span class="badge bg-primary">${s.newState || s.NewState || "-"}</span></td>
-                            <td>${s.reason || s.Reason || "-"}</td>
+                            <td>${escapeHtml(s.reason || s.Reason || "-")}</td>
                             <td>Usuario #${s.changedByUserId || s.ChangedByUserId || "---"}</td>
                         </tr>
                     `).join("") : '<tr><td colspan="5" class="text-center text-muted">Sin cambios de estado registrados.</td></tr>';
@@ -343,7 +343,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         <tr>
                             <td>${new Date(f.failureDate || f.FailureDate).toLocaleString("es-CR")}</td>
                             <td><span class="badge bg-danger">${f.severityLevel || f.SeverityLevel || "-"}</span></td>
-                            <td>${f.description || f.Description || "-"}</td>
+                            <td>${escapeHtml(f.description || f.Description || "-")}</td>
                         </tr>
                     `).join("") : '<tr><td colspan="3" class="text-center text-muted">No se han reportado averías en esta turbina.</td></tr>';
                 }

@@ -283,6 +283,35 @@ document.addEventListener("DOMContentLoaded", function () {
                     handleApiError(xhr);
                 });
         });
+
+        // Reenvío del OTP de activación: usa el endpoint ResendOtp existente. Permite obtener un
+        // código nuevo si el anterior expiró, sin tener que volver a llenar el formulario de registro.
+        const resendActivationBtn = document.getElementById("resendActivationBtn");
+        if (resendActivationBtn) {
+            resendActivationBtn.addEventListener("click", function () {
+                const email = document.getElementById("actEmail")?.value.trim();
+                if (!email) {
+                    notify.warning("Ingrese su correo electrónico para reenviar el código.");
+                    return;
+                }
+
+                const original = resendActivationBtn.innerHTML;
+                resendActivationBtn.disabled = true;
+                resendActivationBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Reenviando...';
+
+                apiClient.post("Users/ResendOtp", { email: email, usageType: "Activation" })
+                    .done(function (res) {
+                        notify.success(res?.message || res?.Message || "Código de activación reenviado. Revise su correo.");
+                    })
+                    .fail(function (xhr) {
+                        handleApiError(xhr);
+                    })
+                    .always(function () {
+                        resendActivationBtn.disabled = false;
+                        resendActivationBtn.innerHTML = original;
+                    });
+            });
+        }
     }
 
     // ==========================================

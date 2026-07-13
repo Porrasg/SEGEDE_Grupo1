@@ -238,9 +238,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 return `
                     <tr>
-                        <td class="fw-bold">${u.identification || "-"}</td>
-                        <td>${fullName || "-"}</td>
-                        <td>${u.email || "-"}</td>
+                        <td class="fw-bold">${escapeHtml(u.identification || "-")}</td>
+                        <td>${escapeHtml(fullName || "-")}</td>
+                        <td>${escapeHtml(u.email || "-")}</td>
                         <td>${u.phone || "-"}</td>
                         <td>${roleBadge}</td>
                         <td>${statusBadge}</td>
