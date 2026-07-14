@@ -17,7 +17,7 @@ public class SqlDao
         // En producción se configura desde appsettings.json vía WebAPI/Program.cs.
         _connectionString = ConnectionStringHolder.ConnectionString
             ?? throw new InvalidOperationException(
-                "Connection string not configured. Call SqlDao.Configure() during startup.");
+                "Data Source=proyectocenfogp1.database.windows.net;Initial Catalog=ProyectoCenfoGp1;Persist Security Info=True;User ID=sgderoot;Password=sgde123!.!;Trust Server Certificate=True");
     }
 
     // Obtiene la instancia Singleton del SqlDao.
@@ -28,6 +28,15 @@ public class SqlDao
     public static void Configure(string connectionString)
     {
         ConnectionStringHolder.ConnectionString = connectionString;
+        // Read optional env var flags to control behavior without changing code
+        var autoPrefixEnv = Environment.GetEnvironmentVariable("Data:AutoPrefixSchema")
+                            ?? Environment.GetEnvironmentVariable("Data__AutoPrefixSchema")
+                            ?? Environment.GetEnvironmentVariable("SQL_AUTO_PREFIX_SCHEMA");
+        if (!string.IsNullOrWhiteSpace(autoPrefixEnv) && bool.TryParse(autoPrefixEnv, out var ap))
+        {
+            ConnectionStringHolder.AutoPrefixSchema = ap;
+        }
+
         _instance = null; // Fuerza recreación con nueva cadena
     }
 
@@ -130,4 +139,6 @@ internal static class ConnectionStringHolder
 {
     // Propiedad de datos mapeada a la columna de base de datos o parámetro de transferencia.
     internal static string? ConnectionString { get; set; }
+    // If true, SqlDao will prefix SP names without schema with dbo.
+    internal static bool AutoPrefixSchema { get; set; } = false;
 }

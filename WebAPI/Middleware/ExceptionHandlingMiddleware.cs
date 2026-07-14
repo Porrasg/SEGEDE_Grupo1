@@ -11,12 +11,14 @@ public class ExceptionHandlingMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionHandlingMiddleware> _logger;
+    private readonly IWebHostEnvironment _env;
 
     // Constructor que inicializa el middleware en el pipeline de peticiones HTTP.
-    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
+    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger, IWebHostEnvironment env)
     {
         _next = next;
         _logger = logger;
+        _env = env;
     }
 
     // Función operativa que ejecuta la intercepción de la petición y captura cualquier excepción no manejada.
@@ -34,7 +36,7 @@ public class ExceptionHandlingMiddleware
     }
 
     // Manejador interno que evalúa el tipo de excepción y retorna el código de estado HTTP y estructura ApiResponse correspondiente.
-    private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
+    private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
         context.Response.ContentType = "application/json";
 
@@ -76,6 +78,11 @@ public class ExceptionHandlingMiddleware
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                 response.Message = "Ha ocurrido un error interno en el procesamiento del servidor.";
                 response.ErrorCode = "INTERNAL_SERVER_ERROR";
+                // In Development, include exception details to help debugging
+                if (_env != null && _env.IsDevelopment())
+                {
+                    response.Data = new { Exception = exception.Message, StackTrace = exception.StackTrace };
+                }
                 break;
         }
 
