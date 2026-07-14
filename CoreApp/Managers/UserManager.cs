@@ -16,8 +16,16 @@ namespace SEGEDE_Grupo1.CoreApp.Managers;
 // Aplica validaciones de seguridad, control de intentos fallidos (bloqueo a los 5 intentos), flujos OTP y ownership.
 public class UserManager
 {
-    // Propiedad de datos mapeada a la columna de base de datos o parámetro de transferencia.
-    public static string JwtSecret { get; set; } = Environment.GetEnvironmentVariable("Jwt:Secret") ?? "DefaultSuperSecretKeyThatIsAtLeast32BytesLongForHmacSha256!!";
+    // Clave de firma JWT. Se lee de la variable de entorno "Jwt:Secret", poblada desde
+    // appsettings.Development.json (gitignored) por el puente de WebAPI/Program.cs. Falla-cerrado:
+    // si no está configurada, se lanza excepción en vez de usar un valor por defecto versionado
+    // (que permitiría forjar tokens). Nunca hardcodear la clave real aquí.
+    public static string JwtSecret { get; set; } =
+        Environment.GetEnvironmentVariable("Jwt:Secret") is { Length: >= 32 } secret
+            ? secret
+            : throw new InvalidOperationException(
+                "Jwt:Secret no está configurado o es demasiado corto (mínimo 32 caracteres). " +
+                "Defínalo en appsettings.Development.json bajo la sección \"Jwt\".");
     // Propiedad de datos mapeada a la columna de base de datos o parámetro de transferencia.
     public static int JwtExpiryMinutes { get; set; } = 480;
 
@@ -42,6 +50,31 @@ public class UserManager
         var existingUser = _userCrudFactory.RetrieveByEmail(r.Email);
         if (existingUser != null)
         {
+            // Una cuenta que nunca se activó no "pertenece" a nadie todavía. Si el correo existe pero
+            // sigue en PendingActivation, tratamos este registro como un reintento: refrescamos las
+            // credenciales editables (contraseña/teléfono/foto) y reenviamos el OTP de activación,
+            // en vez de bloquear con EMAIL_ALREADY_EXISTS —que dejaba al usuario atascado si no
+            // activó dentro de la ventana del OTP—. Solo una cuenta ya activada/bloqueada reserva
+            // el correo de forma definitiva.
+            if (string.Equals(existingUser.Status, "PendingActivation", StringComparison.OrdinalIgnoreCase))
+            {
+                string refreshedHash = PasswordHasher.Hash(r.Password);
+                _userCrudFactory.UpdateProfile(existingUser.Id, r.Phone, r.PhotoUrl, refreshedHash, TimeHelper.NowCR());
+
+                if (IsLocalSimulation)
+                {
+                    _userCrudFactory.UpdateStatus(existingUser.Id, "Active", TimeHelper.NowCR());
+                    Console.WriteLine($"[DEV] Cuenta pendiente auto-activada para {r.Email} en reintento local.");
+                }
+                else
+                {
+                    CreateAndSendOtp(existingUser.Id, existingUser.Email, OtpUsageTypes.Activation, "Account Activation Code");
+                }
+
+                _auditManager.LogAction(existingUser.Id, existingUser.Email, AuditModules.Users, AuditActions.Update, "tblUser", existingUser.Id, "PendingActivation", "Re-registration: activation OTP reissued");
+                return;
+            }
+
             throw new BusinessException("An account with this email already exists.", "EMAIL_ALREADY_EXISTS");
         }
 
@@ -127,7 +160,11 @@ public class UserManager
         if (!isPasswordValid)
         {
             _userCrudFactory.IncrementFailedAttempts(user.Id);
-            if (user.FailedAttempts + 1 >= 5)
+            // Re-lee el conteo real tras el incremento (no confía en el valor en memoria, que puede
+            // estar obsoleto ante intentos concurrentes) para decidir el bloqueo exacto a los 5 intentos.
+            var refreshed = _userCrudFactory.RetrieveById<User>(user.Id);
+            int currentAttempts = refreshed?.FailedAttempts ?? (user.FailedAttempts + 1);
+            if (currentAttempts >= 5)
             {
                 _userCrudFactory.BlockUser(user.Id, TimeHelper.NowCR(), TimeHelper.NowCR());
                 _auditManager.LogAction(user.Id, user.Email, AuditModules.Users, AuditActions.Block, "tblUser", user.Id, "Active", "Blocked");
@@ -173,7 +210,8 @@ public class UserManager
             UserId = user.Id,
             Email = user.Email,
             Role = user.Role,
-            Expiration = TimeHelper.NowCR().AddMinutes(JwtExpiryMinutes)
+            // En UTC para coincidir con la expiración real del token (JwtHelper usa DateTime.UtcNow).
+            Expiration = DateTime.UtcNow.AddMinutes(JwtExpiryMinutes)
         };
     }
 
@@ -392,17 +430,9 @@ public class UserManager
         return MapToSafeResponse(user);
     }
 
-    // Sube una foto de perfil y actualiza el campo PhotoUrl del usuario.
-    public string UploadPhoto(int userId, Stream file, string contentType)
-    {
-        var user = _userCrudFactory.RetrieveById<User>(userId) ?? throw new NotFoundException("User not found.");
-        
-        string photoUrl = $"https://storage.segede.local/photos/{userId}_{TimeHelper.NowCR():yyyyMMddHHmmss}.jpg";
-        _userCrudFactory.UpdateProfile(user.Id, user.Phone, photoUrl, user.PasswordHash, TimeHelper.NowCR());
-        _auditManager.LogAction(userId, user.Email, AuditModules.Users, AuditActions.Update, "tblUser", userId, user.PhotoUrl, photoUrl);
-        
-        return photoUrl;
-    }
+    // La foto de perfil se persiste como data-URL base64 vía UpdateProfile (RF-010). No existe un
+    // endpoint de subida de archivo binario; el antiguo UploadPhoto fabricaba una URL ficticia sin
+    // guardar el archivo, por lo que se eliminó para no exponer funcionalidad engañosa.
 
     // --- Helpers Privados ---
 
@@ -448,7 +478,11 @@ public class UserManager
         if (!isValid)
         {
             _otpAttemptCrudFactory.IncrementFailedAttempts(activeAttempt.Id);
-            if (activeAttempt.FailedAttempts + 1 >= 5)
+            // Re-lee el intento tras el incremento para bloquear exactamente a los 5 fallos,
+            // sin depender del valor en memoria (posible desincronización ante concurrencia).
+            var refreshedAttempt = _otpAttemptCrudFactory.RetrieveActive(userId, usageType);
+            int currentFailures = refreshedAttempt?.FailedAttempts ?? (activeAttempt.FailedAttempts + 1);
+            if (currentFailures >= 5)
             {
                 _otpAttemptCrudFactory.UpdateStatus(activeAttempt.Id, OtpAttemptStates.Blocked, TimeHelper.NowCR());
             }

@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const turbines = res?.data || res?.Data || [];
                 const options = turbines.map(function (t) {
                     const code = t.uniqueCode || t.UniqueCode || `#${t.id}`;
-                    return `<option value="${t.id}">${code} — ${t.name || ""}</option>`;
+                    return `<option value="${t.id}">${escapeHtml(code)} — ${escapeHtml(t.name || "")}</option>`;
                 }).join("");
                 if (failTurbineSelect) failTurbineSelect.innerHTML = options;
                 if (battTurbineSelect) battTurbineSelect.innerHTML = options;

@@ -64,7 +64,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const canRegen = status === "Annulled";
             return `<tr>
                 <td>${id}</td>
-                <td>${userNames[buyerId] || `Comprador #${buyerId}`}</td>
+                <td>${escapeHtml(userNames[buyerId] || `Comprador #${buyerId}`)}</td>
                 <td>${s.month ?? s.Month}/${s.year ?? s.Year}</td>
                 <td>${Number(s.assignedMWh ?? s.AssignedMWh ?? 0).toLocaleString("es-CR", { minimumFractionDigits: 2 })}</td>
                 <td>${Number(s.subtotal ?? s.Subtotal ?? 0).toLocaleString("es-CR", { minimumFractionDigits: 2 })}</td>

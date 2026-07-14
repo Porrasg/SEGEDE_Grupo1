@@ -63,6 +63,14 @@ public class OtpServiceClient
         }
         catch (Exception ex) when (ex is not BusinessException)
         {
+            // Resiliencia en desarrollo local: si el microservicio OtpService en localhost (puerto 5306) no está ejecutándose,
+            // caemos en modo simulación local para no bloquear el flujo de Registro o Login.
+            if (_baseUrl.Contains("localhost", StringComparison.OrdinalIgnoreCase) || _baseUrl.Contains("127.0.0.1"))
+            {
+                Console.WriteLine($"[OTP DEV FALLBACK] El servicio OtpService en {_baseUrl} no está ejecutándose. Modo simulación local activado para {email} ({usageType}). Código dev: '123456' o '999999'.");
+                return true;
+            }
+
             throw new BusinessException($"No se pudo contactar al proveedor externo de OTP ({_baseUrl}).", "OTP_SERVICE_UNAVAILABLE");
         }
     }
@@ -74,8 +82,8 @@ public class OtpServiceClient
     // Retorna: True si el código es válido; de lo contrario, False.
     public bool VerifyOtp(string email, string usageType, string code)
     {
-        // En modo simulación local o si se introduce el código de pruebas "123456", validamos exitosamente.
-        if (string.IsNullOrWhiteSpace(_baseUrl) || _baseUrl.Contains(".local", StringComparison.OrdinalIgnoreCase) || code == "123456")
+        // En modo simulación local (sin servicio OTP configurado) cualquier código valida.
+        if (string.IsNullOrWhiteSpace(_baseUrl) || _baseUrl.Contains(".local", StringComparison.OrdinalIgnoreCase))
         {
             return true;
         }
@@ -96,8 +104,15 @@ public class OtpServiceClient
         }
         catch
         {
-            // Si el servicio externo no responde, aceptamos "123456" como código de contingencia para pruebas.
-            return code == "123456";
+            // Resiliencia en desarrollo local: si el servicio en localhost no responde, permitimos los códigos de desarrollo.
+            if (_baseUrl.Contains("localhost", StringComparison.OrdinalIgnoreCase) || _baseUrl.Contains("127.0.0.1"))
+            {
+                Console.WriteLine($"[OTP DEV FALLBACK] Verificando código '{code}' en modo simulación local.");
+                return code == "123456" || code == "999999";
+            }
+
+            // Fail-closed en ambientes externos/producción si el servicio externo no responde.
+            throw new BusinessException($"No se pudo contactar al proveedor externo de OTP ({_baseUrl}).", "OTP_SERVICE_UNAVAILABLE");
         }
     }
 }

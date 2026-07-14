@@ -135,6 +135,17 @@ document.addEventListener("DOMContentLoaded", function () {
         let allUsers = [];
         let editingUserId = null;
 
+        // Robust modal initialization
+        const userModalEl = document.getElementById("userModal");
+        let userModal = null;
+        if (userModalEl) {
+            try {
+                userModal = bootstrap.Modal.getOrCreateInstance(userModalEl);
+            } catch (e) {
+                console.warn("Could not initialize userModal:", e);
+            }
+        }
+
         loadUsers();
 
         // Búsqueda y filtrado en tiempo real
@@ -144,15 +155,47 @@ document.addEventListener("DOMContentLoaded", function () {
         if (searchInput) searchInput.addEventListener("input", filterAndRenderUsers);
         if (filterSelect) filterSelect.addEventListener("change", filterAndRenderUsers);
 
+        // "Nuevo Usuario" button — manual open (no data-bs-toggle to avoid conflicts)
+        const btnNewUser = document.getElementById("btnOpenNewUser");
+        if (btnNewUser) {
+            btnNewUser.addEventListener("click", function () {
+                editingUserId = null;
+                document.getElementById("userForm")?.reset();
+                const modalTitle = userModalEl?.querySelector(".modal-title");
+                if (modalTitle) modalTitle.innerHTML = '<i class="bi bi-person-plus-fill me-2"></i>Nuevo Usuario Interno';
+
+                // Enable all fields for creation
+                setFieldState("uId", true, false);
+                setFieldState("uEmail", true, false);
+                setFieldState("uPhone", true, false);
+                setFieldState("uBirthDate", true, false);
+                setFieldState("uPass", true, false);
+
+                const passHint = document.getElementById("passHint");
+                if (passHint) passHint.textContent = "(requerida)";
+
+                if (userModal) userModal.show();
+            });
+        }
+
+        function setFieldState(id, visible, disabled) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.disabled = disabled;
+                const wrapper = el.closest('.col-md-6') || el.closest('.mb-3') || el.closest('.mb-2');
+                if (wrapper) wrapper.style.display = visible ? '' : 'none';
+            }
+        }
+
         function loadUsers() {
-            tableBody.innerHTML = '<tr><td colspan="6" class="text-center"><span class="spinner-border spinner-border-sm" role="status"></span> Cargando usuarios...</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="7" class="text-center"><span class="spinner-border spinner-border-sm" role="status"></span> Cargando usuarios...</td></tr>';
             apiClient.get("Users/RetrieveAll")
                 .done(function (res) {
                     allUsers = res?.data || res?.Data || [];
                     filterAndRenderUsers();
                 })
                 .fail(function (xhr) {
-                    tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Error al cargar la lista de usuarios.</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Error al cargar la lista de usuarios.</td></tr>';
                     handleApiError(xhr);
                 });
         }
@@ -176,7 +219,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         function renderUsersTable(users) {
             if (!users.length) {
-                tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No se encontraron usuarios que coincidan con los filtros.</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">No se encontraron usuarios que coincidan con los filtros.</td></tr>';
                 return;
             }
 
@@ -195,17 +238,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 return `
                     <tr>
-                        <td class="fw-bold">${u.identification || "-"}</td>
-                        <td>${fullName || "-"}</td>
-                        <td>${u.email || "-"}</td>
+                        <td class="fw-bold">${escapeHtml(u.identification || "-")}</td>
+                        <td>${escapeHtml(fullName || "-")}</td>
+                        <td>${escapeHtml(u.email || "-")}</td>
+                        <td>${u.phone || "-"}</td>
                         <td>${roleBadge}</td>
                         <td>${statusBadge}</td>
-                        <td>${actions}</td>
+                        <td class="text-end text-nowrap">${actions}</td>
                     </tr>
                 `;
             }).join("");
 
-            // Enlazar eventos de acción
+            // Bind action events
             tableBody.querySelectorAll(".btn-edit").forEach(btn => {
                 btn.addEventListener("click", () => openEditModal(btn.getAttribute("data-id")));
             });
@@ -228,73 +272,99 @@ document.addEventListener("DOMContentLoaded", function () {
             if ((status || "").toLowerCase() === "active") return '<span class="badge bg-success">Activo</span>';
             if ((status || "").toLowerCase() === "inactive") return '<span class="badge bg-secondary">Inactivo</span>';
             if ((status || "").toLowerCase() === "blocked") return '<span class="badge bg-danger">Bloqueado</span>';
+            if ((status || "").toLowerCase() === "pendingactivation") return '<span class="badge bg-warning text-dark">Pendiente</span>';
             return `<span class="badge bg-warning text-dark">${status || "-"}</span>`;
         }
 
-        // Acciones modales y CRUD
-        const userModalEl = document.getElementById("userModal");
-        const userModal = userModalEl ? new bootstrap.Modal(userModalEl) : null;
-        const saveBtn = document.getElementById("saveUserBtn");
-
-        const btnNewUser = document.querySelector('button[data-bs-target="#userModal"]');
-        if (btnNewUser) {
-            btnNewUser.addEventListener("click", function () {
-                editingUserId = null;
-                document.getElementById("userForm")?.reset();
-                const modalTitle = userModalEl?.querySelector(".modal-title");
-                if (modalTitle) modalTitle.textContent = "Nuevo Usuario Interno";
-                
-                const idInput = document.getElementById("uId");
-                const emailInput = document.getElementById("uEmail");
-                if (idInput) idInput.disabled = false;
-                if (emailInput) emailInput.disabled = false;
-            });
-        }
-
+        // Edit modal
         function openEditModal(id) {
             const u = allUsers.find(item => String(item.id) === String(id));
-            if (!u) return;
+            if (!u) {
+                notify.error("No se encontró el usuario.");
+                return;
+            }
 
             editingUserId = u.id;
             const modalTitle = userModalEl?.querySelector(".modal-title");
-            if (modalTitle) modalTitle.textContent = "Editar Usuario Interno";
+            if (modalTitle) modalTitle.innerHTML = '<i class="bi bi-pencil-square me-2"></i>Editar Usuario';
 
+            // Populate fields
             const idInput = document.getElementById("uId");
-            const first1Input = document.getElementById("uFirst1") || document.getElementById("uFirst");
+            const first1Input = document.getElementById("uFirst1");
             const first2Input = document.getElementById("uFirst2");
-            const last1Input = document.getElementById("uLast1") || document.getElementById("uLast");
+            const last1Input = document.getElementById("uLast1");
             const last2Input = document.getElementById("uLast2");
             const emailInput = document.getElementById("uEmail");
+            const phoneInput = document.getElementById("uPhone");
+            const birthDateInput = document.getElementById("uBirthDate");
             const roleInput = document.getElementById("uRole");
+            const passInput = document.getElementById("uPass");
 
             if (idInput) { idInput.value = u.identification || ""; idInput.disabled = true; }
+            if (emailInput) { emailInput.value = u.email || ""; emailInput.disabled = true; }
+
             if (first1Input) {
                 const names = (u.firstName || "").split(" ");
                 first1Input.value = names[0] || "";
-                if (first2Input) first2Input.value = names.slice(1).join(" ") || "";
+                first1Input.disabled = false;
+                if (first2Input) { first2Input.value = names.slice(1).join(" ") || ""; first2Input.disabled = false; }
             }
             if (last1Input) {
                 const lasts = (u.lastName || "").split(" ");
                 last1Input.value = lasts[0] || "";
-                if (last2Input) last2Input.value = lasts.slice(1).join(" ") || "";
+                last1Input.disabled = false;
+                if (last2Input) { last2Input.value = lasts.slice(1).join(" ") || ""; last2Input.disabled = false; }
             }
-            if (emailInput) { emailInput.value = u.email || ""; emailInput.disabled = true; }
-            if (roleInput) roleInput.value = u.role || "Engineer";
 
-            userModal?.show();
+            if (phoneInput) { phoneInput.value = u.phone || ""; phoneInput.disabled = false; }
+
+            if (birthDateInput) {
+                if (u.birthDate) {
+                    const d = new Date(u.birthDate);
+                    birthDateInput.value = d.toISOString().split('T')[0];
+                }
+                birthDateInput.disabled = true;  // BirthDate not editable
+            }
+
+            if (roleInput) { roleInput.value = u.role || "Engineer"; roleInput.disabled = false; }
+            if (passInput) { passInput.value = ""; passInput.disabled = false; }
+
+            const passHint = document.getElementById("passHint");
+            if (passHint) passHint.textContent = "(dejar vacío para no cambiar)";
+
+            // Show birthDate row but disabled, hide password requirement
+            setFieldState("uBirthDate", true, true);
+            setFieldState("uPass", true, false);
+
+            if (userModal) {
+                userModal.show();
+            } else {
+                // Fallback: try to create the modal instance again
+                try {
+                    userModal = new bootstrap.Modal(userModalEl);
+                    userModal.show();
+                } catch(e) {
+                    notify.error("Error al abrir el formulario de edición.");
+                    console.error("Modal init error:", e);
+                }
+            }
         }
 
+        // Save button
+        const saveBtn = document.getElementById("saveUserBtn");
         if (saveBtn) {
             saveBtn.addEventListener("click", function () {
                 const idVal = document.getElementById("uId")?.value.trim();
-                const f1 = document.getElementById("uFirst1")?.value.trim() || document.getElementById("uFirst")?.value.trim() || "";
+                const f1 = document.getElementById("uFirst1")?.value.trim() || "";
                 const f2 = document.getElementById("uFirst2")?.value.trim() || "";
-                const l1 = document.getElementById("uLast1")?.value.trim() || document.getElementById("uLast")?.value.trim() || "";
+                const l1 = document.getElementById("uLast1")?.value.trim() || "";
                 const l2 = document.getElementById("uLast2")?.value.trim() || "";
                 
                 const firstVal = f2 ? `${f1} ${f2}` : f1;
                 const lastVal = l2 ? `${l1} ${l2}` : l1;
                 const emailVal = document.getElementById("uEmail")?.value.trim();
+                const phoneVal = document.getElementById("uPhone")?.value.trim();
+                const birthDateVal = document.getElementById("uBirthDate")?.value;
                 const roleVal = document.getElementById("uRole")?.value;
                 const passVal = document.getElementById("uPass")?.value;
 
@@ -307,12 +377,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
 
                 if (editingUserId) {
-                    // Editar usuario existente
+                    // Edit existing user
                     const dto = {
                         userId: editingUserId,
                         firstName: firstVal,
                         lastName: lastVal,
-                        phone: "88888888",
+                        phone: phoneVal || "88888888",
                         role: roleVal,
                         status: "Active"
                     };
@@ -328,14 +398,28 @@ document.addEventListener("DOMContentLoaded", function () {
                         })
                         .always(function () {
                             saveBtn.disabled = false;
-                            saveBtn.textContent = "Guardar";
+                            saveBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Guardar';
                         });
                 } else {
-                    // Crear nuevo usuario interno
+                    // Create new internal user
                     if (!idVal || !emailVal) {
                         notify.warning("Por favor complete identificación y correo para nuevos usuarios.");
                         saveBtn.disabled = false;
-                        saveBtn.textContent = "Guardar";
+                        saveBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Guardar';
+                        return;
+                    }
+
+                    if (!phoneVal) {
+                        notify.warning("Por favor ingrese un número de teléfono.");
+                        saveBtn.disabled = false;
+                        saveBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Guardar';
+                        return;
+                    }
+
+                    if (!birthDateVal) {
+                        notify.warning("Por favor ingrese la fecha de nacimiento.");
+                        saveBtn.disabled = false;
+                        saveBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Guardar';
                         return;
                     }
 
@@ -345,8 +429,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         lastName: lastVal,
                         email: emailVal,
                         role: roleVal,
-                        phone: "88888888",
-                        birthDate: "1990-01-01",
+                        phone: phoneVal,
+                        birthDate: birthDateVal,
                         password: passVal || "SEGEDE_Temp123!"
                     };
 
@@ -361,7 +445,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         })
                         .always(function () {
                             saveBtn.disabled = false;
-                            saveBtn.textContent = "Guardar";
+                            saveBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Guardar';
                         });
                 }
             });

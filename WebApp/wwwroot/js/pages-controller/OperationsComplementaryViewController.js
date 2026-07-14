@@ -111,7 +111,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 <td>#${l.id || l.Id}</td>
                 <td>${formatDateTime(l.timestamp || l.Timestamp)}</td>
                 <td class="fw-bold text-danger">-${formatNum(l.lostMWh || l.LostMWh)} MWh</td>
-                <td>${l.reason || l.Reason || "Pérdida operativa en red"}</td>
+                <td>${escapeHtml(l.reason || l.Reason || "Pérdida operativa en red")}</td>
             </tr>
         `).join("");
     }

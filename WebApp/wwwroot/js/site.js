@@ -1,4 +1,15 @@
 // site.js (§29.2, §29.3) - Control global de navegación, estética intuitiva, roles y seguridad
+
+// Escapa datos de usuario antes de interpolarlos en innerHTML (defensa contra XSS almacenado).
+// Se expone global porque site.js se carga antes que todos los *ViewController.js (ver _Layout).
+function escapeHtml(value) {
+    if (value === null || value === undefined) return "";
+    return String(value).replace(/[&<>"']/g, function (c) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+}
+window.escapeHtml = escapeHtml;
+
 document.addEventListener("DOMContentLoaded", function () {
     initNavigation();
     initSignOut();
@@ -244,4 +255,77 @@ function initInteractiveCardLinks() {
         });
     });
 }
+
+/**
+ * ============================================================================
+ * SGDE Core — Role-Based UI Access Controller (Vanilla JavaScript)
+ * ============================================================================
+ */
+class RoleAccessController {
+    constructor() {
+        this.storageKey = 'userRole';
+        this.defaultRole = 'guest';
+    }
+
+    getCurrentRoles() {
+        const sessionRole = typeof session !== 'undefined' ? session.getRole() : null;
+        const storedValue = sessionRole || sessionStorage.getItem(this.storageKey) || this.defaultRole;
+        return storedValue
+            .toLowerCase()
+            .split(',')
+            .map(r => r.trim())
+            .filter(r => r.length > 0);
+    }
+
+    applyUIFiltering() {
+        const activeRoles = this.getCurrentRoles();
+        const restrictedElements = document.querySelectorAll('[data-roles]');
+
+        restrictedElements.forEach(element => {
+            const allowedRolesAttr = element.getAttribute('data-roles');
+            if (!allowedRolesAttr) return;
+
+            const allowedRoles = allowedRolesAttr
+                .toLowerCase()
+                .split(',')
+                .map(r => r.trim());
+
+            const hasAccess = allowedRoles.some(role => activeRoles.includes(role));
+
+            if (hasAccess) {
+                element.classList.remove('d-none');
+            } else {
+                element.classList.add('d-none');
+            }
+        });
+
+        this.updateSidebarUserProfile(activeRoles);
+    }
+
+    updateSidebarUserProfile(activeRoles) {
+        const badgeEl = document.getElementById('sidebarUserRoleBadge');
+        const nameEl = document.getElementById('sidebarUserName');
+        if (badgeEl && activeRoles.length > 0) {
+            badgeEl.textContent = activeRoles[0].toUpperCase();
+        }
+        if (nameEl && typeof session !== 'undefined') {
+            const email = session.getEmail() || sessionStorage.getItem('sgde_login_email') || 'Usuario Sesión';
+            nameEl.textContent = email;
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const rbacController = new RoleAccessController();
+    rbacController.applyUIFiltering();
+
+    window.SGDE_RBAC = {
+        refresh: () => rbacController.applyUIFiltering(),
+        setRole: (newRole) => {
+            sessionStorage.setItem('userRole', newRole);
+            rbacController.applyUIFiltering();
+        }
+    };
+});
+
 
