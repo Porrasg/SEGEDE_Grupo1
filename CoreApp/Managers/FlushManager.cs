@@ -1,4 +1,5 @@
 using System.Data;
+using Microsoft.Data.SqlClient;
 using SEGEDE_Grupo1.DataAccess.CRUD;
 using SEGEDE_Grupo1.DataAccess.DAO;
 using SEGEDE_Grupo1.EntitiesDTOs.Constants;
@@ -106,43 +107,61 @@ public class FlushManager
 
         var now = TimeHelper.NowCR();
 
-        // Ciclo ACID real (§37.25/§60.1): una única transacción con aislamiento Serializable envuelve
-        // la creación del Flush, sus snapshots, el ajuste del Banco Central y el vaciado de baterías.
-        // Ante cualquier fallo, se revierte todo el lote — no queda ningún registro "Processing" huérfano.
+        // Crear el registro de Flush FUERA de la transacción principal para poder marcarlo Failed si el
+        // trabajo transaccional falla (la fila sobrevive al rollback). El trabajo crítico (snapshots,
+        // inventario y baterías) se ejecuta dentro de una única transacción Serializable para garantizar ACID.
+        //
+        // Garantía de concurrencia: el índice único filtrado UX_Flush_Active sobre tblFlush(Status)
+        // WHERE Status='Processing' (ver Database/03_Index_Flush_Active.sql) impide a NIVEL DE BD que
+        // exista más de un flush 'Processing' a la vez. Si dos procesos intentan crear en paralelo, el
+        // segundo INSERT viola el índice y se traduce a FLUSH_IN_PROGRESS (409) — protección atómica y
+        // real, no dependiente del re-chequeo por Id (que queda como defensa adicional si el índice no
+        // estuviera desplegado en una BD dada).
+        var flush = new Flush
+        {
+            ExecutionType = executionType,
+            Status = FlushStates.Processing,
+            UserId = userId,
+            TotalTransferredEnergy = 0m,
+            SaturationLoss = 0m,
+            StartDate = now,
+            EndDate = null,
+            Created = now
+        };
+
+        try
+        {
+            _flushFactory.Create(flush);
+        }
+        catch (SqlException ex) when (ex.Number is 2601 or 2627)
+        {
+            // Violación del índice único filtrado: ya existe un flush 'Processing' concurrente.
+            throw new BusinessException("A flush operation is already currently in progress.", "FLUSH_IN_PROGRESS");
+        }
+
+        var createdFlush = _flushFactory.RetrieveActive() ?? throw new BusinessException("Failed to initiate flush transaction.");
+
+        // Ejecutar las operaciones críticas en una única transacción Serializable.
         using var conn = SqlDao.GetInstance().GetOpenConnection();
         using var tx = conn.BeginTransaction(IsolationLevel.Serializable);
 
         try
         {
-            // Re-chequeo dentro de la transacción Serializable: la comprobación previa (CheckActiveFlush)
-            // ocurre fuera de la transacción y no impide una carrera entre dos flushes concurrentes.
-            // Bajo Serializable, este SELECT adquiere locks de rango que serializan la creación del flush,
-            // evitando dos registros "Processing" simultáneos que drenarían las baterías dos veces.
+            // Re-chequeo dentro de la transacción: si existe otro flush activo distinto al que acabamos de crear,
+            // abortamos. Si la única fila "Processing" es la que creamos arriba (misma Id), continuamos.
             var alreadyActive = _flushFactory.RetrieveActive(conn, tx);
-            if (alreadyActive != null)
+            if (alreadyActive != null && alreadyActive.Id != createdFlush.Id)
             {
                 throw new BusinessException("A flush operation is already currently in progress.", "FLUSH_IN_PROGRESS");
             }
 
-            var flush = new Flush
-            {
-                ExecutionType = executionType,
-                Status = FlushStates.Processing,
-                UserId = userId,
-                TotalTransferredEnergy = 0m,
-                SaturationLoss = 0m,
-                StartDate = now,
-                EndDate = null,
-                Created = now
-            };
-
-            _flushFactory.Create(flush, conn, tx);
-            var createdFlush = _flushFactory.RetrieveActive(conn, tx) ?? throw new BusinessException("Failed to initiate flush transaction.");
-
             decimal totalSnapshotEnergy = 0m;
             var snapshots = new List<FlushSnapshot>();
 
-            foreach (var b in nonEmptyBatteries)
+            // Leer baterías dentro de la transacción para evitar carreras.
+            var batteriesInTx = _batteryFactory.RetrieveAllNonEmpty(conn, tx);
+
+            foreach (var b in batteriesInTx)
             {
                 if (b.StoredEnergy <= 0) continue;
 
@@ -213,6 +232,7 @@ public class FlushManager
                 _batteryFactory.UpdateEnergy(snap.LocalBatteryId, 0m, now, conn, tx);
             }
 
+            // Marcar el flush como completado dentro de la misma transacción
             _flushFactory.UpdateStatus(createdFlush.Id, FlushStates.Completed, now, transferred, ps, now, conn, tx);
 
             tx.Commit();
@@ -221,15 +241,24 @@ public class FlushManager
         }
         catch (BusinessException)
         {
-            // Errores de negocio esperados (p.ej. FLUSH_IN_PROGRESS por carrera): revertir y
-            // propagar tal cual para conservar su código HTTP (409) — no son fallos de ejecución.
             try { tx.Rollback(); } catch { /* la conexión pudo cerrarse antes del rollback */ }
+            // Podemos marcar el flush como fallido puesto que fue creado fuera de la transacción principal.
+            try
+            {
+                _flushFactory.UpdateStatus(createdFlush.Id, FlushStates.Failed, TimeHelper.NowCR(), 0m, 0m, TimeHelper.NowCR());
+            }
+            catch { /* si falla el update de estado, no podemos hacer más aquí */ }
             throw;
         }
         catch (Exception ex)
         {
             try { tx.Rollback(); } catch { /* la conexión pudo cerrarse antes del rollback */ }
-            _auditManager.LogAction(userId, userId.HasValue ? $"User {userId}" : SystemActor.Name, AuditModules.Flush, AuditActions.Execute, "tblFlush", 0, FlushStates.Processing, FlushStates.Failed);
+            try
+            {
+                _flushFactory.UpdateStatus(createdFlush.Id, FlushStates.Failed, TimeHelper.NowCR(), 0m, 0m, TimeHelper.NowCR());
+            }
+            catch { /* ignorable */ }
+            _auditManager.LogAction(userId, userId.HasValue ? $"User {userId}" : SystemActor.Name, AuditModules.Flush, AuditActions.Execute, "tblFlush", createdFlush.Id, FlushStates.Processing, FlushStates.Failed);
             throw new BusinessException($"Flush execution failed: {ex.Message}", "FLUSH_FAILED");
         }
     }
