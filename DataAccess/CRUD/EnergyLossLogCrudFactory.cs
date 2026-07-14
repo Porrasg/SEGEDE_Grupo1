@@ -1,3 +1,4 @@
+using Microsoft.Data.SqlClient;
 using SEGEDE_Grupo1.DataAccess.DAO;
 using SEGEDE_Grupo1.EntitiesDTOs;
 using SEGEDE_Grupo1.EntitiesDTOs.Entities;
@@ -11,6 +12,22 @@ public class EnergyLossLogCrudFactory : CrudFactory
     public override void Create(BaseDTO baseDTO)
     {
         var l = (EnergyLossLog)baseDTO;
+        var op = BuildCreateOperation(l);
+        sqlDao.ExecuteProcedure(op);
+    }
+
+    // --- Overload transaccional (§37.25) ---
+
+    public void Create(BaseDTO baseDTO, SqlConnection conn, SqlTransaction tx)
+    {
+        var l = (EnergyLossLog)baseDTO;
+        var op = BuildCreateOperation(l);
+        sqlDao.ExecuteProcedureInTransaction(op, conn, tx);
+    }
+
+    // Helper para reducir la duplicación entre Create transaccional y no transaccional
+    private static Operation BuildCreateOperation(EnergyLossLog l)
+    {
         var op = new Operation { ProcedureName = "CRE_EL_LOG_PR" };
         op.AddIntParameter("@TurbineId", l.TurbineId);
         op.AddDecimalParameter("@InactiveTimeSeconds", l.InactiveTimeSeconds);
@@ -18,7 +35,7 @@ public class EnergyLossLogCrudFactory : CrudFactory
         op.AddStringParameter("@Cause", l.Cause);
         op.AddDateTimeParameter("@EventDate", l.EventDate);
         op.AddDateTimeParameter("@Created", l.Created);
-        sqlDao.ExecuteProcedure(op);
+        return op;
     }
 
     // Invoca el SP de modificación para actualizar los campos operacionales del registro en la base de datos.
@@ -42,7 +59,7 @@ public class EnergyLossLogCrudFactory : CrudFactory
     public override List<T> RetrieveAll<T>() =>
         throw new NotSupportedException("RetrieveAll is not supported for EnergyLossLog.");
 
-    // --- Custom methods ---
+    // --- Métodos personalizados ---
 
     public List<EnergyLossLog> RetrieveByTurbine(int turbineId)
     {

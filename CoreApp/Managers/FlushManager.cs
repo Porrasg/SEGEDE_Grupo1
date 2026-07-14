@@ -18,6 +18,7 @@ public class FlushManager
     private readonly FlushConfigCrudFactory _configFactory = new();
     private readonly FlushSnapshotCrudFactory _snapshotFactory = new();
     private readonly SaturationLogCrudFactory _satLogFactory = new();
+    private readonly EnergyLossLogCrudFactory _lossLogCrudFactory = new();
     private readonly LocalBatteryCrudFactory _batteryFactory = new();
     private readonly CentralBankCrudFactory _cbFactory = new();
     private readonly CentralBankLogCrudFactory _cbLogFactory = new();
@@ -82,6 +83,27 @@ public class FlushManager
     }
 
     // --- Helper Privado de Vaciado ACID (§17.2) ---
+    // PerformFlush (resumen de pasos, en español):
+    // 1) Comprobaciones preliminares fuera de la transacción: asegura que no hay otro flush
+    //    en Processing, lee baterías no vacías y valida condiciones para flush manual/auto.
+    // 2) Crea el registro tblFlush con Status=Processing fuera de la TX para poder marcar
+    //    el flush como Failed si la transacción crítica falla.
+    // 3) Abre una única transacción (IsolationLevel.Serializable) que contendrá las
+    //    operaciones críticas: snapshots WORM, cálculo de saturación, actualización de
+    //    inventario, logs y vaciado de baterías.
+    // 4) Dentro de la TX se re-chequea idempotencia (RetrieveActive en-TX) y se vuelven a
+    //    leer las baterías para evitar condiciones de carrera.
+    // 5) Insertar FlushSnapshot por cada batería (WORM) y acumular la energía capturada.
+    // 6) Calcular saturación: si inventory + totalSnapshotEnergy > capacidad =>
+    //    generar SaturationLog (WORM), prorratear la pérdida entre turbinas y persistir
+    //    EnergyLossLog por turbina (WORM), ajustar energía transferida.
+    // 7) Actualizar inventario del Banco Central e insertar CentralBankLog (si hubo
+    //    transferencia efectiva).
+    // 8) Poner a cero (UpdateEnergy) las baterías locales afectadas (dentro de la TX).
+    // 9) Marcar tblFlush como Completed dentro de la misma TX (TotalTransferredEnergy,
+    //    SaturationLoss) y commitear la TX.
+    // 10) En caso de excepción: rollback; fuera de la TX marcar tblFlush como Failed y
+    //     registrar auditoría. Garantías: ACID, WORM para snapshots/logs, idempotencia.
 
     private void PerformFlush(string executionType, int? userId)
     {
@@ -177,6 +199,7 @@ public class FlushManager
                 finalInv = cmbc;
                 transferred = et - ps;
 
+                // Crear una entrada de SaturationLog (WORM) para el flush global.
                 var satLog = new SaturationLog
                 {
                     FlushId = createdFlush.Id,
@@ -187,6 +210,30 @@ public class FlushManager
                     Created = now
                 };
                 _satLogFactory.Create(satLog, conn, tx);
+                // Además, prorratear la pérdida por saturación entre las turbinas en proporción a su
+                // contribución a la energía capturada y persistir un EnergyLossLog por turbina
+                // para que las pérdidas sean auditables por turbina (WORM). Esto mantiene la contabilidad
+                // consistente y preserva trazas detalladas de la pérdida.
+                if (ps > 0 && snapshots.Count > 0)
+                {
+                    foreach (var snap in snapshots)
+                    {
+                        // proporción = snap.CapturedEnergy / et
+                        var proportion = et > 0 ? (snap.CapturedEnergy / et) : 0m;
+                        var lost = Math.Round(proportion * ps, 4);
+
+                        var lossLog = new EnergyLossLog
+                        {
+                            TurbineId = snap.TurbineId,
+                            InactiveTimeSeconds = 0m,
+                            LostEnergy = lost,
+                            Cause = EnergyLossCauses.Maintenance, // causa genérica para pérdida por saturación
+                            EventDate = now,
+                            Created = now
+                        };
+                        _lossLogCrudFactory.Create(lossLog, conn, tx);
+                    }
+                }
             }
             else
             {
