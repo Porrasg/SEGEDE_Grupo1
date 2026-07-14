@@ -1,3 +1,4 @@
+using Microsoft.Data.SqlClient;
 using SEGEDE_Grupo1.DataAccess.DAO;
 using SEGEDE_Grupo1.EntitiesDTOs;
 using SEGEDE_Grupo1.EntitiesDTOs.Entities;
@@ -36,6 +37,17 @@ public class CentralBankCrudFactory : CrudFactory
         return results.Count > 0 ? BuildCentralBank(results[0]) : null;
     }
 
+    // Inicialización única e idempotente de la fila singleton (Id=1). No usar Create(): está bloqueado a propósito
+    // para impedir inserciones fuera de este flujo de arranque/seed (§12.14, Singleton).
+    public void InitializeSingleton(decimal currentInventory, decimal automaticCapacity, DateTime created)
+    {
+        var op = new Operation { ProcedureName = "INIT_CENT_BANK_PR" };
+        op.AddDecimalParameter("@CurrentInventory", currentInventory);
+        op.AddDecimalParameter("@AutomaticCapacity", automaticCapacity);
+        op.AddDateTimeParameter("@Created", created);
+        sqlDao.ExecuteProcedure(op);
+    }
+
     // Función encargada de modificar y actualizar los campos operacionales de registros existentes.
     public void UpdateInventory(decimal currentInventory, DateTime updated)
     {
@@ -61,6 +73,23 @@ public class CentralBankCrudFactory : CrudFactory
         op.AddNullableDecimalParameter("@ManualCapacity", manualCapacity);
         op.AddDateTimeParameter("@Updated", updated);
         sqlDao.ExecuteProcedure(op);
+    }
+
+    // --- Overloads transaccionales (§37.25, contratos de bloqueo de Flush y Distribución) ---
+
+    public CentralBank? RetrieveSingleton(SqlConnection conn, SqlTransaction tx)
+    {
+        var op = new Operation { ProcedureName = "RET_SINGLETON_CENT_BANK_PR" };
+        var results = sqlDao.ExecuteQueryInTransaction(op, conn, tx);
+        return results.Count > 0 ? BuildCentralBank(results[0]) : null;
+    }
+
+    public void UpdateInventory(decimal currentInventory, DateTime updated, SqlConnection conn, SqlTransaction tx)
+    {
+        var op = new Operation { ProcedureName = "UPD_INVENTORY_CENT_BANK_PR" };
+        op.AddDecimalParameter("@CurrentInventory", currentInventory);
+        op.AddDateTimeParameter("@Updated", updated);
+        sqlDao.ExecuteProcedureInTransaction(op, conn, tx);
     }
 
     // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.

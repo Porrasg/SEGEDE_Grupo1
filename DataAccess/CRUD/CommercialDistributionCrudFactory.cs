@@ -1,3 +1,4 @@
+using Microsoft.Data.SqlClient;
 using SEGEDE_Grupo1.DataAccess.DAO;
 using SEGEDE_Grupo1.EntitiesDTOs;
 using SEGEDE_Grupo1.EntitiesDTOs.Entities;
@@ -57,6 +58,33 @@ public class CommercialDistributionCrudFactory : CrudFactory
         op.AddIntParameter("@Month", month);
         op.AddIntParameter("@Year", year);
         var results = sqlDao.ExecuteQueryProcedure(op);
+        return results.Count > 0 ? BuildDistribution(results[0]) : null;
+    }
+
+    // --- Overloads transaccionales (§37.25, ciclo ACID de Distribución Comercial) ---
+
+    public void Create(BaseDTO baseDTO, SqlConnection conn, SqlTransaction tx)
+    {
+        var d = (CommercialDistribution)baseDTO;
+        var op = new Operation { ProcedureName = "CRE_COMM_DIST_PR" };
+        op.AddIntParameter("@Month", d.Month);
+        op.AddIntParameter("@Year", d.Year);
+        op.AddDateTimeParameter("@ExecutionDate", d.ExecutionDate);
+        op.AddDecimalParameter("@AvailableInventory", d.AvailableInventory);
+        op.AddDecimalParameter("@TotalDemand", d.TotalDemand);
+        op.AddDecimalParameter("@DistributedEnergy", d.DistributedEnergy);
+        op.AddDecimalParameter("@RoundingResidual", d.RoundingResidual);
+        op.AddStringParameter("@Scenario", d.Scenario);
+        op.AddDateTimeParameter("@Created", d.Created);
+        sqlDao.ExecuteProcedureInTransaction(op, conn, tx);
+    }
+
+    public CommercialDistribution? RetrieveByMonth(int month, int year, SqlConnection conn, SqlTransaction tx)
+    {
+        var op = new Operation { ProcedureName = "RET_BY_MONTH_COMM_DIST_PR" };
+        op.AddIntParameter("@Month", month);
+        op.AddIntParameter("@Year", year);
+        var results = sqlDao.ExecuteQueryInTransaction(op, conn, tx);
         return results.Count > 0 ? BuildDistribution(results[0]) : null;
     }
 

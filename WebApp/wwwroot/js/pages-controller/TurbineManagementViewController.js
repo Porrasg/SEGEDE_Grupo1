@@ -12,6 +12,11 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
+    // Esta misma vista se comparte entre /Admin/Turbines(+TurbineDetail) y /Engineer/Turbines(+TurbineDetail);
+    // el enlace de Detalle y el Back deben apuntar siempre al rol de origen (corrige el bug de enrutamiento cruzado).
+    const roleBase = window.location.pathname.toLowerCase().startsWith("/admin") ? "/Admin" : "/Engineer";
+    const isAdmin = role === "Administrator" || role === "Admin";
+
     // ==========================================
     // 1. LISTADO Y OPERACIÓN (/Engineer/Turbines)
     // ==========================================
@@ -70,16 +75,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 return `
                     <tr>
-                        <td class="fw-bold">${code}</td>
-                        <td>${name}</td>
-                        <td>${loc}</td>
+                        <td class="fw-bold">${escapeHtml(code)}</td>
+                        <td>${escapeHtml(name)}</td>
+                        <td>${escapeHtml(loc)}</td>
                         <td>${cap}</td>
                         <td>${stateBadge}</td>
                         <td>
+                            ${isAdmin ? `<button class="btn btn-sm btn-outline-secondary me-1 btn-edit" data-id="${t.id}" title="Editar Turbina"><i class="bi bi-pencil"></i> Editar</button>` : ""}
                             <button class="btn btn-sm btn-outline-warning me-1 btn-state" data-id="${t.id}" data-state="${stateVal}" title="Cambiar Estado">
                                 <i class="bi bi-gear"></i> Estado
                             </button>
-                            <a href="/Engineer/TurbineDetail?id=${t.id}" class="btn btn-sm btn-outline-info" title="Ver Detalle Técnico">
+                            <a href="${roleBase}/TurbineDetail?id=${t.id}" class="btn btn-sm btn-outline-info" title="Ver Detalle Técnico">
                                 <i class="bi bi-eye"></i> Detalle
                             </a>
                         </td>
@@ -89,6 +95,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
             turbinesBody.querySelectorAll(".btn-state").forEach(btn => {
                 btn.addEventListener("click", () => openStateModal(btn.getAttribute("data-id"), btn.getAttribute("data-state")));
+            });
+            turbinesBody.querySelectorAll(".btn-edit").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const t = allTurbines.find(x => String(x.id) === btn.getAttribute("data-id"));
+                    if (t) openEditModal(t);
+                });
             });
         }
 
@@ -152,9 +164,48 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }
 
+        let editingTurbineId = null;
+        const tModalEl = document.getElementById("turbineModal");
+        const tCodeInput = document.getElementById("tCode");
+        const tYearInput = document.getElementById("tYear");
+        const tModalTitle = tModalEl?.querySelector(".modal-title");
+        const tCodeField = tCodeInput?.closest(".col") || tCodeInput;
+
+        // Al abrir el modal para "Nueva Turbina" (no vía botón Editar), limpia cualquier estado de edición previo.
+        if (tModalEl) {
+            tModalEl.addEventListener("show.bs.modal", function (event) {
+                if (event.relatedTarget && event.relatedTarget.classList.contains("btn-edit")) return;
+                editingTurbineId = null;
+                document.getElementById("turbineForm")?.reset();
+                if (tModalTitle) tModalTitle.textContent = "Registrar Turbina";
+                if (tCodeInput) tCodeInput.disabled = false;
+                if (tYearInput) tYearInput.disabled = false;
+                if (tCodeField) tCodeField.classList.remove("d-none");
+            });
+        }
+
+        function openEditModal(t) {
+            editingTurbineId = t.id;
+            if (tModalTitle) tModalTitle.textContent = `Editar Turbina — ${t.uniqueCode || t.UniqueCode || ""}`;
+            const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val ?? ""; };
+            setVal("tCode", t.uniqueCode || t.UniqueCode);
+            setVal("tName", t.name);
+            setVal("tLoc", t.location);
+            setVal("tBrand", t.brand || t.Brand);
+            setVal("tModel", t.model || t.Model);
+            setVal("tYear", t.year || t.Year);
+            setVal("tCap", t.weeklyNominalCapacity || t.WeeklyNominalCapacity);
+            // UniqueCode y Year no son editables (UpdateTurbineRequest no los admite) — se muestran de solo lectura.
+            if (tCodeInput) tCodeInput.disabled = true;
+            if (tYearInput) tYearInput.disabled = true;
+            const tModalInst = tModalEl ? (bootstrap.Modal.getInstance(tModalEl) || new bootstrap.Modal(tModalEl)) : null;
+            tModalInst?.show();
+        }
+
         const saveTurbineBtn = document.getElementById("saveTurbineBtn");
         if (saveTurbineBtn) {
             saveTurbineBtn.addEventListener("click", function () {
+                const isEdit = editingTurbineId != null;
                 const dto = {
                     uniqueCode: document.getElementById("tCode")?.value.trim(),
                     name: document.getElementById("tName")?.value.trim(),
@@ -170,12 +221,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
                 saveTurbineBtn.disabled = true;
                 saveTurbineBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Guardando...';
-                apiClient.post("Turbines/Register", dto).done(function () {
-                    notify.success("Turbina registrada exitosamente.");
-                    const tModalEl = document.getElementById("turbineModal");
+
+                const request = isEdit
+                    ? apiClient.put("Turbines/Update", { turbineId: editingTurbineId, name: dto.name, location: dto.location, brand: dto.brand, model: dto.model, weeklyNominalCapacity: dto.weeklyNominalCapacity })
+                    : apiClient.post("Turbines/Register", dto);
+
+                request.done(function () {
+                    notify.success(isEdit ? "Turbina actualizada exitosamente." : "Turbina registrada exitosamente.");
                     const tModalInst = bootstrap.Modal.getInstance(tModalEl) || (tModalEl ? new bootstrap.Modal(tModalEl) : null);
                     tModalInst?.hide();
                     document.getElementById("turbineForm")?.reset();
+                    editingTurbineId = null;
                     loadTurbines();
                 }).fail(function (xhr) {
                     handleApiError(xhr);
@@ -188,15 +244,17 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // ==========================================
-    // 2. DETALLE TÉCNICO (/Engineer/TurbineDetail)
+    // 2. DETALLE TÉCNICO (/Admin/TurbineDetail y /Engineer/TurbineDetail — IDs con o sin prefijo "eng")
     // ==========================================
-    if (document.getElementById("engDetName")) {
+    const byIdEither = (a, b) => document.getElementById(a) || document.getElementById(b);
+
+    if (byIdEither("engDetName", "detName")) {
         const urlParams = new URLSearchParams(window.location.search);
         const turbineId = urlParams.get("id");
 
         if (!turbineId) {
             notify.error("Identificador de turbina no especificado.");
-            setTimeout(() => window.location.href = "/Engineer/Turbines", 1500);
+            setTimeout(() => window.location.href = roleBase + "/Turbines", 1500);
             return;
         }
 
@@ -209,9 +267,9 @@ document.addEventListener("DOMContentLoaded", function () {
         apiClient.get("Turbines/" + id)
             .done(function (res) {
                 const t = res?.data || res?.Data || {};
-                const nameEl = document.getElementById("engDetName");
-                const metaEl = document.getElementById("engDetMeta");
-                const statusEl = document.getElementById("engDetStatus");
+                const nameEl = byIdEither("engDetName", "detName");
+                const metaEl = byIdEither("engDetMeta", "detMeta");
+                const statusEl = byIdEither("engDetStatus", "detStatus");
 
                 if (nameEl) nameEl.textContent = t.name || `Turbina #${t.id || id}`;
                 if (metaEl) metaEl.textContent = `Código: ${t.uniqueCode || t.UniqueCode || t.turbineCode || t.Code || "-"} | Ubicación: ${t.location || "-"} | Capacidad: ${Number(t.weeklyNominalCapacity || t.WeeklyNominalCapacity || 0).toLocaleString("es-CR")} MWh/sem`;
@@ -232,10 +290,10 @@ document.addEventListener("DOMContentLoaded", function () {
         apiClient.get("Turbines/Metrics/" + id)
             .done(function (res) {
                 const m = res?.data || res?.Data || {};
-                setText("engValDo", (m.operationalAvailability ?? m.OperationalAvailability ?? 0) + "%");
-                setText("engValIo", (m.operationalUnavailability ?? m.OperationalUnavailability ?? 0) + "%");
-                setText("engValMtbf", Number(m.mtbf ?? m.MTBF ?? 0).toLocaleString("es-CR", { maximumFractionDigits: 1 }) + " hrs");
-                setText("engValMttr", Number(m.mttr ?? m.MTTR ?? 0).toLocaleString("es-CR", { maximumFractionDigits: 1 }) + " hrs");
+                setTextEither("engValDo", "valDo", (m.operationalAvailability ?? m.OperationalAvailability ?? 0) + "%");
+                setTextEither("engValIo", "valIo", (m.operationalUnavailability ?? m.OperationalUnavailability ?? 0) + "%");
+                setTextEither("engValMtbf", "valMtbf", Number(m.mtbf ?? m.MTBF ?? 0).toLocaleString("es-CR", { maximumFractionDigits: 1 }) + " hrs");
+                setTextEither("engValMttr", "valMttr", Number(m.mttr ?? m.MTTR ?? 0).toLocaleString("es-CR", { maximumFractionDigits: 1 }) + " hrs");
             })
             .fail(function (xhr) {
                 console.error("Error cargando métricas:", xhr);
@@ -248,7 +306,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const h = res?.data || res?.Data || {};
 
                 // Render Estado Histórico
-                const histBody = document.getElementById("engHistoryBody");
+                const histBody = byIdEither("engHistoryBody", "historyBody");
                 const stateChanges = h.stateChanges || h.StateChanges || [];
                 if (histBody) {
                     histBody.innerHTML = stateChanges.length ? stateChanges.map(s => `
@@ -256,14 +314,14 @@ document.addEventListener("DOMContentLoaded", function () {
                             <td>${new Date(s.changeDate || s.ChangeDate).toLocaleString("es-CR")}</td>
                             <td><span class="badge bg-secondary">${s.previousState || s.PreviousState || "-"}</span></td>
                             <td><span class="badge bg-primary">${s.newState || s.NewState || "-"}</span></td>
-                            <td>${s.reason || s.Reason || "-"}</td>
+                            <td>${escapeHtml(s.reason || s.Reason || "-")}</td>
                             <td>Usuario #${s.changedByUserId || s.ChangedByUserId || "---"}</td>
                         </tr>
                     `).join("") : '<tr><td colspan="5" class="text-center text-muted">Sin cambios de estado registrados.</td></tr>';
                 }
 
                 // Render Mantenimientos
-                const maintBody = document.getElementById("engMaintBody");
+                const maintBody = byIdEither("engMaintBody", "maintBody");
                 const maintenances = h.maintenances || h.Maintenances || [];
                 if (maintBody) {
                     maintBody.innerHTML = maintenances.length ? maintenances.map(m => `
@@ -278,14 +336,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
                 // Render Fallas
-                const failBody = document.getElementById("engFailBody");
+                const failBody = byIdEither("engFailBody", "failBody");
                 const failures = h.failures || h.Failures || [];
                 if (failBody) {
                     failBody.innerHTML = failures.length ? failures.map(f => `
                         <tr>
                             <td>${new Date(f.failureDate || f.FailureDate).toLocaleString("es-CR")}</td>
                             <td><span class="badge bg-danger">${f.severityLevel || f.SeverityLevel || "-"}</span></td>
-                            <td>${f.description || f.Description || "-"}</td>
+                            <td>${escapeHtml(f.description || f.Description || "-")}</td>
                         </tr>
                     `).join("") : '<tr><td colspan="3" class="text-center text-muted">No se han reportado averías en esta turbina.</td></tr>';
                 }
@@ -297,6 +355,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function setText(id, value) {
         const el = document.getElementById(id);
+        if (el) el.textContent = value;
+    }
+
+    function setTextEither(idA, idB, value) {
+        const el = byIdEither(idA, idB);
         if (el) el.textContent = value;
     }
 });

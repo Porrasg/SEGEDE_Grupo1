@@ -38,16 +38,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                 sessionStorage.removeItem("sgde_login_email");
                                 notify.success("¡Inicio de sesión exitoso! Redirigiendo...");
                                 setTimeout(function () {
-                                    const role = session.getRole();
-                                    if (role === "Administrator" || role === "Admin") {
-                                        window.location.href = "/Admin/Dashboard";
-                                    } else if (role === "Engineer") {
-                                        window.location.href = "/Engineer/Dashboard";
-                                    } else if (role === "Buyer") {
-                                        window.location.href = "/Buyer/Dashboard";
-                                    } else {
-                                        window.location.href = "/";
-                                    }
+                                    window.location.href = dashboardUrlForRole(session.getRole()) || "/";
                                 }, 800);
                             }
                         })
@@ -108,16 +99,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         notify.success("¡Inicio de sesión exitoso! Redirigiendo...");
 
                         setTimeout(function () {
-                            const role = session.getRole();
-                            if (role === "Administrator" || role === "Admin") {
-                                window.location.href = "/Admin/Dashboard";
-                            } else if (role === "Engineer") {
-                                window.location.href = "/Engineer/Dashboard";
-                            } else if (role === "Buyer") {
-                                window.location.href = "/Buyer/Dashboard";
-                            } else {
-                                window.location.href = "/";
-                            }
+                            window.location.href = dashboardUrlForRole(session.getRole()) || "/";
                         }, 1000);
                     } else {
                         notify.error("No se recibieron datos de sesión válidos.");
@@ -152,6 +134,59 @@ document.addEventListener("DOMContentLoaded", function () {
     // ==========================================
     const registerForm = document.getElementById("registerForm");
     if (registerForm) {
+        // Edad calculada automáticamente a partir de la fecha de nacimiento (RF de registro).
+        const birthInput = document.getElementById("regBirthDate");
+        const ageInput = document.getElementById("regAge");
+        if (birthInput && ageInput) {
+            birthInput.addEventListener("change", function () {
+                const bd = new Date(this.value);
+                if (isNaN(bd)) { ageInput.value = ""; return; }
+                const today = new Date();
+                let age = today.getFullYear() - bd.getFullYear();
+                const m = today.getMonth() - bd.getMonth();
+                if (m < 0 || (m === 0 && today.getDate() < bd.getDate())) age--;
+                ageInput.value = age >= 0 ? `${age} años` : "";
+            });
+        }
+
+        // Fotografía de perfil: se redimensiona en el cliente (máx. 256px) y se envía como data-URL base64.
+        let photoDataUrl = null;
+        const photoInput = document.getElementById("regPhoto");
+        const photoPreview = document.getElementById("regPhotoPreview");
+        const photoPlaceholder = document.getElementById("regPhotoPlaceholder");
+        if (photoInput) {
+            photoInput.addEventListener("change", function () {
+                const file = this.files?.[0];
+                if (!file) { photoDataUrl = null; return; }
+                if (!/^image\/(jpeg|png|webp)$/.test(file.type)) {
+                    notify.warning("Formato no soportado. Use JPG, PNG o WebP.");
+                    this.value = "";
+                    return;
+                }
+                const img = new Image();
+                img.onload = function () {
+                    const MAX = 256;
+                    const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+                    const canvas = document.createElement("canvas");
+                    canvas.width = Math.round(img.width * scale);
+                    canvas.height = Math.round(img.height * scale);
+                    canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+                    photoDataUrl = canvas.toDataURL("image/jpeg", 0.82);
+                    URL.revokeObjectURL(img.src);
+                    if (photoPreview && photoPlaceholder) {
+                        photoPreview.src = photoDataUrl;
+                        photoPreview.classList.remove("d-none");
+                        photoPlaceholder.classList.add("d-none");
+                    }
+                };
+                img.onerror = function () {
+                    URL.revokeObjectURL(img.src);
+                    notify.error("No se pudo leer la imagen seleccionada.");
+                };
+                img.src = URL.createObjectURL(file);
+            });
+        }
+
         registerForm.addEventListener("submit", function (e) {
             e.preventDefault();
 
@@ -175,6 +210,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 lastName: ln2 ? `${ln1} ${ln2}` : ln1,
                 phone: document.getElementById("regPhone")?.value.trim(),
                 birthDate: document.getElementById("regBirthDate")?.value,
+                photoUrl: photoDataUrl,
                 password: password
             };
 
@@ -187,9 +223,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
             apiClient.post("Users/Register", dto)
                 .done(function (res) {
-                    notify.success(res?.message || res?.Message || "Comprador registrado con éxito. Ya puede iniciar sesión.");
+                    notify.success(res?.message || res?.Message || "Comprador registrado con éxito. Active su cuenta con el código enviado a su correo.");
+                    sessionStorage.setItem("sgde_activate_email", dto.email);
                     setTimeout(function () {
-                        window.location.href = "/Login";
+                        window.location.href = "/Activate";
                     }, 1500);
                 })
                 .fail(function (xhr) {
@@ -246,6 +283,35 @@ document.addEventListener("DOMContentLoaded", function () {
                     handleApiError(xhr);
                 });
         });
+
+        // Reenvío del OTP de activación: usa el endpoint ResendOtp existente. Permite obtener un
+        // código nuevo si el anterior expiró, sin tener que volver a llenar el formulario de registro.
+        const resendActivationBtn = document.getElementById("resendActivationBtn");
+        if (resendActivationBtn) {
+            resendActivationBtn.addEventListener("click", function () {
+                const email = document.getElementById("actEmail")?.value.trim();
+                if (!email) {
+                    notify.warning("Ingrese su correo electrónico para reenviar el código.");
+                    return;
+                }
+
+                const original = resendActivationBtn.innerHTML;
+                resendActivationBtn.disabled = true;
+                resendActivationBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Reenviando...';
+
+                apiClient.post("Users/ResendOtp", { email: email, usageType: "Activation" })
+                    .done(function (res) {
+                        notify.success(res?.message || res?.Message || "Código de activación reenviado. Revise su correo.");
+                    })
+                    .fail(function (xhr) {
+                        handleApiError(xhr);
+                    })
+                    .always(function () {
+                        resendActivationBtn.disabled = false;
+                        resendActivationBtn.innerHTML = original;
+                    });
+            });
+        }
     }
 
     // ==========================================

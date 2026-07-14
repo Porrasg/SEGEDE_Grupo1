@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SEGEDE_Grupo1.CoreApp.Managers;
 using SEGEDE_Grupo1.EntitiesDTOs.DTOs;
+using SEGEDE_Grupo1.EntitiesDTOs.DTOs.Requests;
 using SEGEDE_Grupo1.EntitiesDTOs.Entities;
 
 namespace SEGEDE_Grupo1.WebAPI.Controllers;
@@ -8,7 +10,8 @@ namespace SEGEDE_Grupo1.WebAPI.Controllers;
 // Controlador REST para la simulación de generación, cálculo de pérdidas e inventario de baterías locales (§14.5).
 [ApiController]
 [Route("api/[controller]")]
-public class EnergyController : ControllerBase
+[Authorize(Roles = "Administrator,Engineer")]
+public class EnergyController : SgdeControllerBase
 {
     private readonly EnergyManager _energyManager = new();
 
@@ -18,6 +21,14 @@ public class EnergyController : ControllerBase
     {
         _energyManager.RunSimulationCycle();
         return Ok(new ApiResponse<object> { Success = true, Message = "Ciclo de simulación de energía ejecutado correctamente." });
+    }
+
+    // Método manejador que fuerza la carga de la batería local de una turbina (Simulator Panel, adenda v3 §131.2).
+    [HttpPost("SetBatteryCharge")]
+    public IActionResult SetBatteryCharge([FromBody] SetBatteryChargeRequest request)
+    {
+        _energyManager.SetLocalBatteryCharge(request.TurbineId, request.StoredEnergy);
+        return Ok(new ApiResponse<object> { Success = true, Message = "Carga de batería local actualizada." });
     }
 
     // Función de consulta que obtiene el estado actual y nivel de carga de la batería local de una turbina.
