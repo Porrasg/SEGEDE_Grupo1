@@ -69,10 +69,11 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Registro de servicios en segundo plano para simulación de energía, notificaciones y auditoría WORM.
+// Registro de servicios en segundo plano para simulación de energía, notificaciones, auditoría WORM y flush automático.
 builder.Services.AddHostedService<EnergySimulationJob>();
 builder.Services.AddHostedService<NotificationProcessingJob>();
 builder.Services.AddHostedService<AuditArchiveJob>();
+builder.Services.AddHostedService<AutoFlushJob>();
 
 var app = builder.Build();
 
