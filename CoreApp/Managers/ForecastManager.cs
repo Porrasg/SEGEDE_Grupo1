@@ -4,6 +4,7 @@ using SEGEDE_Grupo1.EntitiesDTOs.DTOs.Requests;
 using SEGEDE_Grupo1.EntitiesDTOs.Entities;
 using SEGEDE_Grupo1.EntitiesDTOs.Exceptions;
 using SEGEDE_Grupo1.EntitiesDTOs.Helpers;
+using SEGEDE_Grupo1.EntitiesDTOs.Validation;
 
 namespace SEGEDE_Grupo1.CoreApp.Managers;
 
@@ -17,25 +18,9 @@ public class ForecastManager
     // RF-044: Registro de pronóstico. Valida fecha futura, horizonte y que no exista un pronóstico duplicado activo.
     public void Register(RegisterForecastRequest r, int callerUserId)
     {
+        ForecastValidator.Validate(r.AmountMWh, r.Month, r.Year).ThrowIfInvalid();
+
         var now = TimeHelper.NowCR();
-        var targetDate = new DateTime(r.Year, r.Month, 1);
-        var currentMonthDate = new DateTime(now.Year, now.Month, 1);
-
-        if (targetDate <= currentMonthDate)
-        {
-            throw new BusinessException("Forecast can only be registered for future months.", "INVALID_FORECAST_DATE");
-        }
-
-        if (targetDate > currentMonthDate.AddMonths(12))
-        {
-            throw new BusinessException("Forecast date exceeds the maximum horizon of 12 months.", "FORECAST_HORIZON_EXCEEDED");
-        }
-
-        if (r.AmountMWh <= 0)
-        {
-            throw new BusinessException("Forecast amount must be greater than zero.", "INVALID_AMOUNT");
-        }
-
         var existing = _forecastCrudFactory.RetrieveActiveByBuyerMonth(callerUserId, r.Month, r.Year);
         if (existing != null)
         {
@@ -68,7 +53,7 @@ public class ForecastManager
 
         if (string.Equals(forecast.Status, "Blocked", StringComparison.OrdinalIgnoreCase) ||
             string.Equals(forecast.Status, "Cancelled", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(forecast.Status, "Invoiced", StringComparison.OrdinalIgnoreCase))
+            string.Equals(forecast.Status, ForecastStates.Distributed, StringComparison.OrdinalIgnoreCase))
         {
             throw new BusinessException("Forecast cannot be modified in its current state.", "FORECAST_LOCKED");
         }
@@ -99,7 +84,7 @@ public class ForecastManager
 
         if (string.Equals(forecast.Status, "Blocked", StringComparison.OrdinalIgnoreCase) ||
             string.Equals(forecast.Status, "Cancelled", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(forecast.Status, "Invoiced", StringComparison.OrdinalIgnoreCase))
+            string.Equals(forecast.Status, ForecastStates.Distributed, StringComparison.OrdinalIgnoreCase))
         {
             throw new BusinessException("Forecast cannot be cancelled in its current state.", "FORECAST_LOCKED");
         }

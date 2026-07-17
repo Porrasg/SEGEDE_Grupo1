@@ -111,7 +111,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 <td>#${l.id || l.Id}</td>
                 <td>${formatDateTime(l.timestamp || l.Timestamp)}</td>
                 <td class="fw-bold text-danger">-${formatNum(l.lostMWh || l.LostMWh)} MWh</td>
-                <td>${l.reason || l.Reason || "Pérdida operativa en red"}</td>
+                <td>${escapeHtml(l.reason || l.Reason || "Pérdida operativa en red")}</td>
             </tr>
         `).join("");
     }
@@ -278,12 +278,14 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         function cancelMaintenance(id) {
-            if (!confirm("¿Está seguro de cancelar este mantenimiento programado?")) return;
-            apiClient.post("Maintenance/Cancel/" + id + "?callerUserId=" + userId).done(function () {
-                notify.info("Mantenimiento cancelado.");
-                loadMaintenances();
-            }).fail(function (xhr) {
-                handleApiError(xhr);
+            notify.confirm("¿Está seguro de cancelar este mantenimiento programado?", { dangerous: true, confirmText: "Cancelar mantenimiento" }).then(function (ok) {
+                if (!ok) return;
+                apiClient.post("Maintenance/Cancel/" + id).done(function () {
+                    notify.info("Mantenimiento cancelado.");
+                    loadMaintenances();
+                }).fail(function (xhr) {
+                    handleApiError(xhr);
+                });
             });
         }
     }

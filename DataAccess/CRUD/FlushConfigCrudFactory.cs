@@ -39,6 +39,17 @@ public class FlushConfigCrudFactory : CrudFactory
         return results.Count > 0 ? BuildConfig(results[0]) : null;
     }
 
+    // Inicialización única e idempotente de la fila singleton (Id=1). No usar Create(): está bloqueado a propósito
+    // para impedir inserciones fuera de este flujo de arranque/seed (§12.10, Singleton).
+    public void InitializeSingleton(TimeSpan executionTime, bool isAutomatic, DateTime created)
+    {
+        var op = new Operation { ProcedureName = "INIT_FLUSH_CFG_PR" };
+        op.AddTimeParameter("@ExecutionTime", executionTime);
+        op.AddBoolParameter("@IsAutomatic", isAutomatic);
+        op.AddDateTimeParameter("@Created", created);
+        sqlDao.ExecuteProcedure(op);
+    }
+
     // Función encargada de modificar y actualizar los campos operacionales de registros existentes.
     public void UpdateSingleton(TimeSpan executionTime, bool isAutomatic, DateTime updated)
     {

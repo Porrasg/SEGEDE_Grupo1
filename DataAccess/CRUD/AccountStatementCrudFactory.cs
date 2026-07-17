@@ -1,3 +1,4 @@
+using Microsoft.Data.SqlClient;
 using SEGEDE_Grupo1.DataAccess.DAO;
 using SEGEDE_Grupo1.EntitiesDTOs;
 using SEGEDE_Grupo1.EntitiesDTOs.Entities;
@@ -55,6 +56,32 @@ public class AccountStatementCrudFactory : CrudFactory
         var op = new Operation { ProcedureName = "RET_ALL_ACCT_STMT_PR" };
         var results = sqlDao.ExecuteQueryProcedure(op);
         return results.Select(r => (T)(object)BuildStatement(r)).ToList();
+    }
+
+    // --- Overload transaccional (§37.25) ---
+
+    public void Create(BaseDTO baseDTO, SqlConnection conn, SqlTransaction tx)
+    {
+        var s = (AccountStatement)baseDTO;
+        var op = new Operation { ProcedureName = "CRE_ACCT_STMT_PR" };
+        op.AddIntParameter("@BuyerId", s.BuyerId);
+        op.AddIntParameter("@DistributionId", s.DistributionId);
+        op.AddIntParameter("@ForecastId", s.ForecastId);
+        op.AddIntParameter("@Month", s.Month);
+        op.AddIntParameter("@Year", s.Year);
+        op.AddDecimalParameter("@AssignedMWh", s.AssignedMWh);
+        op.AddDecimalParameter("@UnitPrice", s.UnitPrice);
+        op.AddDecimalParameter("@TaxPercentage", s.TaxPercentage);
+        op.AddDecimalParameter("@Subtotal", s.Subtotal);
+        op.AddDecimalParameter("@TaxAmount", s.TaxAmount);
+        op.AddDecimalParameter("@Total", s.Total);
+        op.AddStringParameter("@Status", s.Status);
+        op.AddIntParameter("@RevisionNumber", s.RevisionNumber);
+        op.AddNullableIntParameter("@ParentId", s.ParentId);
+        op.AddStringParameter("@AnnulmentReason", s.AnnulmentReason);
+        op.AddDateTimeParameter("@IssueDate", s.IssueDate);
+        op.AddDateTimeParameter("@Created", s.Created);
+        sqlDao.ExecuteProcedureInTransaction(op, conn, tx);
     }
 
     // --- Custom methods ---

@@ -40,41 +40,4 @@ public static class JwtHelper
         var token = tokenHandler.CreateToken(tokenDescriptor);
         return tokenHandler.WriteToken(token);
     }
-
-    // Valida un token JWT utilizando la clave secreta proporcionada y retorna los claims si es válido.
-    // Parámetro token: Cadena del token JWT a validar.
-    // Parámetro secret: Clave secreta simétrica utilizada en la firma.
-    // Retorna: ClaimsPrincipal si el token es válido; de lo contrario, retorna null.
-    public static ClaimsPrincipal? ValidateToken(string token, string secret)
-    {
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.UTF8.GetBytes(secret);
-
-        try
-        {
-            var validationParameters = new TokenValidationParameters
-            {
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(key),
-                ValidateIssuer = false,
-                ValidateAudience = false,
-                ClockSkew = TimeSpan.Zero
-            };
-
-            var principal = tokenHandler.ValidateToken(token, validationParameters, out var validatedToken);
-
-            if (validatedToken is not JwtSecurityToken jwtToken ||
-                !jwtToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
-            {
-                return null;
-            }
-
-            return principal;
-        }
-        catch
-        {
-            // Retorna null si la validación falla (ej. token expirado, firma inválida)
-            return null;
-        }
-    }
 }
