@@ -39,6 +39,15 @@ public class EnergyController : SgdeControllerBase
         return Ok(new ApiResponse<LocalBattery> { Success = true, Data = b });
     }
 
+    // Función de consulta que obtiene todas las baterías locales de una vez (útil para UI que carga
+    // el estado de todas las turbinas en una sola petición).
+    [HttpGet("LocalBatteries/All")]
+    public IActionResult GetAllLocalBatteries()
+    {
+        var list = _energyManager.RetrieveAllLocalBatteries();
+        return Ok(new ApiResponse<List<LocalBattery>> { Success = true, Data = list });
+    }
+
     // Función de consulta que retorna el historial paginado de generación de energía de una turbina.
     [HttpGet("GenerationHistory/{turbineId:int}")]
     public IActionResult GetGenerationHistory(int turbineId, [FromQuery] int page = 1, [FromQuery] int pageSize = 50)

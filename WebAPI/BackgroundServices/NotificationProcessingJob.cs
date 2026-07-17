@@ -3,7 +3,7 @@ using SEGEDE_Grupo1.CoreApp.Managers;
 namespace SEGEDE_Grupo1.WebAPI.BackgroundServices;
 
 // Servicio de fondo que procesa la cola asíncrona de notificaciones por correo electrónico periódicamente según §14.11.
-public class NotificationProcessingJob : BackgroundService
+public class NotificationProcessingJob : JobBase
 {
     private readonly ILogger<NotificationProcessingJob> _logger;
     private readonly NotificationManager _notificationManager = new();
@@ -20,15 +20,19 @@ public class NotificationProcessingJob : BackgroundService
         _logger.LogInformation("Servicio en segundo plano NotificationProcessingJob iniciado.");
         while (!stoppingToken.IsCancellationRequested)
         {
-            try
+            await RunGuarded(async () =>
             {
-                _notificationManager.ProcessQueue();
-                _logger.LogDebug("Procesamiento de cola de notificaciones completado.");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error en el procesamiento de la cola de notificaciones.");
-            }
+                try
+                {
+                    _notificationManager.ProcessQueue();
+                    _logger.LogDebug("Procesamiento de cola de notificaciones completado.");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error en el procesamiento de la cola de notificaciones.");
+                }
+                await Task.CompletedTask;
+            });
             await Task.Delay(TimeSpan.FromSeconds(60), stoppingToken);
         }
         _logger.LogInformation("Servicio en segundo plano NotificationProcessingJob detenido.");

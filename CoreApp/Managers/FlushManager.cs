@@ -18,6 +18,7 @@ public class FlushManager
     private readonly FlushConfigCrudFactory _configFactory = new();
     private readonly FlushSnapshotCrudFactory _snapshotFactory = new();
     private readonly SaturationLogCrudFactory _satLogFactory = new();
+    private readonly EnergyLossLogCrudFactory _lossLogCrudFactory = new();
     private readonly LocalBatteryCrudFactory _batteryFactory = new();
     private readonly CentralBankCrudFactory _cbFactory = new();
     private readonly CentralBankLogCrudFactory _cbLogFactory = new();
@@ -81,8 +82,6 @@ public class FlushManager
         return _flushFactory.RetrieveActive();
     }
 
-    // --- Helper Privado de Vaciado ACID (§17.2) ---
-
     private void PerformFlush(string executionType, int? userId)
     {
         var active = CheckActiveFlush();
@@ -106,43 +105,45 @@ public class FlushManager
 
         var now = TimeHelper.NowCR();
 
-        // Ciclo ACID real (§37.25/§60.1): una única transacción con aislamiento Serializable envuelve
-        // la creación del Flush, sus snapshots, el ajuste del Banco Central y el vaciado de baterías.
-        // Ante cualquier fallo, se revierte todo el lote — no queda ningún registro "Processing" huérfano.
+        // Crear el registro de Flush fuera de la transacción principal para poder marcarlo Failed en caso
+        // de que el trabajo transaccional falle. El trabajo crítico (snapshots, inventario y baterías)
+        // se ejecutará dentro de una única transacción para garantizar ACID.
+        var flush = new Flush
+        {
+            ExecutionType = executionType,
+            Status = FlushStates.Processing,
+            UserId = userId,
+            TotalTransferredEnergy = 0m,
+            SaturationLoss = 0m,
+            StartDate = now,
+            EndDate = null,
+            Created = now
+        };
+
+        _flushFactory.Create(flush);
+        var createdFlush = _flushFactory.RetrieveActive() ?? throw new BusinessException("Failed to initiate flush transaction.");
+
+        // Ejecutar las operaciones críticas en una única transacción Serializable.
         using var conn = SqlDao.GetInstance().GetOpenConnection();
         using var tx = conn.BeginTransaction(IsolationLevel.Serializable);
 
         try
         {
-            // Re-chequeo dentro de la transacción Serializable: la comprobación previa (CheckActiveFlush)
-            // ocurre fuera de la transacción y no impide una carrera entre dos flushes concurrentes.
-            // Bajo Serializable, este SELECT adquiere locks de rango que serializan la creación del flush,
-            // evitando dos registros "Processing" simultáneos que drenarían las baterías dos veces.
+            // Re-chequeo dentro de la transacción: si existe otro flush activo distinto al que acabamos de crear,
+            // abortamos. Si la única fila "Processing" es la que creamos arriba (misma Id), continuamos.
             var alreadyActive = _flushFactory.RetrieveActive(conn, tx);
-            if (alreadyActive != null)
+            if (alreadyActive != null && alreadyActive.Id != createdFlush.Id)
             {
                 throw new BusinessException("A flush operation is already currently in progress.", "FLUSH_IN_PROGRESS");
             }
 
-            var flush = new Flush
-            {
-                ExecutionType = executionType,
-                Status = FlushStates.Processing,
-                UserId = userId,
-                TotalTransferredEnergy = 0m,
-                SaturationLoss = 0m,
-                StartDate = now,
-                EndDate = null,
-                Created = now
-            };
-
-            _flushFactory.Create(flush, conn, tx);
-            var createdFlush = _flushFactory.RetrieveActive(conn, tx) ?? throw new BusinessException("Failed to initiate flush transaction.");
-
             decimal totalSnapshotEnergy = 0m;
             var snapshots = new List<FlushSnapshot>();
 
-            foreach (var b in nonEmptyBatteries)
+            // Leer baterías dentro de la transacción para evitar carreras.
+            var batteriesInTx = _batteryFactory.RetrieveAllNonEmpty(conn, tx);
+
+            foreach (var b in batteriesInTx)
             {
                 if (b.StoredEnergy <= 0) continue;
 
@@ -175,6 +176,7 @@ public class FlushManager
                 finalInv = cmbc;
                 transferred = et - ps;
 
+                // Crear una entrada de SaturationLog (WORM) para el flush global.
                 var satLog = new SaturationLog
                 {
                     FlushId = createdFlush.Id,
@@ -185,6 +187,30 @@ public class FlushManager
                     Created = now
                 };
                 _satLogFactory.Create(satLog, conn, tx);
+                // Además, prorratear la pérdida por saturación entre las turbinas en proporción a su
+                // contribución a la energía capturada y persistir un EnergyLossLog por turbina
+                // para que las pérdidas sean auditables por turbina (WORM). Esto mantiene la contabilidad
+                // consistente y preserva trazas detalladas de la pérdida.
+                if (ps > 0 && snapshots.Count > 0)
+                {
+                    foreach (var snap in snapshots)
+                    {
+                        // proporción = snap.CapturedEnergy / et
+                        var proportion = et > 0 ? (snap.CapturedEnergy / et) : 0m;
+                        var lost = Math.Round(proportion * ps, 4);
+
+                        var lossLog = new EnergyLossLog
+                        {
+                            TurbineId = snap.TurbineId,
+                            InactiveTimeSeconds = 0m,
+                            LostEnergy = lost,
+                            Cause = EnergyLossCauses.Maintenance, // causa genérica para pérdida por saturación
+                            EventDate = now,
+                            Created = now
+                        };
+                        _lossLogCrudFactory.Create(lossLog, conn, tx);
+                    }
+                }
             }
             else
             {
@@ -213,6 +239,7 @@ public class FlushManager
                 _batteryFactory.UpdateEnergy(snap.LocalBatteryId, 0m, now, conn, tx);
             }
 
+            // Marcar el flush como completado dentro de la misma transacción
             _flushFactory.UpdateStatus(createdFlush.Id, FlushStates.Completed, now, transferred, ps, now, conn, tx);
 
             tx.Commit();
@@ -221,15 +248,24 @@ public class FlushManager
         }
         catch (BusinessException)
         {
-            // Errores de negocio esperados (p.ej. FLUSH_IN_PROGRESS por carrera): revertir y
-            // propagar tal cual para conservar su código HTTP (409) — no son fallos de ejecución.
             try { tx.Rollback(); } catch { /* la conexión pudo cerrarse antes del rollback */ }
+            // Podemos marcar el flush como fallido puesto que fue creado fuera de la transacción principal.
+            try
+            {
+                _flushFactory.UpdateStatus(createdFlush.Id, FlushStates.Failed, TimeHelper.NowCR(), 0m, 0m, TimeHelper.NowCR());
+            }
+            catch { /* si falla el update de estado, no podemos hacer más aquí */ }
             throw;
         }
         catch (Exception ex)
         {
             try { tx.Rollback(); } catch { /* la conexión pudo cerrarse antes del rollback */ }
-            _auditManager.LogAction(userId, userId.HasValue ? $"User {userId}" : SystemActor.Name, AuditModules.Flush, AuditActions.Execute, "tblFlush", 0, FlushStates.Processing, FlushStates.Failed);
+            try
+            {
+                _flushFactory.UpdateStatus(createdFlush.Id, FlushStates.Failed, TimeHelper.NowCR(), 0m, 0m, TimeHelper.NowCR());
+            }
+            catch { /* ignorable */ }
+            _auditManager.LogAction(userId, userId.HasValue ? $"User {userId}" : SystemActor.Name, AuditModules.Flush, AuditActions.Execute, "tblFlush", createdFlush.Id, FlushStates.Processing, FlushStates.Failed);
             throw new BusinessException($"Flush execution failed: {ex.Message}", "FLUSH_FAILED");
         }
     }
