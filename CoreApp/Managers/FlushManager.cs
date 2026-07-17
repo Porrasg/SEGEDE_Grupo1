@@ -82,29 +82,6 @@ public class FlushManager
         return _flushFactory.RetrieveActive();
     }
 
-    // --- Helper Privado de Vaciado ACID (§17.2) ---
-    // PerformFlush (resumen de pasos, en español):
-    // 1) Comprobaciones preliminares fuera de la transacción: asegura que no hay otro flush
-    //    en Processing, lee baterías no vacías y valida condiciones para flush manual/auto.
-    // 2) Crea el registro tblFlush con Status=Processing fuera de la TX para poder marcar
-    //    el flush como Failed si la transacción crítica falla.
-    // 3) Abre una única transacción (IsolationLevel.Serializable) que contendrá las
-    //    operaciones críticas: snapshots WORM, cálculo de saturación, actualización de
-    //    inventario, logs y vaciado de baterías.
-    // 4) Dentro de la TX se re-chequea idempotencia (RetrieveActive en-TX) y se vuelven a
-    //    leer las baterías para evitar condiciones de carrera.
-    // 5) Insertar FlushSnapshot por cada batería (WORM) y acumular la energía capturada.
-    // 6) Calcular saturación: si inventory + totalSnapshotEnergy > capacidad =>
-    //    generar SaturationLog (WORM), prorratear la pérdida entre turbinas y persistir
-    //    EnergyLossLog por turbina (WORM), ajustar energía transferida.
-    // 7) Actualizar inventario del Banco Central e insertar CentralBankLog (si hubo
-    //    transferencia efectiva).
-    // 8) Poner a cero (UpdateEnergy) las baterías locales afectadas (dentro de la TX).
-    // 9) Marcar tblFlush como Completed dentro de la misma TX (TotalTransferredEnergy,
-    //    SaturationLoss) y commitear la TX.
-    // 10) En caso de excepción: rollback; fuera de la TX marcar tblFlush como Failed y
-    //     registrar auditoría. Garantías: ACID, WORM para snapshots/logs, idempotencia.
-
     private void PerformFlush(string executionType, int? userId)
     {
         var active = CheckActiveFlush();

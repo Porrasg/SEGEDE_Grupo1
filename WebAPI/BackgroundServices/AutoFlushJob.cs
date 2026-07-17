@@ -10,12 +10,12 @@ namespace SEGEDE_Grupo1.WebAPI.BackgroundServices;
 public class AutoFlushJob : JobBase
 {
     private readonly ILogger<AutoFlushJob> _logger;
-    private readonly FlushManager _flushManager = new();
+    private readonly FlushManager _flushManager;
 
-    // Constructor del servicio de fondo para el flush automático programado.
     public AutoFlushJob(ILogger<AutoFlushJob> logger)
     {
         _logger = logger;
+        _flushManager = new FlushManager();
     }
 
     // Función operativa asíncrona que verifica cada minuto si corresponde ejecutar el flush automático.
