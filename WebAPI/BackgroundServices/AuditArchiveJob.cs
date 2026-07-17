@@ -21,7 +21,7 @@ public class AuditArchiveJob : JobBase
         while (!stoppingToken.IsCancellationRequested)
         {
             await RunGuarded(async () =>
-            {
+            { 
                 try
                 {
                     _auditManager.ArchiveColdRecords();
