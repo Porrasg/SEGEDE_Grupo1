@@ -19,6 +19,7 @@ public class FlushManager
     private readonly FlushConfigCrudFactory _configFactory = new();
     private readonly FlushSnapshotCrudFactory _snapshotFactory = new();
     private readonly SaturationLogCrudFactory _satLogFactory = new();
+    private readonly EnergyLossLogCrudFactory _lossLogCrudFactory = new();
     private readonly LocalBatteryCrudFactory _batteryFactory = new();
     private readonly CentralBankCrudFactory _cbFactory = new();
     private readonly CentralBankLogCrudFactory _cbLogFactory = new();
@@ -81,8 +82,6 @@ public class FlushManager
     {
         return _flushFactory.RetrieveActive();
     }
-
-    // --- Helper Privado de Vaciado ACID (§17.2) ---
 
     private void PerformFlush(string executionType, int? userId)
     {
@@ -194,6 +193,7 @@ public class FlushManager
                 finalInv = cmbc;
                 transferred = et - ps;
 
+                // Crear una entrada de SaturationLog (WORM) para el flush global.
                 var satLog = new SaturationLog
                 {
                     FlushId = createdFlush.Id,
@@ -204,6 +204,30 @@ public class FlushManager
                     Created = now
                 };
                 _satLogFactory.Create(satLog, conn, tx);
+                // Además, prorratear la pérdida por saturación entre las turbinas en proporción a su
+                // contribución a la energía capturada y persistir un EnergyLossLog por turbina
+                // para que las pérdidas sean auditables por turbina (WORM). Esto mantiene la contabilidad
+                // consistente y preserva trazas detalladas de la pérdida.
+                if (ps > 0 && snapshots.Count > 0)
+                {
+                    foreach (var snap in snapshots)
+                    {
+                        // proporción = snap.CapturedEnergy / et
+                        var proportion = et > 0 ? (snap.CapturedEnergy / et) : 0m;
+                        var lost = Math.Round(proportion * ps, 4);
+
+                        var lossLog = new EnergyLossLog
+                        {
+                            TurbineId = snap.TurbineId,
+                            InactiveTimeSeconds = 0m,
+                            LostEnergy = lost,
+                            Cause = EnergyLossCauses.Maintenance, // causa genérica para pérdida por saturación
+                            EventDate = now,
+                            Created = now
+                        };
+                        _lossLogCrudFactory.Create(lossLog, conn, tx);
+                    }
+                }
             }
             else
             {
