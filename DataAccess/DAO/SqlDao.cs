@@ -16,7 +16,7 @@ public class SqlDao
         // Lee connection string de la configuración de la aplicación.
         // En producción se configura desde appsettings.json vía WebAPI/Program.cs.
         _connectionString = ConnectionStringHolder.ConnectionString
-            ?? throw new InvalidOperationException(
+            ?? throw new InvalidOperationException(  
                 "Data Source=proyectocenfogp1.database.windows.net;Initial Catalog=ProyectoCenfoGp1;Persist Security Info=True;User ID=sgderoot;Password=sgde123!.!;Trust Server Certificate=True");
     }
 

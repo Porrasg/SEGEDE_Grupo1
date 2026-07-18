@@ -38,7 +38,7 @@ public class UserCrudFactory : CrudFactory
         op.AddStringParameter("@Phone", user.Phone);
         op.AddStringParameter("@Role", user.Role);
         op.AddStringParameter("@Status", user.Status);
-        op.AddDateTimeParameter("@Updated", user.Updated);
+        op.AddDateTimeParameter("@Updated", user.Updated ?? DateTime.Now);
         sqlDao.ExecuteProcedure(op);
     }
 
