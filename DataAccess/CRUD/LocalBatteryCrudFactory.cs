@@ -64,6 +64,7 @@ public class LocalBatteryCrudFactory : CrudFactory
         sqlDao.ExecuteProcedure(op);
     }
 
+    
     // Función de consulta encargada de buscar y retornar la información solicitada desde la base de datos.
     public List<LocalBattery> RetrieveAllNonEmpty()
     {

@@ -104,6 +104,9 @@ public class CentralBankLogCrudFactory : CrudFactory
         DistributionId = row["DistributionId"] as int?,
         EventDate = (DateTime)row["EventDate"],
         Created = (DateTime)row["Created"],
-        Updated = row["Updated"] as DateTime? ?? default
+        // 'Updated' puede faltar en el conjunto de resultados; usar TryGetValue para evitar KeyNotFoundException
+        Updated = row.TryGetValue("Updated", out var _updated) && _updated is DateTime _ud
+            ? _ud
+            : default
     };
 }

@@ -14,6 +14,12 @@ public class EnergyManager
     private readonly EnergyGenerationLogCrudFactory _genLogCrudFactory = new();
     private readonly EnergyLossLogCrudFactory _lossLogCrudFactory = new();
     private readonly LocalBatteryCrudFactory _localBatteryCrudFactory = new();
+
+    // Recupera todas las baterías locales (helper usado por el controlador)
+    public List<LocalBattery> RetrieveAllLocalBatteries()
+    {
+        return _localBatteryCrudFactory.RetrieveAll<LocalBattery>();
+    }
     private readonly TurbineCrudFactory _turbineCrudFactory = new();
 
     // RF-025/026/027/028 (§17.3): Ejecuta ciclo de simulación de energía en ventana de 30s.
