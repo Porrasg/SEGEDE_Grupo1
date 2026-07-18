@@ -1,6 +1,5 @@
-using SEGEDE_Grupo1.CoreApp.Managers;
-using SEGEDE_Grupo1.EntitiesDTOs.Constants;
-using SEGEDE_Grupo1.EntitiesDTOs.Helpers;
+using SEGEDE_Grupo1.CoreApp;
+using SEGEDE_Grupo1.EntitiesDTOs;
 
 namespace SEGEDE_Grupo1.WebAPI.BackgroundServices;
 

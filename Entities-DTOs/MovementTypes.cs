@@ -1,0 +1,9 @@
+namespace SEGEDE_Grupo1.EntitiesDTOs;
+
+// Tipos de movimiento en banco central (§4).
+public static class MovementTypes
+{
+    public const string Inflow = "Inflow";
+    public const string Outflow = "Outflow";
+    public const string Saturation = "Saturation";
+}

@@ -1,4 +1,4 @@
-using SEGEDE_Grupo1.CoreApp.Managers;
+using SEGEDE_Grupo1.CoreApp;
 
 namespace SEGEDE_Grupo1.WebAPI.BackgroundServices;
 
