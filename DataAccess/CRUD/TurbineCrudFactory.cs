@@ -1,6 +1,5 @@
 using SEGEDE_Grupo1.DataAccess.DAO;
 using SEGEDE_Grupo1.EntitiesDTOs;
-using SEGEDE_Grupo1.EntitiesDTOs.Entities;
 
 namespace SEGEDE_Grupo1.DataAccess.CRUD;
 
@@ -36,7 +35,7 @@ public class TurbineCrudFactory : CrudFactory
         op.AddStringParameter("@Brand", t.Brand);
         op.AddStringParameter("@Model", t.Model);
         op.AddDecimalParameter("@WeeklyNominalCapacity", t.WeeklyNominalCapacity);
-        op.AddDateTimeParameter("@Updated", t.Updated);
+        op.AddDateTimeParameter("@Updated", t.Updated ?? DateTime.Now);
         sqlDao.ExecuteProcedure(op);
     }
 

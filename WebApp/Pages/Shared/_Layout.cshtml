@@ -62,6 +62,12 @@
             <div class="container d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2 text-muted fs-xs">
                 <span>&copy; 2026 SGDE — Sistema de Generación y Despacho Eléctrico</span>
                 <span>Arquitectura N-Tier · CoreForge Technologies</span>
+                    <a href="https://josue191419.github.io/landing-coreforge-technologies/"
+                       class="btn btn-sm btn-outline-primary ms-0 ms-sm-3"
+                       role="button"
+                       aria-label="Landing del Equipo">
+                        Landing del Equipo
+                    </a>
             </div>
         </footer>
     </div>
@@ -85,14 +91,8 @@ else
 
             <!-- Menú Navegación Modular por Rol -->
             <ul class="nav nav-pills flex-column mb-auto gap-1">
-                <li class="nav-item" data-roles="superadmin,administrator,admin,engineer,buyer,customer,guest">
-                    <a asp-page="/Index" class="nav-link d-flex align-items-center gap-3 px-3 py-2">
-                        <i class="bi bi-house-door-fill"></i>
-                        <span>Portal Principal</span>
-                    </a>
-                </li>
                 <li class="nav-item" data-roles="superadmin,administrator,admin,engineer,buyer,customer">
-                    <a asp-page="/Dashboard" class="nav-link d-flex align-items-center gap-3 px-3 py-2">
+                    <a asp-page="/Dashboard" class="nav-link d-flex align-items-center gap-3 px-3 py-2" data-nav="/dashboard">
                         <i class="bi bi-grid-1x2-fill"></i>
                         <span>Centro de Módulos</span>
                     </a>
@@ -143,15 +143,27 @@ else
                         <span>Simulador SCADA</span>
                     </a>
                 </li>
+                <li class="nav-item" data-roles="superadmin,administrator,admin">
+                    <a href="/Admin/Reports" class="nav-link d-flex align-items-center gap-3 px-3 py-2">
+                        <i class="bi bi-bar-chart-fill"></i>
+                        <span>Centro de Reportes</span>
+                    </a>
+                </li>
+                <li class="nav-item" data-roles="superadmin,administrator,admin">
+                    <a href="/Admin/Audit" class="nav-link d-flex align-items-center gap-3 px-3 py-2">
+                        <i class="bi bi-journal-check"></i>
+                        <span>Bitácora de Auditoría</span>
+                    </a>
+                </li>
 
                 <!-- Módulos Comprador -->
-                <li class="nav-item" data-roles="superadmin,administrator,admin,buyer,customer">
+                <li class="nav-item d-none" data-roles="buyer,customer">
                     <a href="/Buyer/Dashboard" class="nav-link d-flex align-items-center gap-3 px-3 py-2">
                         <i class="bi bi-building"></i>
                         <span>Portal Comprador</span>
                     </a>
                 </li>
-                <li class="nav-item" data-roles="superadmin,administrator,admin,buyer,customer">
+                <li class="nav-item d-none" data-roles="buyer,customer">
                     <a href="/Buyer/Statements" class="nav-link d-flex align-items-center gap-3 px-3 py-2">
                         <i class="bi bi-file-earmark-text-fill"></i>
                         <span>Estados de Cuenta</span>
@@ -162,7 +174,7 @@ else
             <hr class="my-2 opacity-25" />
 
             <!-- Pie del Sidebar: Usuario + Tema + Logout -->
-            <div class="sgde-user-profile px-2 d-flex align-items-center justify-content-between">
+            <div class="sgde-user-profile d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center gap-2 overflow-hidden">
                     <div class="sgde-avatar rounded-circle d-flex align-items-center justify-content-center fw-bold fs-sm">
                         <i class="bi bi-person-fill"></i>

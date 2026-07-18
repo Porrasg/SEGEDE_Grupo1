@@ -4,7 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using SEGEDE_Grupo1.DataAccess.DAO;
 using SEGEDE_Grupo1.WebAPI.BackgroundServices;
 using SEGEDE_Grupo1.WebAPI.Middleware;
-using SEGEDE_Grupo1.CoreApp.Managers;
+using SEGEDE_Grupo1.CoreApp;
 
 var builder = WebApplication.CreateBuilder(args);
 
