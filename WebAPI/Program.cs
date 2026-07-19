@@ -26,7 +26,7 @@ foreach (var key in new[] { "Smtp:Host", "Smtp:Port", "Smtp:User", "Smtp:Passwor
 }
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers(options => options.Filters.Add<ApiResponseWrapperFilter>());
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
