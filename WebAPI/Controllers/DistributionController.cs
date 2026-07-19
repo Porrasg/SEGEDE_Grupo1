@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SEGEDE_Grupo1.CoreApp;
-using SEGEDE_Grupo1.EntitiesDTOs.DTOs;
 using SEGEDE_Grupo1.EntitiesDTOs;
 
 namespace SEGEDE_Grupo1.WebAPI.Controllers;
@@ -19,7 +18,7 @@ public class DistributionController : SgdeControllerBase
     public IActionResult ExecuteMonthly([FromQuery] int month, [FromQuery] int year)
     {
         _distributionManager.RunMonthlyDistribution(month, year);
-        return Ok(new ApiResponse<object> { Success = true, Message = "Distribución comercial calculada y cerrada satisfactoriamente." });
+        return Ok(new { message = "Distribución comercial calculada y cerrada satisfactoriamente." });
     }
 
     // Función de consulta que retorna el historial de las distribuciones comerciales cerradas. Vista de Admin (Admin/Distribution).
@@ -28,7 +27,7 @@ public class DistributionController : SgdeControllerBase
     public IActionResult GetHistory()
     {
         var result = _distributionManager.RetrieveHistory();
-        return Ok(new ApiResponse<List<CommercialDistribution>> { Success = true, Data = result });
+        return Ok(result);
     }
 
     // Función de consulta que recupera el historial de distribuciones y asignaciones energéticas de un comprador específico (§14.9). Ownership: Buyer propio o Admin.
@@ -37,7 +36,7 @@ public class DistributionController : SgdeControllerBase
     public IActionResult GetByBuyer(int buyerId)
     {
         var result = _distributionManager.RetrieveDetailByBuyer(buyerId, CallerUserId, CallerRole);
-        return Ok(new ApiResponse<List<DistributionDetail>> { Success = true, Data = result });
+        return Ok(result);
     }
 
     // Función de consulta que retorna el detalle por comprador de una distribución específica (Admin/Distribution). Solo Admin.
@@ -46,6 +45,6 @@ public class DistributionController : SgdeControllerBase
     public IActionResult GetDetailByDistribution(int distributionId)
     {
         var result = _distributionManager.RetrieveDetailByDistribution(distributionId);
-        return Ok(new ApiResponse<List<DistributionDetail>> { Success = true, Data = result });
+        return Ok(result);
     }
 }

@@ -1,8 +1,8 @@
 using System.Net;
 using System.Net.Mail;
 using SEGEDE_Grupo1.DataAccess.CRUD;
-using SEGEDE_Grupo1.EntitiesDTOs.DTOs;
 using SEGEDE_Grupo1.EntitiesDTOs;
+using SEGEDE_Grupo1.CoreApp.Helpers;
 
 namespace SEGEDE_Grupo1.CoreApp;
 
@@ -110,27 +110,9 @@ public class NotificationManager
         }
     }
 
-    // RF-070: Retorna las notificaciones del usuario de manera paginada.
-    public PagedResponse<NotificationQueue> RetrieveByUser(int userId, PagedRequest p)
+    // RF-070: Retorna las notificaciones del usuario.
+    public List<NotificationQueue> RetrieveByUser(int userId)
     {
-        int page = p.Page < 1 ? 1 : p.Page;
-        int pageSize = p.PageSize < 1 ? 50 : (p.PageSize > 200 ? 200 : p.PageSize);
-
-        var items = _queueFactory.RetrieveByUser(userId, page, pageSize);
-        int totalCount = ((page - 1) * pageSize) + items.Count;
-        if (items.Count == pageSize)
-        {
-            totalCount += 1;
-        }
-        int totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
-
-        return new PagedResponse<NotificationQueue>
-        {
-            Items = items,
-            Page = page,
-            PageSize = pageSize,
-            TotalCount = totalCount,
-            TotalPages = totalPages == 0 ? 1 : totalPages
-        };
+        return _queueFactory.RetrieveByUser(userId, 1, 1000);
     }
 }

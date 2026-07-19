@@ -1,8 +1,8 @@
 using System.Text.Json;
 using SEGEDE_Grupo1.DataAccess.CRUD;
-using SEGEDE_Grupo1.EntitiesDTOs.DTOs;
 using SEGEDE_Grupo1.EntitiesDTOs;
-using SEGEDE_Grupo1.EntitiesDTOs.Exceptions;
+using SEGEDE_Grupo1.CoreApp.Helpers;
+using SEGEDE_Grupo1.CoreApp.Exceptions;
 
 namespace SEGEDE_Grupo1.CoreApp;
 
@@ -47,7 +47,7 @@ public class AuditManager
 
     // Retorna registros de auditoría filtrados por módulo con paginación (§14.12).
     // Aplica regla RN-030: los ingenieros no pueden ver auditorías del módulo Billing.
-    public PagedResponse<AuditLog> RetrieveByModule(string module, string callerRole, PagedRequest p)
+    public List<AuditLog> RetrieveByModule(string module, string callerRole)
     {
         if (string.Equals(callerRole, "Engineer", StringComparison.OrdinalIgnoreCase) &&
             string.Equals(module, AuditModules.Billing, StringComparison.OrdinalIgnoreCase))
@@ -55,29 +55,27 @@ public class AuditManager
             throw new UnauthorizedAccessAppException("Engineers are not authorized to access Billing audit logs.", "UNAUTHORIZED_AUDIT_ACCESS");
         }
 
-        var items = _auditCrudFactory.RetrieveByModule(module, p.Page, p.PageSize);
-        return BuildPagedResponse(items, p);
+        return _auditCrudFactory.RetrieveByModule(module, 1, 10000);
     }
 
-    // Retorna registros de auditoría filtrados por usuario con paginación (§14.12).
-    public PagedResponse<AuditLog> RetrieveByUser(int userId, PagedRequest p)
+    // Retorna registros de auditoría filtrados por usuario (§14.12).
+    public List<AuditLog> RetrieveByUser(int userId)
     {
-        var items = _auditCrudFactory.RetrieveByUser(userId, p.Page, p.PageSize);
-        return BuildPagedResponse(items, p);
+        return _auditCrudFactory.RetrieveByUser(userId, 1, 10000);
     }
 
     // Retorna registros de auditoría en un rango de fechas (§14.12).
     // Excluye registros del módulo Billing si el rol es Engineer (RN-030).
-    public PagedResponse<AuditLog> RetrieveByDateRange(DateTime from, DateTime to, string callerRole, PagedRequest p)
+    public List<AuditLog> RetrieveByDateRange(DateTime from, DateTime to, string callerRole)
     {
-        var items = _auditCrudFactory.RetrieveByDateRange(from, to, p.Page, p.PageSize);
+        var items = _auditCrudFactory.RetrieveByDateRange(from, to, 1, 10000);
 
         if (string.Equals(callerRole, "Engineer", StringComparison.OrdinalIgnoreCase))
         {
             items = items.Where(x => !string.Equals(x.Module, AuditModules.Billing, StringComparison.OrdinalIgnoreCase)).ToList();
         }
 
-        return BuildPagedResponse(items, p);
+        return items;
     }
 
     // Job anual que marca registros con más de 5 años como IsColdArchive=true (§14.12 / §17.4).
@@ -88,17 +86,4 @@ public class AuditManager
         LogAction(null, "System", AuditModules.System, AuditActions.Update, "tblAuditLog", 0, null, $"Cold archive threshold: {threshold:yyyy-MM-dd}");
     }
 
-    // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.
-    private static PagedResponse<T> BuildPagedResponse<T>(List<T> items, PagedRequest p)
-    {
-        int totalCount = items.Count;
-        return new PagedResponse<T>
-        {
-            Items = items,
-            Page = p.Page,
-            PageSize = p.PageSize,
-            TotalCount = totalCount,
-            TotalPages = totalCount > 0 ? (int)Math.Ceiling((double)totalCount / p.PageSize) : 1
-        };
     }
-}

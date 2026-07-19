@@ -1,7 +1,7 @@
 using SEGEDE_Grupo1.DataAccess.CRUD;
 using SEGEDE_Grupo1.EntitiesDTOs;
-using SEGEDE_Grupo1.EntitiesDTOs.Exceptions;
-using SEGEDE_Grupo1.EntitiesDTOs.Validation;
+using SEGEDE_Grupo1.CoreApp.Helpers;
+using SEGEDE_Grupo1.CoreApp.Exceptions;
 
 namespace SEGEDE_Grupo1.CoreApp;
 
@@ -15,7 +15,7 @@ public class ForecastManager
     // RF-044: Registro de pronóstico. Valida fecha futura, horizonte y que no exista un pronóstico duplicado activo.
     public void Register(RegisterForecastRequest r, int callerUserId)
     {
-        ForecastValidator.Validate(r.AmountMWh, r.Month, r.Year).ThrowIfInvalid();
+        ValidateForecastInput(r.AmountMWh, r.Month, r.Year);
 
         var now = TimeHelper.NowCR();
         var existing = _forecastCrudFactory.RetrieveActiveByBuyerMonth(callerUserId, r.Month, r.Year);
@@ -113,5 +113,20 @@ public class ForecastManager
         var thresholdDate = TimeHelper.NowCR().AddMonths(3);
         _forecastCrudFactory.CancelBeyond3Months(buyerId, thresholdDate.Month, thresholdDate.Year, TimeHelper.NowCR());
         _auditManager.LogAction(null, "System/Admin", AuditModules.Forecasts, AuditActions.LogicalDelete, "tblForecast", buyerId, null, "Cancelled forecasts beyond 3 months due to user deactivation");
+    }
+
+    private static void ValidateForecastInput(decimal amountMWh, int month, int year)
+    {
+        if (amountMWh <= 0)
+            throw new BusinessException("AmountMWh must be greater than 0.", "INVALID_AMOUNT");
+
+        var now = TimeHelper.NowCR();
+        if (year < now.Year || (year == now.Year && month <= now.Month))
+            throw new BusinessException("Forecast month/year must be strictly in the future.", "INVALID_FORECAST_DATE");
+
+        var forecastDate = new DateTime(year, month, 1);
+        var maxDate = new DateTime(now.Year, now.Month, 1).AddMonths(6);
+        if (forecastDate > maxDate)
+            throw new BusinessException("Forecast cannot exceed 6 months into the future.", "FORECAST_TOO_FAR");
     }
 }
