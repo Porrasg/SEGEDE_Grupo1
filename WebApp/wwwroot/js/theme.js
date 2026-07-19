@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", function () {
     applyTheme(currentTheme);
 
     if (btnToggle) {
+        // Función de cliente en JavaScript que gestiona la interactividad de la interfaz y comunicación asíncrona.
         btnToggle.addEventListener("click", function () {
             currentTheme = currentTheme === "light" ? "dark" : "light";
             applyTheme(currentTheme);
@@ -14,6 +15,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    // Función de cliente en JavaScript que gestiona la interactividad de la interfaz y comunicación asíncrona.
     function applyTheme(theme) {
         document.documentElement.setAttribute("data-bs-theme", theme);
         if (btnToggle) {
