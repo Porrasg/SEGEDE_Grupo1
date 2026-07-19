@@ -13,8 +13,4 @@
     <None Remove="Validation\**" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="DTOs\" />
-  </ItemGroup>
-
 </Project>

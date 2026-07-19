@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Mail;
 using SEGEDE_Grupo1.DataAccess.CRUD;
 using SEGEDE_Grupo1.EntitiesDTOs;
+using SEGEDE_Grupo1.CoreApp.Helpers;
 
 namespace SEGEDE_Grupo1.CoreApp;
 

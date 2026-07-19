@@ -1,4 +1,5 @@
 using SEGEDE_Grupo1.CoreApp;
+using SEGEDE_Grupo1.CoreApp.Helpers;
 using SEGEDE_Grupo1.EntitiesDTOs;
 
 namespace SEGEDE_Grupo1.WebAPI.BackgroundServices;

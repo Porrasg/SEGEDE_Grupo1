@@ -1,6 +1,6 @@
 using System.Net;
 using System.Text.Json;
-using SEGEDE_Grupo1.EntitiesDTOs.Exceptions;
+using SEGEDE_Grupo1.CoreApp.Exceptions;
 
 namespace SEGEDE_Grupo1.WebAPI.Middleware;
 
