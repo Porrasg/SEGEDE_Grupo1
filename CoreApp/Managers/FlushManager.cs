@@ -114,6 +114,16 @@ public class FlushManager
 
         try
         {
+            // Re-chequeo dentro de la transacción Serializable: la comprobación previa (CheckActiveFlush)
+            // ocurre fuera de la transacción y no impide una carrera entre dos flushes concurrentes.
+            // Bajo Serializable, este SELECT adquiere locks de rango que serializan la creación del flush,
+            // evitando dos registros "Processing" simultáneos que drenarían las baterías dos veces.
+            var alreadyActive = _flushFactory.RetrieveActive(conn, tx);
+            if (alreadyActive != null)
+            {
+                throw new BusinessException("A flush operation is already currently in progress.", "FLUSH_IN_PROGRESS");
+            }
+
             var flush = new Flush
             {
                 ExecutionType = executionType,
@@ -208,6 +218,13 @@ public class FlushManager
             tx.Commit();
 
             _auditManager.LogAction(userId, userId.HasValue ? $"User {userId}" : SystemActor.Name, AuditModules.Flush, AuditActions.Execute, "tblFlush", createdFlush.Id, FlushStates.Processing, FlushStates.Completed);
+        }
+        catch (BusinessException)
+        {
+            // Errores de negocio esperados (p.ej. FLUSH_IN_PROGRESS por carrera): revertir y
+            // propagar tal cual para conservar su código HTTP (409) — no son fallos de ejecución.
+            try { tx.Rollback(); } catch { /* la conexión pudo cerrarse antes del rollback */ }
+            throw;
         }
         catch (Exception ex)
         {

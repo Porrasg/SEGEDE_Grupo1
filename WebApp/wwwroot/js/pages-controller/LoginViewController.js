@@ -283,6 +283,35 @@ document.addEventListener("DOMContentLoaded", function () {
                     handleApiError(xhr);
                 });
         });
+
+        // Reenvío del OTP de activación: usa el endpoint ResendOtp existente. Permite obtener un
+        // código nuevo si el anterior expiró, sin tener que volver a llenar el formulario de registro.
+        const resendActivationBtn = document.getElementById("resendActivationBtn");
+        if (resendActivationBtn) {
+            resendActivationBtn.addEventListener("click", function () {
+                const email = document.getElementById("actEmail")?.value.trim();
+                if (!email) {
+                    notify.warning("Ingrese su correo electrónico para reenviar el código.");
+                    return;
+                }
+
+                const original = resendActivationBtn.innerHTML;
+                resendActivationBtn.disabled = true;
+                resendActivationBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Reenviando...';
+
+                apiClient.post("Users/ResendOtp", { email: email, usageType: "Activation" })
+                    .done(function (res) {
+                        notify.success(res?.message || res?.Message || "Código de activación reenviado. Revise su correo.");
+                    })
+                    .fail(function (xhr) {
+                        handleApiError(xhr);
+                    })
+                    .always(function () {
+                        resendActivationBtn.disabled = false;
+                        resendActivationBtn.innerHTML = original;
+                    });
+            });
+        }
     }
 
     // ==========================================
@@ -323,6 +352,29 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
         });
     }
+
+    
+    // CONTROL DEL OJITO PARA VER CONTRASEÑA
+   
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+
+    if (togglePassword && passwordInput) {
+        togglePassword.addEventListener('click', function () {
+            // Alternar el tipo de input de password a text y viceversa
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+
+            // Alternar el icono del ojito (ojo abierto / ojo tachado)
+            const icon = this.querySelector('i');
+            if (icon) {
+                icon.classList.toggle('bi-eye');
+                icon.classList.toggle('bi-eye-slash');
+            }
+        });
+    }
+
+
 
     // ==========================================
     // 6. FLUJO DE RESTABLECIMIENTO (/ResetPassword)

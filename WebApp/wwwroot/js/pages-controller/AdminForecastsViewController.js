@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 body.innerHTML = items.map(function (f) {
                     const buyerId = f.buyerId ?? f.BuyerId;
                     return `<tr>
-                        <td>${userNames[buyerId] || `Comprador #${buyerId}`}</td>
+                        <td>${escapeHtml(userNames[buyerId] || `Comprador #${buyerId}`)}</td>
                         <td>${f.month ?? f.Month}/${f.year ?? f.Year}</td>
                         <td>${Number(f.amountMWh ?? f.AmountMWh ?? 0).toLocaleString("es-CR", { minimumFractionDigits: 2 })}</td>
                         <td>${statusBadge(f.status || f.Status)}</td>
