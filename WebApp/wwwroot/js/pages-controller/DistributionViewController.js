@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     const pct = requested > 0 ? (assigned / requested) * 100 : 100;
                     const buyerId = d.buyerId ?? d.BuyerId;
                     return `<tr>
-                        <td>${userNames[buyerId] || `Comprador #${buyerId}`}</td>
+                        <td>${escapeHtml(userNames[buyerId] || `Comprador #${buyerId}`)}</td>
                         <td>${requested.toLocaleString("es-CR", { minimumFractionDigits: 2 })}</td>
                         <td>${assigned.toLocaleString("es-CR", { minimumFractionDigits: 2 })}</td>
                         <td>${unsupplied.toLocaleString("es-CR", { minimumFractionDigits: 2 })}</td>

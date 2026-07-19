@@ -57,7 +57,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     <td>${new Date(m.estimatedStartDate || m.EstimatedStartDate).toLocaleDateString("es-CR")}</td>
                     <td>${new Date(m.estimatedEndDate || m.EstimatedEndDate).toLocaleDateString("es-CR")}</td>
                     <td><span class="badge ${badge[status] || "bg-secondary"}">${status}</span></td>
-                    <td>${m.result || m.Result || "-"}</td>
+                    <td>${escapeHtml(m.result || m.Result || "-")}</td>
                 </tr>`;
             }).join("");
         }
@@ -111,7 +111,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     <td>${f.id ?? f.Id}</td>
                     <td>${turbineCodes[turbineId] || `#${turbineId}`}</td>
                     <td><span class="badge ${sev === "Critical" ? "bg-danger" : "bg-warning text-dark"}">${sev}</span></td>
-                    <td>${f.description || f.Description || "-"}</td>
+                    <td>${escapeHtml(f.description || f.Description || "-")}</td>
                     <td>${new Date(f.failureDate || f.FailureDate).toLocaleString("es-CR")}</td>
                 </tr>`;
             }).join("");
