@@ -31,11 +31,13 @@ public class UserManager
     private readonly OtpServiceClient _otpClient = new();
     private readonly AuditManager _auditManager = new();
 
-    // Detecta si el servicio OTP está en modo simulación local (sin servidor externo real).
+    // Detecta si el servicio OTP está en modo simulación local (sin servidor externo real o en localhost).
     // Cuando es true, se omiten pasos de OTP para permitir pruebas locales sin fricciones.
     private bool IsLocalSimulation =>
         string.IsNullOrWhiteSpace(OtpServiceClient.BaseUrlSetting) ||
-        OtpServiceClient.BaseUrlSetting.Contains(".local", StringComparison.OrdinalIgnoreCase);
+        OtpServiceClient.BaseUrlSetting.Contains(".local", StringComparison.OrdinalIgnoreCase) ||
+        OtpServiceClient.BaseUrlSetting.Contains("localhost", StringComparison.OrdinalIgnoreCase) ||
+        OtpServiceClient.BaseUrlSetting.Contains("127.0.0.1");
 
     // RF-001: Registro de comprador. Crea el usuario en estado PendingActivation, genera OTP de activación y encola notificación.
     public void Register(RegisterBuyerRequest r)

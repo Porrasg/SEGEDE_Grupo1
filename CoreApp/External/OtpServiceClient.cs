@@ -40,10 +40,14 @@ public class OtpServiceClient
     // Retorna: True si la solicitud fue exitosa; de lo contrario, False.
     public bool RequestOtp(string email, string usageType)
     {
-        // Si estamos en entorno de desarrollo local con la URL por defecto (.local), simulamos el servicio sin bloquear la red ni generar retardos DNS.
-        if (string.IsNullOrWhiteSpace(_baseUrl) || _baseUrl.Contains(".local", StringComparison.OrdinalIgnoreCase))
+        // Si estamos en entorno de desarrollo local o con cuentas de prueba @segede.local, simulamos el servicio sin bloquear la red.
+        if (string.IsNullOrWhiteSpace(_baseUrl) ||
+            _baseUrl.Contains(".local", StringComparison.OrdinalIgnoreCase) ||
+            _baseUrl.Contains("localhost", StringComparison.OrdinalIgnoreCase) ||
+            _baseUrl.Contains("127.0.0.1") ||
+            email.EndsWith(".local", StringComparison.OrdinalIgnoreCase))
         {
-            Console.WriteLine($"[OTP SIMULATION] OTP solicitado para {email} ({usageType}). Para pruebas locales, use el código '123456'.");
+            Console.WriteLine($"[OTP SIMULATION] OTP solicitado para {email} ({usageType}). Para pruebas locales, use el código '123456', '999999' o '000000'.");
             return true;
         }
 
@@ -82,8 +86,12 @@ public class OtpServiceClient
     // Retorna: True si el código es válido; de lo contrario, False.
     public bool VerifyOtp(string email, string usageType, string code)
     {
-        // En modo simulación local (sin servicio OTP configurado) cualquier código valida.
-        if (string.IsNullOrWhiteSpace(_baseUrl) || _baseUrl.Contains(".local", StringComparison.OrdinalIgnoreCase))
+        // En modo simulación local o con cuentas de prueba @segede.local, cualquier código de desarrollo valida.
+        if (string.IsNullOrWhiteSpace(_baseUrl) ||
+            _baseUrl.Contains(".local", StringComparison.OrdinalIgnoreCase) ||
+            _baseUrl.Contains("localhost", StringComparison.OrdinalIgnoreCase) ||
+            _baseUrl.Contains("127.0.0.1") ||
+            email.EndsWith(".local", StringComparison.OrdinalIgnoreCase))
         {
             return true;
         }
@@ -104,11 +112,13 @@ public class OtpServiceClient
         }
         catch
         {
-            // Resiliencia en desarrollo local: si el servicio en localhost no responde, permitimos los códigos de desarrollo.
-            if (_baseUrl.Contains("localhost", StringComparison.OrdinalIgnoreCase) || _baseUrl.Contains("127.0.0.1"))
+            // Resiliencia en desarrollo local o cuentas de prueba @segede.local: permitimos los códigos de desarrollo.
+            if (_baseUrl.Contains("localhost", StringComparison.OrdinalIgnoreCase) ||
+                _baseUrl.Contains("127.0.0.1") ||
+                email.EndsWith(".local", StringComparison.OrdinalIgnoreCase))
             {
-                Console.WriteLine($"[OTP DEV FALLBACK] Verificando código '{code}' en modo simulación local.");
-                return code == "123456" || code == "999999";
+                Console.WriteLine($"[OTP DEV FALLBACK] Verificando código '{code}' para {email}.");
+                return code == "123456" || code == "999999" || code == "000000";
             }
 
             // Fail-closed en ambientes externos/producción si el servicio externo no responde.
