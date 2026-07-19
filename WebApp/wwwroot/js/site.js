@@ -117,27 +117,10 @@ function initLandingLogin() {
         apiClient.post("Users/LoginStep1", { email: ident, password: pass })
             .done(function (res) {
                 sessionStorage.setItem("sgde_login_email", ident);
-
-                // Auto-chain LoginStep2 (funciona en modo local sin OTP)
-                apiClient.post("Users/LoginStep2", { email: ident, otpCode: "000000" })
-                    .done(function (res2) {
-                        const loginData = res2?.data || res2?.Data;
-                        if (loginData) {
-                            session.save(loginData);
-                            sessionStorage.removeItem("sgde_login_email");
-                            if (typeof notify !== "undefined") notify.success("¡Sesión iniciada!");
-                            setTimeout(function () {
-                                window.location.href = dashboardUrlForRole(session.getRole()) || "/";
-                            }, 600);
-                        }
-                    })
-                    .fail(function () {
-                        // Si OTP real es requerido, redirigir al flujo normal
-                        if (typeof notify !== "undefined") notify.success("Código OTP enviado a su correo.");
-                        setTimeout(() => {
-                            window.location.href = `/LoginOtp?email=${encodeURIComponent(ident)}`;
-                        }, 800);
-                    });
+                if (typeof notify !== "undefined") notify.success(res?.message || res?.Message || "Código OTP enviado a su correo.");
+                setTimeout(function () {
+                    window.location.href = "/LoginOtp";
+                }, 1000);
             })
             .fail(function (xhr) {
                 if (btn) {
