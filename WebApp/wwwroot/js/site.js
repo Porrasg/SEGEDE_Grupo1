@@ -17,6 +17,7 @@ document.addEventListener("DOMContentLoaded", function () {
     checkRouteSecurity();
     initInteractiveFilterChips();
     initInteractiveCardLinks();
+    highlightActiveSidebarLink();
 });
 
 function initNavigation() {
@@ -327,5 +328,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 });
+
+function highlightActiveSidebarLink() {
+    const currentPath = window.location.pathname.toLowerCase().replace(/\/$/, '') || '/';
+    document.querySelectorAll('.sgde-sidebar .nav-link').forEach(link => {
+        const nav = (link.getAttribute('data-nav') || link.getAttribute('href') || '').toLowerCase().replace(/\/$/, '');
+        if (!nav || nav === '#') return;
+        const isIndex = nav === '' || nav === '/';
+        if (isIndex) {
+            if (currentPath === '' || currentPath === '/') link.classList.add('active');
+        } else if (currentPath === nav || currentPath.startsWith(nav + '/')) {
+            link.classList.add('active');
+        }
+    });
+}
 
 

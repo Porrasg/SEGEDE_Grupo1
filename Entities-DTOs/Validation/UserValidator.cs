@@ -1,5 +1,5 @@
 using System.Text.RegularExpressions;
-using SEGEDE_Grupo1.EntitiesDTOs.Helpers;
+using SEGEDE_Grupo1.EntitiesDTOs;
 
 namespace SEGEDE_Grupo1.EntitiesDTOs.Validation;
 

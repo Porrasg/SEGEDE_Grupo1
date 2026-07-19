@@ -1,7 +1,6 @@
 using Microsoft.Data.SqlClient;
 using SEGEDE_Grupo1.DataAccess.DAO;
 using SEGEDE_Grupo1.EntitiesDTOs;
-using SEGEDE_Grupo1.EntitiesDTOs.Entities;
 
 namespace SEGEDE_Grupo1.DataAccess.CRUD;
 
@@ -37,7 +36,7 @@ public class NotificationQueueCrudFactory : CrudFactory
         op.AddIntParameter("@Attempts", n.Attempts);
         op.AddNullableDateTimeParameter("@NextAttempt", n.NextAttempt);
         op.AddNullableDateTimeParameter("@SentDate", n.SentDate);
-        op.AddDateTimeParameter("@Updated", n.Updated);
+        op.AddDateTimeParameter("@Updated", n.Updated ?? DateTime.Now);
         sqlDao.ExecuteProcedure(op);
     }
 

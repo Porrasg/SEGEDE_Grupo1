@@ -1,6 +1,5 @@
 using SEGEDE_Grupo1.DataAccess.DAO;
 using SEGEDE_Grupo1.EntitiesDTOs;
-using SEGEDE_Grupo1.EntitiesDTOs.Entities;
 
 namespace SEGEDE_Grupo1.DataAccess.CRUD;
 
@@ -32,7 +31,7 @@ public class OtpAttemptCrudFactory : CrudFactory
         op.AddIntParameter("@ResendCount", otp.ResendCount);
         op.AddIntParameter("@FailedAttempts", otp.FailedAttempts);
         op.AddStringParameter("@Status", otp.Status);
-        op.AddDateTimeParameter("@Updated", otp.Updated);
+        op.AddDateTimeParameter("@Updated", otp.Updated ?? DateTime.Now);
         sqlDao.ExecuteProcedure(op);
     }
 
