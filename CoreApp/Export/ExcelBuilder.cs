@@ -1,5 +1,5 @@
 using System.Text;
-using SEGEDE_Grupo1.EntitiesDTOs.Entities;
+using SEGEDE_Grupo1.EntitiesDTOs;
 
 namespace SEGEDE_Grupo1.CoreApp.Export;
 

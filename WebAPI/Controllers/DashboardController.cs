@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using SEGEDE_Grupo1.CoreApp.Managers;
+using SEGEDE_Grupo1.CoreApp;
 using SEGEDE_Grupo1.EntitiesDTOs.DTOs;
-using SEGEDE_Grupo1.EntitiesDTOs.DTOs.Responses;
+using SEGEDE_Grupo1.EntitiesDTOs;
 using SEGEDE_Grupo1.EntitiesDTOs.Exceptions;
 
 namespace SEGEDE_Grupo1.WebAPI.Controllers;
