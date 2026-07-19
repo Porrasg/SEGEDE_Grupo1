@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SEGEDE_Grupo1.CoreApp;
-using SEGEDE_Grupo1.EntitiesDTOs.DTOs;
 using SEGEDE_Grupo1.EntitiesDTOs;
 
 namespace SEGEDE_Grupo1.WebAPI.Controllers;
@@ -21,7 +20,7 @@ public class BillingController : SgdeControllerBase
     public IActionResult SetPrice([FromBody] SetPriceRequest request)
     {
         _billingManager.SetPrice(request, CallerUserId);
-        return Ok(new ApiResponse<object> { Success = true, Message = "Nuevo precio por MWh fijado en el sistema." });
+        return Ok(new { message = "Nuevo precio por MWh fijado en el sistema." });
     }
 
     // Función de consulta que retorna el historial de precios (Admin/Prices). Ruta faltante detectada en la auditoría de v2 §53.
@@ -30,7 +29,7 @@ public class BillingController : SgdeControllerBase
     public IActionResult GetPriceHistory()
     {
         var result = _billingManager.RetrievePriceHistory();
-        return Ok(new ApiResponse<List<Price>> { Success = true, Data = result });
+        return Ok(result);
     }
 
     // Método manejador que actualiza el porcentaje de impuesto aplicable en la facturación mensual. Solo Admin.
@@ -39,7 +38,7 @@ public class BillingController : SgdeControllerBase
     public IActionResult SetTax([FromBody] SetTaxRequest request)
     {
         _billingManager.SetTax(request, CallerUserId);
-        return Ok(new ApiResponse<object> { Success = true, Message = "Porcentaje de impuesto actualizado con éxito." });
+        return Ok(new { message = "Porcentaje de impuesto actualizado con éxito." });
     }
 
     // Función de consulta que retorna el historial de impuestos (Admin/Taxes). Ruta faltante detectada en la auditoría de v2 §53.
@@ -48,7 +47,7 @@ public class BillingController : SgdeControllerBase
     public IActionResult GetTaxHistory()
     {
         var result = _billingManager.RetrieveTaxHistory();
-        return Ok(new ApiResponse<List<Tax>> { Success = true, Data = result });
+        return Ok(result);
     }
 
     // Función de consulta que recupera el listado de estados de cuenta emitidos para un comprador o globalmente. Ownership: Buyer solo ve los propios.
@@ -56,7 +55,7 @@ public class BillingController : SgdeControllerBase
     public IActionResult GetStatements([FromQuery] int? buyerId = null)
     {
         var result = _billingManager.RetrieveStatements(buyerId, CallerUserId, CallerRole);
-        return Ok(new ApiResponse<List<AccountStatement>> { Success = true, Data = result });
+        return Ok(result);
     }
 
     // Método manejador que procesa la anulación justificada de un estado de cuenta emitido. Solo Admin.
@@ -65,7 +64,7 @@ public class BillingController : SgdeControllerBase
     public IActionResult AnnulStatement([FromBody] AnnulStatementRequest request)
     {
         _billingManager.AnnulStatement(request, CallerUserId);
-        return Ok(new ApiResponse<object> { Success = true, Message = "Estado de cuenta anulado formalmente." });
+        return Ok(new { message = "Estado de cuenta anulado formalmente." });
     }
 
     // Método manejador que regenera una nueva revisión de un estado de cuenta anulado. Solo Admin.
@@ -75,7 +74,7 @@ public class BillingController : SgdeControllerBase
     public IActionResult RegenerateStatement([FromBody] RegenerateStatementRequest request)
     {
         _billingManager.RegenerateStatement(request, CallerUserId);
-        return Ok(new ApiResponse<object> { Success = true, Message = "Estado de cuenta regenerado con nueva revisión." });
+        return Ok(new { message = "Estado de cuenta regenerado con nueva revisión." });
     }
 
     // Función de consulta que retorna la bitácora completa de exportaciones (Admin/Exports). Solo Admin.
@@ -85,7 +84,7 @@ public class BillingController : SgdeControllerBase
     public IActionResult GetExportLogs()
     {
         var result = _billingManager.RetrieveExportLogs();
-        return Ok(new ApiResponse<List<ExportLog>> { Success = true, Data = result });
+        return Ok(result);
     }
 
     // Método manejador que exporta y descarga un estado de cuenta en el formato solicitado (CSV, Excel o HTML/PDF) (§14.10, §20.1). Ownership: Buyer solo exporta lo propio (BIL-04).

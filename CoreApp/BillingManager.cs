@@ -1,8 +1,8 @@
 using SEGEDE_Grupo1.CoreApp.Export;
 using SEGEDE_Grupo1.DataAccess.CRUD;
 using SEGEDE_Grupo1.EntitiesDTOs;
-using SEGEDE_Grupo1.EntitiesDTOs.Exceptions;
-using SEGEDE_Grupo1.EntitiesDTOs.Validation;
+using SEGEDE_Grupo1.CoreApp.Helpers;
+using SEGEDE_Grupo1.CoreApp.Exceptions;
 
 namespace SEGEDE_Grupo1.CoreApp;
 
@@ -24,7 +24,8 @@ public class BillingManager
     // RF-057: Establecer un nuevo precio por MWh. Cierra el precio activo vigente (manejado por el SP de inserción) y registra el nuevo.
     public void SetPrice(SetPriceRequest r, int callerUserId)
     {
-        BillingValidator.ValidatePrice(r.PriceCRCPerMWh).ThrowIfInvalid();
+        // Validación para precio sea mayor que 0
+        ValidatePrice(r.PriceCRCPerMWh);
 
         var now = TimeHelper.NowCR();
         var oldPrice = _priceFactory.RetrieveActive();
@@ -52,7 +53,7 @@ public class BillingManager
     // RF-058: Establecer un nuevo impuesto. Valida que sea fracción entre 0 y 1 (ej. 0.13), cierra el anterior y crea el nuevo.
     public void SetTax(SetTaxRequest r, int callerUserId)
     {
-        BillingValidator.ValidateTax(r.Percentage).ThrowIfInvalid();
+        ValidateTax(r.Percentage);
 
         if (string.IsNullOrWhiteSpace(r.Name))
         {
@@ -113,7 +114,7 @@ public class BillingManager
     // RF-062: Anula un estado de cuenta. Valida que exista motivo, marca Status=Annulled sin tocar valores financieros.
     public void AnnulStatement(AnnulStatementRequest r, int callerUserId)
     {
-        BillingValidator.ValidateAnnulment(r.Reason).ThrowIfInvalid();
+        ValidateAnnulment(r.Reason);
 
         var stmt = _statementFactory.RetrieveById<AccountStatement>(r.StatementId) ?? throw new NotFoundException("Account statement not found.");
 
@@ -215,5 +216,28 @@ public class BillingManager
         _auditManager.LogAction(callerUserId, $"User {callerUserId}", AuditModules.Billing, AuditActions.Export, "tblAccountStatement", stmt.Id, null, $"Exported as {formatName}");
 
         return fileBytes;
+    }
+
+    // Validación para que precio sea mayor que 0 
+    private static void ValidatePrice(decimal priceCRCPerMWh)
+    {
+        if (priceCRCPerMWh <= 0)
+            throw new BusinessException("PriceCRCPerMWh must be greater than 0.", "INVALID_PRICE");
+    }
+
+    private static void ValidateTax(decimal percentage)
+    {
+        if (percentage < 0)
+            throw new BusinessException("Tax percentage must be >= 0.", "INVALID_TAX");
+        if (percentage >= 1)
+            throw new BusinessException("Tax percentage must be < 1 (fraction: 0.13 = 13%).", "INVALID_TAX");
+    }
+
+    private static void ValidateAnnulment(string? reason)
+    {
+        if (string.IsNullOrWhiteSpace(reason))
+            throw new BusinessException("Annulment reason is required.", "INVALID_ANNULMENT_REASON");
+        if (reason.Length > 500)
+            throw new BusinessException("Annulment reason must not exceed 500 characters.", "INVALID_ANNULMENT_REASON");
     }
 }

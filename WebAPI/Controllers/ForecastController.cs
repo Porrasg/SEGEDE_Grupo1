@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SEGEDE_Grupo1.CoreApp;
-using SEGEDE_Grupo1.EntitiesDTOs.DTOs;
 using SEGEDE_Grupo1.EntitiesDTOs;
 
 namespace SEGEDE_Grupo1.WebAPI.Controllers;
@@ -19,7 +18,7 @@ public class ForecastController : SgdeControllerBase
     public IActionResult Register([FromBody] RegisterForecastRequest request)
     {
         _forecastManager.Register(request, CallerUserId);
-        return Ok(new ApiResponse<object> { Success = true, Message = "Pronóstico de consumo registrado con éxito." });
+        return Ok(new { message = "Pronóstico de consumo registrado con éxito." });
     }
 
     // Método manejador que actualiza la cantidad de MWh de un pronóstico que se encuentre en estado pendiente. Solo Buyer (propio).
@@ -28,7 +27,7 @@ public class ForecastController : SgdeControllerBase
     public IActionResult Modify([FromBody] ModifyForecastRequest request)
     {
         _forecastManager.Modify(request, CallerUserId, CallerRole);
-        return Ok(new ApiResponse<object> { Success = true, Message = "Pronóstico de consumo actualizado." });
+        return Ok(new { message = "Pronóstico de consumo actualizado." });
     }
 
     // Función de consulta que lista los pronósticos registrados para un mes y año específicos. Vista de Admin (Admin/Forecasts).
@@ -37,7 +36,7 @@ public class ForecastController : SgdeControllerBase
     public IActionResult GetByMonth([FromQuery] int month, [FromQuery] int year)
     {
         var result = _forecastManager.RetrieveByMonth(month, year);
-        return Ok(new ApiResponse<List<Forecast>> { Success = true, Data = result });
+        return Ok(result);
     }
 
     // Función de consulta que recupera el listado de pronósticos de demanda de un comprador específico (§14.8). Ownership: Buyer propio o Admin.
@@ -46,7 +45,7 @@ public class ForecastController : SgdeControllerBase
     public IActionResult GetByBuyer(int buyerId)
     {
         var result = _forecastManager.RetrieveByBuyer(buyerId, CallerUserId, CallerRole);
-        return Ok(new ApiResponse<List<Forecast>> { Success = true, Data = result });
+        return Ok(result);
     }
 
     // Método manejador que ejecuta la cancelación formal de un pronóstico de demanda futuro. Solo Buyer (propio).
@@ -55,6 +54,6 @@ public class ForecastController : SgdeControllerBase
     public IActionResult Cancel(int forecastId)
     {
         _forecastManager.Cancel(forecastId, CallerUserId, CallerRole);
-        return Ok(new ApiResponse<object> { Success = true, Message = "Pronóstico cancelado con éxito." });
+        return Ok(new { message = "Pronóstico cancelado con éxito." });
     }
 }

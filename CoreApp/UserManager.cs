@@ -1,10 +1,10 @@
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using SEGEDE_Grupo1.CoreApp.External;
 using SEGEDE_Grupo1.CoreApp.Helpers;
 using SEGEDE_Grupo1.DataAccess.CRUD;
 using SEGEDE_Grupo1.EntitiesDTOs;
-using SEGEDE_Grupo1.EntitiesDTOs.Exceptions;
-using SEGEDE_Grupo1.EntitiesDTOs.Validation;
+using SEGEDE_Grupo1.CoreApp.Exceptions;
 
 namespace SEGEDE_Grupo1.CoreApp;
 
@@ -42,8 +42,7 @@ public class UserManager
     // RF-001: Registro de comprador. Crea el usuario en estado PendingActivation, genera OTP de activación y encola notificación.
     public void Register(RegisterBuyerRequest r)
     {
-        var validation = UserValidator.Validate(r.Email, r.Identification, r.Password, r.Phone, r.BirthDate, r.FirstName, r.LastName);
-        validation.ThrowIfInvalid();
+        ValidateUserInput(r.Email, r.Identification, r.Password, r.Phone, r.BirthDate, r.FirstName, r.LastName);
 
         var existingUser = _userCrudFactory.RetrieveByEmail(r.Email);
         if (existingUser != null)
@@ -231,11 +230,7 @@ public class UserManager
 
         VerifyOtpOrThrow(user.Id, user.Email, OtpUsageTypes.Recovery, r.OtpCode);
 
-        var valResult = UserValidator.Validate(user.Email, user.Identification, r.NewPassword, user.Phone, user.BirthDate, user.FirstName, user.LastName);
-        if (valResult.Errors.Any(e => e.Contains("Password", StringComparison.OrdinalIgnoreCase)))
-        {
-            throw new ValidationException(valResult.Errors.Where(e => e.Contains("Password", StringComparison.OrdinalIgnoreCase)).ToArray());
-        }
+        ValidatePassword(r.NewPassword);
 
         string newHash = PasswordHasher.Hash(r.NewPassword);
         _userCrudFactory.UpdatePassword(user.Id, newHash, TimeHelper.NowCR());
@@ -525,4 +520,55 @@ public class UserManager
         Age = CalculateAge(user.BirthDate),
         Created = user.Created
     };
+
+    private static readonly Regex EmailRegex = new(
+        @"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.Compiled);
+    private static readonly Regex PasswordRegex = new(
+        @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$", RegexOptions.Compiled);
+    private static readonly Regex PhoneRegex = new(
+        @"^(\+506)?\d{8}$", RegexOptions.Compiled);
+    private static readonly Regex DigitsOnly = new(
+        @"^\d+$", RegexOptions.Compiled);
+
+    private static void ValidateUserInput(string? email, string? identification, string? password,
+        string? phone, DateTime? birthDate, string? firstName, string? lastName)
+    {
+        if (string.IsNullOrWhiteSpace(email) || email.Length > 250 || !EmailRegex.IsMatch(email))
+            throw new BusinessException("Email is required and must be a valid address (max 250 characters).", "INVALID_USER_DATA");
+
+        if (string.IsNullOrWhiteSpace(identification) || !DigitsOnly.IsMatch(identification) ||
+            (identification.Length != 9 && identification.Length != 10 &&
+             identification.Length != 11 && identification.Length != 12))
+            throw new BusinessException("Identification must be 9 (f\u00EDsica), 10 (jur\u00EDdica), 11 or 12 (DIMEX) digits.", "INVALID_USER_DATA");
+
+        ValidatePassword(password);
+
+        if (string.IsNullOrWhiteSpace(phone) || !PhoneRegex.IsMatch(phone))
+            throw new BusinessException("Phone must be 8 digits, optionally prefixed with +506.", "INVALID_USER_DATA");
+
+        if (birthDate.HasValue)
+        {
+            var now = TimeHelper.NowCR();
+            if (birthDate.Value > now)
+                throw new BusinessException("Birth date cannot be in the future.", "INVALID_USER_DATA");
+            int age = now.Year - birthDate.Value.Year;
+            if (birthDate.Value.Date > now.AddYears(-age)) age--;
+            if (age < 18)
+                throw new BusinessException("User must be at least 18 years old.", "INVALID_USER_DATA");
+        }
+
+        if (string.IsNullOrWhiteSpace(firstName) || firstName.Length > 150)
+            throw new BusinessException("First name is required and must not exceed 150 characters.", "INVALID_USER_DATA");
+
+        if (string.IsNullOrWhiteSpace(lastName) || lastName.Length > 150)
+            throw new BusinessException("Last name is required and must not exceed 150 characters.", "INVALID_USER_DATA");
+    }
+
+    private static void ValidatePassword(string? password)
+    {
+        if (string.IsNullOrWhiteSpace(password) || !PasswordRegex.IsMatch(password))
+            throw new BusinessException(
+                "Password must be at least 8 characters with 1 uppercase, 1 lowercase, 1 digit, and 1 special character.",
+                "INVALID_PASSWORD");
+    }
 }
