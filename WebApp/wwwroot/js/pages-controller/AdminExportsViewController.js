@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return `<tr>
                 <td>${l.id ?? l.Id}</td>
                 <td>${new Date(l.eventDate || l.EventDate).toLocaleString("es-CR")}</td>
-                <td>${userNames[userId] || `Usuario #${userId}`}</td>
+                <td>${escapeHtml(userNames[userId] || `Usuario #${userId}`)}</td>
                 <td>${userRoles[userId] || "-"}</td>
                 <td>${l.documentType || l.DocumentType || "-"} #${l.documentId ?? l.DocumentId ?? "-"}</td>
                 <td><span class="badge bg-info text-dark">${l.format || l.Format || "-"}</span></td>

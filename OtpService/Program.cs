@@ -120,8 +120,8 @@ static bool TrySendEmail(IConfiguration cfg, string to, string code, int expiryM
         };
         string from = cfg["Smtp:FromAddress"] ?? "no-reply@sgde.cr";
         string subject = "SGDE - Código de verificación";
-        string body = $"Su código de verificación SGDE es: {code}\n\nEste código expira en {expiryMinutes} minutos y es de un solo uso.\nSi usted no solicitó este código, ignore este mensaje.";
-        using var mail = new MailMessage(from, to, subject, body);
+        string body = BuildOtpEmailHtml(code, expiryMinutes);
+        using var mail = new MailMessage(from, to, subject, body) { IsBodyHtml = true };
         client.Send(mail);
         return true;
     }
@@ -131,6 +131,54 @@ static bool TrySendEmail(IConfiguration cfg, string to, string code, int expiryM
         return false;
     }
 }
+
+// Plantilla HTML del correo de OTP. Todo el CSS va inline y el layout usa tablas
+// porque los clientes de correo (Gmail, Outlook) no soportan hojas de estilo ni flexbox.
+static string BuildOtpEmailHtml(string code, int expiryMinutes) => $$"""
+<!DOCTYPE html>
+<html lang="es">
+<body style="margin:0; padding:0; background-color:#f4f6f8; font-family:Segoe UI, Arial, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f6f8; padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="max-width:480px; width:100%; background-color:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(16,42,67,0.08);">
+          <tr>
+            <td style="background-color:#0d3b66; padding:24px 32px;" align="center">
+              <span style="font-size:22px; font-weight:700; color:#ffffff; letter-spacing:1px;">&#9889; SGDE</span><br>
+              <span style="font-size:12px; color:#a8c5e0; letter-spacing:0.5px;">Sistema de Generaci&oacute;n y Despacho El&eacute;ctrico</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px;" align="center">
+              <p style="margin:0 0 8px; font-size:16px; color:#1f2d3d; font-weight:600;">C&oacute;digo de verificaci&oacute;n</p>
+              <p style="margin:0 0 24px; font-size:14px; color:#5a6b7b;">Use este c&oacute;digo para continuar con su operaci&oacute;n en SGDE:</p>
+              <table role="presentation" cellpadding="0" cellspacing="0" align="center">
+                <tr>
+                  <td style="background-color:#eef4fb; border:1px solid #cddcee; border-radius:10px; padding:16px 32px;">
+                    <span style="font-size:34px; font-weight:700; color:#0d3b66; letter-spacing:10px; font-family:Consolas, Courier New, monospace;">{{code}}</span>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:24px 0 0; font-size:13px; color:#5a6b7b;">
+                Este c&oacute;digo expira en <strong>{{expiryMinutes}} minutos</strong> y es de un solo uso.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="background-color:#f9fafc; border-top:1px solid #e6ebf1; padding:16px 32px;" align="center">
+              <p style="margin:0; font-size:12px; color:#8a99a8;">
+                Si usted no solicit&oacute; este c&oacute;digo, ignore este mensaje.<br>
+                Este es un correo autom&aacute;tico &mdash; no responda a esta direcci&oacute;n.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+""";
 
 record OtpRequest(string Email, string UsageType);
 record OtpVerifyRequest(string Email, string UsageType, string Code);

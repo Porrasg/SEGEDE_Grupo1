@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return `<tr>
                 <td>${l.id ?? l.Id}</td>
                 <td>${new Date(l.eventDate || l.EventDate).toLocaleString("es-CR")}</td>
-                <td>${l.userName || l.UserName || "Sistema"}</td>
+                <td>${escapeHtml(l.userName || l.UserName || "Sistema")}</td>
                 <td><span class="badge bg-secondary">${l.module || l.Module || "-"}</span></td>
                 <td>${l.action || l.Action || "-"}</td>
                 <td>${l.affectedEntity || l.AffectedEntity || "-"} #${l.entityId ?? l.EntityId ?? "-"}</td>

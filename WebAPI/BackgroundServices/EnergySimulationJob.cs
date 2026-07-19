@@ -1,9 +1,9 @@
-using SEGEDE_Grupo1.CoreApp.Managers;
+using SEGEDE_Grupo1.CoreApp;
 
 namespace SEGEDE_Grupo1.WebAPI.BackgroundServices;
 
 // Servicio de fondo que ejecuta el ciclo de simulación de energía periódicamente según §14.5.
-public class EnergySimulationJob : BackgroundService
+public class EnergySimulationJob : JobBase
 {
     private readonly ILogger<EnergySimulationJob> _logger;
     private readonly EnergyManager _energyManager = new();
@@ -20,15 +20,19 @@ public class EnergySimulationJob : BackgroundService
         _logger.LogInformation("Servicio en segundo plano EnergySimulationJob iniciado.");
         while (!stoppingToken.IsCancellationRequested)
         {
-            try
+            await RunGuarded(async () =>
             {
-                _energyManager.RunSimulationCycle();
-                _logger.LogInformation("Ciclo de simulación de energía ejecutado satisfactoriamente.");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error durante la ejecución del ciclo de simulación de energía.");
-            }
+                try
+                {
+                    _energyManager.RunSimulationCycle();
+                    _logger.LogInformation("Ciclo de simulación de energía ejecutado satisfactoriamente.");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error durante la ejecución del ciclo de simulación de energía.");
+                }
+                await Task.CompletedTask;
+            });
             await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
         }
         _logger.LogInformation("Servicio en segundo plano EnergySimulationJob detenido.");
