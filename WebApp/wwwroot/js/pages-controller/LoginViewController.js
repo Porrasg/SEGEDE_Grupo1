@@ -353,9 +353,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    
-    // CONTROL DEL OJITO PARA VER CONTRASEÑA
-   
+    // CONTROL DEL OJITO PARA VER CONTRASEÑA (Aporte de Josué)
     const togglePassword = document.getElementById('togglePassword');
     const passwordInput = document.getElementById('password');
 
@@ -373,8 +371,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
-
-
 
     // ==========================================
     // 6. FLUJO DE RESTABLECIMIENTO (/ResetPassword)
