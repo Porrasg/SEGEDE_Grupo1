@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SEGEDE_Grupo1.CoreApp;
-using SEGEDE_Grupo1.EntitiesDTOs.DTOs;
 using SEGEDE_Grupo1.EntitiesDTOs;
 
 namespace SEGEDE_Grupo1.WebAPI.Controllers;
@@ -20,7 +19,7 @@ public class MaintenanceController : SgdeControllerBase
     public IActionResult Schedule([FromBody] RegisterMaintenanceRequest request)
     {
         _maintenanceManager.Register(request, CallerUserId);
-        return Ok(new ApiResponse<object> { Success = true, Message = "Mantenimiento programado y turbina puesta en mantenimiento." });
+        return Ok(new { message = "Mantenimiento programado y turbina puesta en mantenimiento." });
     }
 
     // Método manejador que finaliza un mantenimiento en curso y reactiva la operación normal de la turbina. Operado por Engineer.
@@ -29,7 +28,7 @@ public class MaintenanceController : SgdeControllerBase
     public IActionResult Complete([FromBody] CompleteMaintenanceRequest request)
     {
         _maintenanceManager.Complete(request, CallerUserId);
-        return Ok(new ApiResponse<object> { Success = true, Message = "Mantenimiento completado y turbina reactivada." });
+        return Ok(new { message = "Mantenimiento completado y turbina reactivada." });
     }
 
     // Método manejador que cancela un mantenimiento programado (solo permitido en estado Scheduled). Operado por Engineer.
@@ -39,7 +38,7 @@ public class MaintenanceController : SgdeControllerBase
     public IActionResult Cancel(int maintenanceId)
     {
         _maintenanceManager.Cancel(maintenanceId, CallerUserId);
-        return Ok(new ApiResponse<object> { Success = true, Message = "Mantenimiento cancelado con éxito." });
+        return Ok(new { message = "Mantenimiento cancelado con éxito." });
     }
 
     // Función de consulta que lista el historial de mantenimientos de una turbina en específico.
@@ -47,7 +46,7 @@ public class MaintenanceController : SgdeControllerBase
     public IActionResult GetByTurbine(int turbineId)
     {
         var result = _maintenanceManager.RetrieveByTurbine(turbineId);
-        return Ok(new ApiResponse<List<Maintenance>> { Success = true, Data = result });
+        return Ok(result);
     }
 
     // Función de consulta que retorna el listado global de mantenimientos de todas las turbinas (§14.3).
@@ -55,6 +54,6 @@ public class MaintenanceController : SgdeControllerBase
     public IActionResult GetAll()
     {
         var result = _maintenanceManager.RetrieveAll();
-        return Ok(new ApiResponse<List<Maintenance>> { Success = true, Data = result });
+        return Ok(result);
     }
 }

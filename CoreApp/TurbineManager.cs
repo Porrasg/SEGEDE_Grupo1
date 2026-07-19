@@ -1,7 +1,6 @@
 using SEGEDE_Grupo1.DataAccess.CRUD;
 using SEGEDE_Grupo1.EntitiesDTOs;
 using SEGEDE_Grupo1.EntitiesDTOs.Exceptions;
-using SEGEDE_Grupo1.EntitiesDTOs.Validation;
 
 namespace SEGEDE_Grupo1.CoreApp;
 
@@ -23,7 +22,7 @@ public class TurbineManager
     // RF-013: Registro de turbina. Crea turbina, su batería local 1:1, log de estado inicial y recalcula capacidad del Banco Central.
     public void Register(RegisterTurbineRequest r, int callerUserId)
     {
-        TurbineValidator.Validate(r.UniqueCode, r.Name, r.Location, r.Brand, r.Model, r.Year, r.WeeklyNominalCapacity).ThrowIfInvalid();
+        ValidateTurbineInput(r.UniqueCode, r.Name, r.Location, r.Brand, r.Model, r.Year, r.WeeklyNominalCapacity);
 
         var existing = _turbineCrudFactory.RetrieveByCode(r.UniqueCode);
         if (existing != null)
@@ -78,7 +77,7 @@ public class TurbineManager
     {
         var existing = _turbineCrudFactory.RetrieveById<Turbine>(r.TurbineId) ?? throw new NotFoundException("Turbine not found.");
 
-        TurbineValidator.Validate(existing.UniqueCode, r.Name, r.Location, r.Brand, r.Model, existing.Year, r.WeeklyNominalCapacity).ThrowIfInvalid();
+        ValidateTurbineInput(existing.UniqueCode, r.Name, r.Location, r.Brand, r.Model, existing.Year, r.WeeklyNominalCapacity);
 
         existing.Name = r.Name;
         existing.Location = r.Location;
@@ -254,5 +253,27 @@ public class TurbineManager
         var activeTurbines = _turbineCrudFactory.RetrieveAllActive();
         decimal totalCapacity = activeTurbines.Sum(t => t.WeeklyNominalCapacity);
         _centralBankCrudFactory.UpdateAutomaticCapacity(totalCapacity, TimeHelper.NowCR());
+    }
+
+    private static void ValidateTurbineInput(string? uniqueCode, string? name, string? location,
+        string? brand, string? model, int year, decimal weeklyNominalCapacity)
+    {
+        if (string.IsNullOrWhiteSpace(uniqueCode))
+            throw new BusinessException("UniqueCode is required.", "INVALID_TURBINE_DATA");
+        if (uniqueCode.Length > 50)
+            throw new BusinessException("UniqueCode must not exceed 50 characters.", "INVALID_TURBINE_DATA");
+        if (string.IsNullOrWhiteSpace(name))
+            throw new BusinessException("Name is required.", "INVALID_TURBINE_DATA");
+        if (string.IsNullOrWhiteSpace(location))
+            throw new BusinessException("Location is required.", "INVALID_TURBINE_DATA");
+        if (string.IsNullOrWhiteSpace(brand))
+            throw new BusinessException("Brand is required.", "INVALID_TURBINE_DATA");
+        if (string.IsNullOrWhiteSpace(model))
+            throw new BusinessException("Model is required.", "INVALID_TURBINE_DATA");
+        var currentYear = TimeHelper.NowCR().Year;
+        if (year < 1900 || year > currentYear + 1)
+            throw new BusinessException($"Year must be between 1900 and {currentYear + 1}.", "INVALID_TURBINE_DATA");
+        if (weeklyNominalCapacity <= 0)
+            throw new BusinessException("WeeklyNominalCapacity must be greater than 0.", "INVALID_TURBINE_DATA");
     }
 }

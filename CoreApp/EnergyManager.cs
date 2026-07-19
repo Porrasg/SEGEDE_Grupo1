@@ -1,5 +1,4 @@
 using SEGEDE_Grupo1.DataAccess.CRUD;
-using SEGEDE_Grupo1.EntitiesDTOs.DTOs;
 using SEGEDE_Grupo1.EntitiesDTOs;
 using SEGEDE_Grupo1.EntitiesDTOs.Exceptions;
 
@@ -140,38 +139,16 @@ public class EnergyManager
         _localBatteryCrudFactory.UpdateEnergy(battery.Id, storedEnergy, TimeHelper.NowCR());
     }
 
-    // RF-027: Retorna el historial paginado de logs de generación de una turbina.
-    public PagedResponse<EnergyGenerationLog> RetrieveGenerationHistory(int turbineId, PagedRequest p)
+    // RF-027: Retorna el historial de logs de generación de una turbina.
+    public List<EnergyGenerationLog> RetrieveGenerationHistory(int turbineId)
     {
-        var all = _genLogCrudFactory.RetrieveByTurbine(turbineId);
-        var items = all.Skip((p.Page - 1) * p.PageSize).Take(p.PageSize).ToList();
-        int totalPages = all.Count == 0 ? 0 : (int)Math.Ceiling(all.Count / (double)p.PageSize);
-
-        return new PagedResponse<EnergyGenerationLog>
-        {
-            Items = items,
-            Page = p.Page,
-            PageSize = p.PageSize,
-            TotalCount = all.Count,
-            TotalPages = totalPages
-        };
+        return _genLogCrudFactory.RetrieveByTurbine(turbineId);
     }
 
-    // RF-028: Retorna el historial paginado de logs de pérdidas de energía de una turbina.
-    public PagedResponse<EnergyLossLog> RetrieveLossHistory(int turbineId, PagedRequest p)
+    // RF-028: Retorna el historial de logs de pérdidas de energía de una turbina.
+    public List<EnergyLossLog> RetrieveLossHistory(int turbineId)
     {
-        var all = _lossLogCrudFactory.RetrieveByTurbine(turbineId);
-        var items = all.Skip((p.Page - 1) * p.PageSize).Take(p.PageSize).ToList();
-        int totalPages = all.Count == 0 ? 0 : (int)Math.Ceiling(all.Count / (double)p.PageSize);
-
-        return new PagedResponse<EnergyLossLog>
-        {
-            Items = items,
-            Page = p.Page,
-            PageSize = p.PageSize,
-            TotalCount = all.Count,
-            TotalPages = totalPages
-        };
+        return _lossLogCrudFactory.RetrieveByTurbine(turbineId);
     }
 
     // Función operativa que ejecuta el procesamiento lógico y control del flujo de trabajo dentro de la capa actual.

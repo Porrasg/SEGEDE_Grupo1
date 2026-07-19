@@ -1,6 +1,5 @@
 using System.Net;
 using System.Text.Json;
-using SEGEDE_Grupo1.EntitiesDTOs.DTOs;
 using SEGEDE_Grupo1.EntitiesDTOs.Exceptions;
 
 namespace SEGEDE_Grupo1.WebAPI.Middleware;
@@ -35,15 +34,14 @@ public class ExceptionHandlingMiddleware
         }
     }
 
-    // Manejador interno que evalúa el tipo de excepción y retorna el código de estado HTTP y estructura ApiResponse correspondiente.
+    // Manejador interno que evalúa el tipo de excepción y retorna el código de estado HTTP y estructura de error correspondiente.
     private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
         context.Response.ContentType = "application/json";
 
-        var response = new ApiResponse<object>
-        {
-            Success = false
-        };
+        string message;
+        string errorCode;
+        object? data = null;
 
         switch (exception)
         {
@@ -51,41 +49,39 @@ public class ExceptionHandlingMiddleware
                 context.Response.StatusCode = IsConflictCode(be.Code)
                     ? (int)HttpStatusCode.Conflict
                     : (int)HttpStatusCode.BadRequest;
-                response.Message = be.Message;
-                response.ErrorCode = be.Code ?? "BUSINESS_ERROR";
+                message = be.Message;
+                errorCode = be.Code ?? "BUSINESS_ERROR";
                 break;
 
             case NotFoundException nfe:
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                response.Message = nfe.Message;
-                response.ErrorCode = "NOT_FOUND";
+                message = nfe.Message;
+                errorCode = "NOT_FOUND";
                 break;
 
             case UnauthorizedAccessAppException uae:
                 context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
-                response.Message = uae.Message;
-                response.ErrorCode = "UNAUTHORIZED_ACCESS";
+                message = uae.Message;
+                errorCode = "UNAUTHORIZED_ACCESS";
                 break;
 
             case ValidationException ve:
                 context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                response.Message = "Error de validación en los datos ingresados.";
-                response.ErrorCode = "VALIDATION_ERROR";
-                response.Data = ve.Errors;
+                message = "Error de validación en los datos ingresados.";
+                errorCode = "VALIDATION_ERROR";
+                data = ve.Errors;
                 break;
 
             default:
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                response.Message = "Ha ocurrido un error interno en el procesamiento del servidor.";
-                response.ErrorCode = "INTERNAL_SERVER_ERROR";
-                // In Development, include exception details to help debugging
+                message = "Ha ocurrido un error interno en el procesamiento del servidor.";
+                errorCode = "INTERNAL_SERVER_ERROR";
                 if (_env != null && _env.IsDevelopment())
-                {
-                    response.Data = new { Exception = exception.Message, StackTrace = exception.StackTrace };
-                }
+                    data = new { Exception = exception.Message, StackTrace = exception.StackTrace };
                 break;
         }
 
+        var response = new { success = false, message, errorCode, data };
         var jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
         var jsonResponse = JsonSerializer.Serialize(response, jsonOptions);
         await context.Response.WriteAsync(jsonResponse);

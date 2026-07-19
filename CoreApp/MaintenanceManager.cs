@@ -1,7 +1,6 @@
 using SEGEDE_Grupo1.DataAccess.CRUD;
 using SEGEDE_Grupo1.EntitiesDTOs;
 using SEGEDE_Grupo1.EntitiesDTOs.Exceptions;
-using SEGEDE_Grupo1.EntitiesDTOs.Validation;
 
 namespace SEGEDE_Grupo1.CoreApp;
 
@@ -16,7 +15,7 @@ public class MaintenanceManager
     // RF-017/019: Registra un nuevo mantenimiento. Valida simultaneidad preventiva y cambia estado de turbina a UnderMaintenance.
     public void Register(RegisterMaintenanceRequest r, int callerUserId)
     {
-        MaintenanceValidator.Validate(r.MaintenanceType, r.EstimatedStartDate, r.EstimatedEndDate).ThrowIfInvalid();
+        ValidateMaintenanceInput(r.MaintenanceType, r.EstimatedStartDate, r.EstimatedEndDate);
 
         var turbine = _turbineCrudFactory.RetrieveById<Turbine>(r.TurbineId) ?? throw new NotFoundException("Turbine not found.");
 
@@ -119,5 +118,18 @@ public class MaintenanceManager
     public List<Maintenance> RetrieveAll()
     {
         return _maintenanceCrudFactory.RetrieveAll<Maintenance>();
+    }
+
+    private static void ValidateMaintenanceInput(string? maintenanceType, DateTime estimatedStartDate, DateTime estimatedEndDate)
+    {
+        if (string.IsNullOrWhiteSpace(maintenanceType))
+            throw new BusinessException("MaintenanceType is required.", "INVALID_MAINTENANCE_TYPE");
+
+        if (!maintenanceType.Equals(MaintenanceTypes.Preventive, StringComparison.OrdinalIgnoreCase) &&
+            !maintenanceType.Equals(MaintenanceTypes.Corrective, StringComparison.OrdinalIgnoreCase))
+            throw new BusinessException("MaintenanceType must be 'Preventive' or 'Corrective'.", "INVALID_MAINTENANCE_TYPE");
+
+        if (estimatedStartDate >= estimatedEndDate)
+            throw new BusinessException("EstimatedStartDate must be before EstimatedEndDate.", "INVALID_MAINTENANCE_DATES");
     }
 }
