@@ -353,6 +353,29 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    
+    // CONTROL DEL OJITO PARA VER CONTRASEÑA
+   
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+
+    if (togglePassword && passwordInput) {
+        togglePassword.addEventListener('click', function () {
+            // Alternar el tipo de input de password a text y viceversa
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+
+            // Alternar el icono del ojito (ojo abierto / ojo tachado)
+            const icon = this.querySelector('i');
+            if (icon) {
+                icon.classList.toggle('bi-eye');
+                icon.classList.toggle('bi-eye-slash');
+            }
+        });
+    }
+
+
+
     // ==========================================
     // 6. FLUJO DE RESTABLECIMIENTO (/ResetPassword)
     // ==========================================
