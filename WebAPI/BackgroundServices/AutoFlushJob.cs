@@ -1,4 +1,5 @@
 using SEGEDE_Grupo1.CoreApp;
+using SEGEDE_Grupo1.CoreApp.Helpers;
 using SEGEDE_Grupo1.EntitiesDTOs;
 
 namespace SEGEDE_Grupo1.WebAPI.BackgroundServices;
@@ -49,8 +50,8 @@ public class AutoFlushJob : JobBase
 
                     // Verificar en la base de datos si ya se ejecutó un flush automático hoy.
                     // Esto protege contra ejecuciones dobles si el servidor se reinicia después del flush.
-                    var history = _flushManager.RetrieveFlushHistory(new EntitiesDTOs.DTOs.PagedRequest { Page = 1, PageSize = 50 });
-                    bool alreadyRanToday = history.Items.Any(f =>
+                    var history = _flushManager.RetrieveFlushHistory();
+                    bool alreadyRanToday = history.Any(f =>
                         string.Equals(f.ExecutionType, FlushTypes.Automatic, StringComparison.OrdinalIgnoreCase) &&
                         f.StartDate.Date == now.Date);
 

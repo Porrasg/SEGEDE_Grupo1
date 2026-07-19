@@ -2,9 +2,9 @@ using System.Data;
 using Microsoft.Data.SqlClient;
 using SEGEDE_Grupo1.DataAccess.CRUD;
 using SEGEDE_Grupo1.DataAccess.DAO;
-using SEGEDE_Grupo1.EntitiesDTOs.DTOs;
 using SEGEDE_Grupo1.EntitiesDTOs;
-using SEGEDE_Grupo1.EntitiesDTOs.Exceptions;
+using SEGEDE_Grupo1.CoreApp.Helpers;
+using SEGEDE_Grupo1.CoreApp.Exceptions;
 
 namespace SEGEDE_Grupo1.CoreApp;
 
@@ -57,21 +57,10 @@ public class FlushManager
         _auditManager.LogAction(callerUserId, $"User {callerUserId}", AuditModules.Flush, AuditActions.Update, "tblFlushConfig", 1, oldVal, newVal);
     }
 
-    // Retorna el historial paginado de operaciones de flush.
-    public PagedResponse<Flush> RetrieveFlushHistory(PagedRequest p)
+    // Retorna el historial de operaciones de flush.
+    public List<Flush> RetrieveFlushHistory()
     {
-        var all = _flushFactory.RetrieveAll<Flush>();
-        var items = all.Skip((p.Page - 1) * p.PageSize).Take(p.PageSize).ToList();
-        int totalPages = all.Count == 0 ? 0 : (int)Math.Ceiling(all.Count / (double)p.PageSize);
-
-        return new PagedResponse<Flush>
-        {
-            Items = items,
-            Page = p.Page,
-            PageSize = p.PageSize,
-            TotalCount = all.Count,
-            TotalPages = totalPages
-        };
+        return _flushFactory.RetrieveAll<Flush>();
     }
 
     // RF-035: Verifica si existe un flush activo en estado Processing.

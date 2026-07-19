@@ -2,9 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using SEGEDE_Grupo1.CoreApp;
-using SEGEDE_Grupo1.EntitiesDTOs.DTOs;
 using SEGEDE_Grupo1.EntitiesDTOs;
-using SEGEDE_Grupo1.EntitiesDTOs.Exceptions;
+using SEGEDE_Grupo1.CoreApp.Exceptions;
 
 namespace SEGEDE_Grupo1.WebAPI.Controllers;
 
@@ -27,7 +26,7 @@ public class DashboardController : SgdeControllerBase
     public IActionResult GetAdminDashboard()
     {
         var d = _dashboardManager.GetAdminDashboard();
-        return Ok(new ApiResponse<DashboardAdminResponse> { Success = true, Data = d });
+        return Ok(d);
     }
 
     // Función de consulta que retorna las métricas de turbinas y estado de mantenimiento para el panel del Ingeniero de Operaciones.
@@ -36,7 +35,7 @@ public class DashboardController : SgdeControllerBase
     public IActionResult GetOperationsDashboard()
     {
         var d = _dashboardManager.GetOperationsDashboard();
-        return Ok(new ApiResponse<DashboardOperationsResponse> { Success = true, Data = d });
+        return Ok(d);
     }
 
     // Función de consulta que retorna el consumo histórico, pronósticos vigentes y facturas del panel de Comprador. Ownership: propio.
@@ -45,7 +44,7 @@ public class DashboardController : SgdeControllerBase
     public IActionResult GetBuyerDashboard()
     {
         var d = _dashboardManager.GetBuyerDashboard(CallerUserId);
-        return Ok(new ApiResponse<DashboardBuyerResponse> { Success = true, Data = d });
+        return Ok(d);
     }
 
     // Endpoint para sembrar o restablecer datos ficticios realistas para pruebas de los dashboards en todos los perfiles. Solo en desarrollo.
@@ -58,6 +57,6 @@ public class DashboardController : SgdeControllerBase
             throw new UnauthorizedAccessAppException("Endpoint disponible únicamente en entorno de desarrollo.");
         }
         new SeederManager().SeedAllDevData();
-        return Ok(new ApiResponse<string> { Success = true, Data = "Siembra de datos funcionales completada exitosamente para todos los perfiles." });
+        return Ok(new { message = "Siembra de datos funcionales completada exitosamente para todos los perfiles." });
     }
 }

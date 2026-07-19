@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SEGEDE_Grupo1.CoreApp;
-using SEGEDE_Grupo1.EntitiesDTOs.DTOs;
 using SEGEDE_Grupo1.EntitiesDTOs;
 
 namespace SEGEDE_Grupo1.WebAPI.Controllers;
@@ -21,7 +20,7 @@ public class TurbinesController : SgdeControllerBase
     public IActionResult Register([FromBody] RegisterTurbineRequest request)
     {
         _turbineManager.Register(request, CallerUserId);
-        return Ok(new ApiResponse<object> { Success = true, Message = "Turbina registrada con éxito en el sistema." });
+        return Ok(new { message = "Turbina registrada con éxito en el sistema." });
     }
 
     // Método manejador que procesa la actualización de características y capacidad nominal de una turbina. Solo Admin.
@@ -30,7 +29,7 @@ public class TurbinesController : SgdeControllerBase
     public IActionResult Update([FromBody] UpdateTurbineRequest request)
     {
         _turbineManager.Update(request, CallerUserId);
-        return Ok(new ApiResponse<object> { Success = true, Message = "Datos de la turbina actualizados." });
+        return Ok(new { message = "Datos de la turbina actualizados." });
     }
 
     // Método manejador que ejecuta la transición de estado operativo de la turbina registrando su historial.
@@ -38,7 +37,7 @@ public class TurbinesController : SgdeControllerBase
     public IActionResult ChangeState([FromBody] ChangeTurbineStateRequest request)
     {
         _turbineManager.ChangeState(request, CallerUserId);
-        return Ok(new ApiResponse<object> { Success = true, Message = "Cambio de estado operativo ejecutado con éxito." });
+        return Ok(new { message = "Cambio de estado operativo ejecutado con éxito." });
     }
 
     // Función de consulta que retorna los datos completos de una turbina específica por su identificador.
@@ -46,7 +45,7 @@ public class TurbinesController : SgdeControllerBase
     public IActionResult GetById(int id)
     {
         var t = _turbineManager.RetrieveById(id);
-        return Ok(new ApiResponse<Turbine> { Success = true, Data = t });
+        return Ok(t);
     }
 
     // Función de consulta que obtiene el catálogo completo y paginado de todas las turbinas registradas.
@@ -55,7 +54,7 @@ public class TurbinesController : SgdeControllerBase
     public IActionResult RetrieveAll()
     {
         var result = _turbineManager.RetrieveAll();
-        return Ok(new ApiResponse<List<Turbine>> { Success = true, Data = result });
+        return Ok(result);
     }
 
     // Función de consulta que calcula y retorna las métricas operativas y de rendimiento de una turbina.
@@ -63,7 +62,7 @@ public class TurbinesController : SgdeControllerBase
     public IActionResult GetMetrics(int id)
     {
         var m = _turbineManager.RetrieveMetrics(id);
-        return Ok(new ApiResponse<TurbineMetricsResponse> { Success = true, Data = m });
+        return Ok(m);
     }
 
     // Función de consulta que recupera el historial operativo y de mantenimiento de una turbina (§14.2).
@@ -71,7 +70,7 @@ public class TurbinesController : SgdeControllerBase
     public IActionResult GetHistory(int id)
     {
         var h = _turbineManager.RetrieveHistory(id);
-        return Ok(new ApiResponse<TurbineHistoryResponse> { Success = true, Data = h });
+        return Ok(h);
     }
 
     // Método manejador que fuerza la verificación de mantenimiento vencido (RF-018, Simulator Panel §131.4).
@@ -80,6 +79,6 @@ public class TurbinesController : SgdeControllerBase
     public IActionResult CheckOverdueMaintenanceEndpoint()
     {
         _turbineManager.CheckOverdueMaintenance();
-        return Ok(new ApiResponse<object> { Success = true, Message = "Verificación de mantenimiento vencido ejecutada." });
+        return Ok(new { message = "Verificación de mantenimiento vencido ejecutada." });
     }
 }

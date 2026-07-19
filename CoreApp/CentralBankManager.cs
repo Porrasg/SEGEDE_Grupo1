@@ -1,7 +1,7 @@
 using SEGEDE_Grupo1.DataAccess.CRUD;
-using SEGEDE_Grupo1.EntitiesDTOs.DTOs;
 using SEGEDE_Grupo1.EntitiesDTOs;
-using SEGEDE_Grupo1.EntitiesDTOs.Exceptions;
+using SEGEDE_Grupo1.CoreApp.Helpers;
+using SEGEDE_Grupo1.CoreApp.Exceptions;
 
 namespace SEGEDE_Grupo1.CoreApp;
 
@@ -42,20 +42,9 @@ public class CentralBankManager
         _auditManager.LogAction(callerUserId, $"User {callerUserId}", AuditModules.CentralBank, AuditActions.Update, "tblCentralBank", 1, oldVal, newVal);
     }
 
-    // RF-043: Retorna el historial paginado de movimientos de inventario del Banco Central (inflows y outflows).
-    public PagedResponse<CentralBankLog> RetrieveLogs(PagedRequest p)
+    // RF-043: Retorna el historial de movimientos de inventario del Banco Central.
+    public List<CentralBankLog> RetrieveLogs()
     {
-        var all = _logFactory.RetrieveAll<CentralBankLog>();
-        var items = all.Skip((p.Page - 1) * p.PageSize).Take(p.PageSize).ToList();
-        int totalPages = all.Count == 0 ? 0 : (int)Math.Ceiling(all.Count / (double)p.PageSize);
-
-        return new PagedResponse<CentralBankLog>
-        {
-            Items = items,
-            Page = p.Page,
-            PageSize = p.PageSize,
-            TotalCount = all.Count,
-            TotalPages = totalPages
-        };
+        return _logFactory.RetrieveAll<CentralBankLog>();
     }
 }

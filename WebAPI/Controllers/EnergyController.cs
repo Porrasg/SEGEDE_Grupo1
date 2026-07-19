@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SEGEDE_Grupo1.CoreApp;
-using SEGEDE_Grupo1.EntitiesDTOs.DTOs;
 using SEGEDE_Grupo1.EntitiesDTOs;
 
 namespace SEGEDE_Grupo1.WebAPI.Controllers;
@@ -14,52 +13,45 @@ public class EnergyController : SgdeControllerBase
 {
     private readonly EnergyManager _energyManager = new();
 
-    // Método manejador que ejecuta manualmente el ciclo de simulación de energía y cálculo de pérdidas.
     [HttpPost("RunSimulation")]
     public IActionResult RunSimulation()
     {
         _energyManager.RunSimulationCycle();
-        return Ok(new ApiResponse<object> { Success = true, Message = "Ciclo de simulación de energía ejecutado correctamente." });
+        return Ok(new { message = "Ciclo de simulación de energía ejecutado correctamente." });
     }
 
-    // Método manejador que fuerza la carga de la batería local de una turbina (Simulator Panel, adenda v3 §131.2).
     [HttpPost("SetBatteryCharge")]
     public IActionResult SetBatteryCharge([FromBody] SetBatteryChargeRequest request)
     {
         _energyManager.SetLocalBatteryCharge(request.TurbineId, request.StoredEnergy);
-        return Ok(new ApiResponse<object> { Success = true, Message = "Carga de batería local actualizada." });
+        return Ok(new { message = "Carga de batería local actualizada." });
     }
 
-    // Función de consulta que obtiene el estado actual y nivel de carga de la batería local de una turbina.
     [HttpGet("LocalBattery/{turbineId:int}")]
     public IActionResult GetLocalBattery(int turbineId)
     {
         var b = _energyManager.RetrieveLocalBattery(turbineId);
-        return Ok(new ApiResponse<LocalBattery> { Success = true, Data = b });
+        return Ok(b);
     }
 
-    // Función de consulta que obtiene todas las baterías locales de una vez (útil para UI que carga
-    // el estado de todas las turbinas en una sola petición).
     [HttpGet("LocalBatteries/All")]
     public IActionResult GetAllLocalBatteries()
     {
         var list = _energyManager.RetrieveAllLocalBatteries();
-        return Ok(new ApiResponse<List<LocalBattery>> { Success = true, Data = list });
+        return Ok(list);
     }
 
-    // Función de consulta que retorna el historial paginado de generación de energía de una turbina.
     [HttpGet("GenerationHistory/{turbineId:int}")]
-    public IActionResult GetGenerationHistory(int turbineId, [FromQuery] int page = 1, [FromQuery] int pageSize = 50)
+    public IActionResult GetGenerationHistory(int turbineId)
     {
-        var result = _energyManager.RetrieveGenerationHistory(turbineId, new PagedRequest { Page = page, PageSize = pageSize });
-        return Ok(new ApiResponse<PagedResponse<EnergyGenerationLog>> { Success = true, Data = result });
+        var result = _energyManager.RetrieveGenerationHistory(turbineId);
+        return Ok(result);
     }
 
-    // Función de consulta que retorna el historial paginado de pérdidas energéticas de una turbina.
     [HttpGet("LossHistory/{turbineId:int}")]
-    public IActionResult GetLossHistory(int turbineId, [FromQuery] int page = 1, [FromQuery] int pageSize = 50)
+    public IActionResult GetLossHistory(int turbineId)
     {
-        var result = _energyManager.RetrieveLossHistory(turbineId, new PagedRequest { Page = page, PageSize = pageSize });
-        return Ok(new ApiResponse<PagedResponse<EnergyLossLog>> { Success = true, Data = result });
+        var result = _energyManager.RetrieveLossHistory(turbineId);
+        return Ok(result);
     }
 }
