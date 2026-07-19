@@ -1,9 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SEGEDE_Grupo1.CoreApp.Managers;
+using SEGEDE_Grupo1.CoreApp;
 using SEGEDE_Grupo1.EntitiesDTOs.DTOs;
-using SEGEDE_Grupo1.EntitiesDTOs.DTOs.Requests;
-using SEGEDE_Grupo1.EntitiesDTOs.Entities;
+using SEGEDE_Grupo1.EntitiesDTOs;
 
 namespace SEGEDE_Grupo1.WebAPI.Controllers;
 
@@ -37,6 +36,15 @@ public class EnergyController : SgdeControllerBase
     {
         var b = _energyManager.RetrieveLocalBattery(turbineId);
         return Ok(new ApiResponse<LocalBattery> { Success = true, Data = b });
+    }
+
+    // Función de consulta que obtiene todas las baterías locales de una vez (útil para UI que carga
+    // el estado de todas las turbinas en una sola petición).
+    [HttpGet("LocalBatteries/All")]
+    public IActionResult GetAllLocalBatteries()
+    {
+        var list = _energyManager.RetrieveAllLocalBatteries();
+        return Ok(new ApiResponse<List<LocalBattery>> { Success = true, Data = list });
     }
 
     // Función de consulta que retorna el historial paginado de generación de energía de una turbina.

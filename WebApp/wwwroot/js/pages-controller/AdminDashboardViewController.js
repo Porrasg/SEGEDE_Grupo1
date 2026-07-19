@@ -20,8 +20,10 @@ document.addEventListener("DOMContentLoaded", function () {
         let capacityChartInstance = null;
 
         loadAdminDashboard();
+        loadUserStats();
         // Auto-refrescar en tiempo real cada 15 segundos
         setInterval(loadAdminDashboard, 15000);
+        setInterval(loadUserStats, 30000);
 
         function loadAdminDashboard() {
             apiClient.get("Dashboard/Admin")
@@ -52,6 +54,19 @@ document.addEventListener("DOMContentLoaded", function () {
                 .fail(function (xhr) {
                     handleApiError(xhr);
                 });
+        }
+
+        function loadUserStats() {
+            apiClient.get("Users/RetrieveAll")
+                .done(function (res) {
+                    const users = res?.data || res?.Data || [];
+                    const active = users.filter(u => (u.status || u.Status) === 'Active').length;
+                    const total = users.length;
+                    setText("kpiActiveUsers", active);
+                    const hint = document.getElementById("kpiTotalUsersHint");
+                    if (hint) hint.innerHTML = `<i class="bi bi-arrow-right-short"></i> ${active} activos de ${total} total`;
+                })
+                .fail(function () { setText("kpiActiveUsers", "-"); });
         }
 
         function renderAdminCharts(totalT, activeT, cbInv, effCap, totalDem) {

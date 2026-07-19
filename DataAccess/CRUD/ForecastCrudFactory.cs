@@ -1,7 +1,6 @@
 using Microsoft.Data.SqlClient;
 using SEGEDE_Grupo1.DataAccess.DAO;
 using SEGEDE_Grupo1.EntitiesDTOs;
-using SEGEDE_Grupo1.EntitiesDTOs.Entities;
 
 namespace SEGEDE_Grupo1.DataAccess.CRUD;
 
@@ -30,7 +29,7 @@ public class ForecastCrudFactory : CrudFactory
         op.AddIntParameter("@Id", f.Id);
         op.AddDecimalParameter("@AmountMWh", f.AmountMWh);
         op.AddStringParameter("@Status", f.Status);
-        op.AddDateTimeParameter("@Updated", f.Updated);
+        op.AddDateTimeParameter("@Updated", f.Updated ?? DateTime.Now);
         sqlDao.ExecuteProcedure(op);
     }
 

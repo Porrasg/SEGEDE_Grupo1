@@ -72,8 +72,11 @@ PublishScripts/
 ############################################################
 # Configuración local de ASP.NET
 ############################################################
-
-appsettings.Development.json
+# NOTA (decisión del equipo): appsettings.Development.json SÍ se versiona
+# a propósito. Es un proyecto privado de clase con una BD de desarrollo
+# compartida; versionar la config permite que cualquiera clone y corra el
+# sistema (BD Azure + SMTP + OTP + JWT) sin configuración manual.
+# ⚠️ Si este repo se hiciera público, rotar estas credenciales y volver a ignorar.
 
 ############################################################
 # Node.js (si algún día agregan frontend con Node)
