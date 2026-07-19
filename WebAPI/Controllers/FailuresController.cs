@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SEGEDE_Grupo1.CoreApp;
-using SEGEDE_Grupo1.EntitiesDTOs.DTOs;
 using SEGEDE_Grupo1.EntitiesDTOs;
 
 namespace SEGEDE_Grupo1.WebAPI.Controllers;
@@ -19,7 +18,7 @@ public class FailuresController : SgdeControllerBase
     public IActionResult Register([FromBody] RegisterFailureRequest request)
     {
         _failureManager.Register(request, CallerUserId);
-        return Ok(new ApiResponse<object> { Success = true, Message = "Falla reportada con éxito. Turbina detenida por seguridad." });
+        return Ok(new { message = "Falla reportada con éxito. Turbina detenida por seguridad." });
     }
 
     // Función de consulta que lista el historial de fallas reportadas para una turbina específica.
@@ -27,7 +26,7 @@ public class FailuresController : SgdeControllerBase
     public IActionResult GetByTurbine(int turbineId)
     {
         var result = _failureManager.RetrieveByTurbine(turbineId);
-        return Ok(new ApiResponse<List<Failure>> { Success = true, Data = result });
+        return Ok(result);
     }
 
     // Función de consulta que retorna el listado global de fallas de todo el parque eólico (§14.4).
@@ -35,6 +34,6 @@ public class FailuresController : SgdeControllerBase
     public IActionResult GetAll()
     {
         var result = _failureManager.RetrieveAll();
-        return Ok(new ApiResponse<List<Failure>> { Success = true, Data = result });
+        return Ok(result);
     }
 }
