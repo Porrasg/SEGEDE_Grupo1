@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     // Intentamos LoginStep2 directamente con un código dummy.
                     apiClient.post("Users/LoginStep2", { email: email, otpCode: "000000" })
                         .done(function (res2) {
-                            const loginData = res2?.data || res2?.Data;
+                            const loginData = res2?.data || res2?.Data || (res2?.token || res2?.Token ? res2 : null);
                             if (loginData) {
                                 session.save(loginData);
                                 sessionStorage.removeItem("sgde_login_email");
@@ -92,7 +92,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             apiClient.post("Users/LoginStep2", { email: savedEmail, otpCode: otpCode })
                 .done(function (res) {
-                    const loginData = res?.data || res?.Data;
+                    const loginData = res?.data || res?.Data || (res?.token || res?.Token ? res : null);
                     if (loginData) {
                         session.save(loginData);
                         sessionStorage.removeItem("sgde_login_email");
