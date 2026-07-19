@@ -1028,3 +1028,121 @@ main[role="main"] {
 .swal2-timer-progress-bar {
   background: var(--sgde-primary) !important;
 }
+
+/* ==========================================================================
+   SGDE LAYOUT & SMART CARD MODULES CSS
+   ========================================================================== */
+
+/* ── 1. Contenedor del Sidebar Fijo ───────────────────────────────────────── */
+.sgde-sidebar {
+    width: 265px;
+    background-color: var(--sgde-surface-card);
+    border-color: var(--sgde-border) !important;
+    transition: width var(--sgde-transition-default, 0.25s ease);
+    z-index: 1020;
+}
+
+.sgde-brand-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--sgde-radius-md, 0.375rem);
+    background: rgba(122, 82, 196, 0.15);
+    color: var(--sgde-primary);
+}
+
+.sgde-sidebar .nav-link {
+    color: var(--sgde-body-secondary, #5C5A66);
+    border-radius: var(--sgde-radius-md, 0.375rem);
+    font-weight: 500;
+    transition: all var(--sgde-transition-fast, 0.15s ease);
+}
+
+.sgde-sidebar .nav-link:hover {
+    color: var(--sgde-heading);
+    background-color: var(--sgde-surface-hover);
+}
+
+.sgde-sidebar .nav-link.active {
+    color: #FFFFFF !important;
+    background-color: var(--sgde-primary);
+    box-shadow: var(--sgde-shadow-sm);
+}
+
+.sgde-avatar {
+    width: 38px;
+    height: 38px;
+    background-color: var(--sgde-surface-elevated);
+    color: var(--sgde-primary);
+    border: 1px solid var(--sgde-border);
+}
+
+/* ── 2. Topbar y Superficie Principal ─────────────────────────────────────── */
+.sgde-topbar {
+    background-color: var(--sgde-surface-card);
+    border-color: var(--sgde-border) !important;
+}
+
+.bg-app-surface {
+    background-color: var(--sgde-bg);
+}
+
+/* ── 3. Tarjetas Modulares del Dashboard (Smartphone App-Style) ───────────── */
+.card-module {
+    background-color: var(--sgde-surface-card);
+    border: 1px solid var(--sgde-border);
+    border-radius: var(--sgde-radius-lg, 0.75rem);
+    box-shadow: var(--sgde-shadow-sm);
+    transition: transform var(--sgde-transition-default, 0.25s ease),
+                box-shadow var(--sgde-transition-default, 0.25s ease),
+                border-color var(--sgde-transition-default, 0.25s ease);
+    overflow: hidden;
+}
+
+.card-module:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--sgde-shadow-md);
+    border-color: var(--sgde-primary);
+}
+
+.card-module:focus-visible {
+    outline: 2px solid var(--sgde-primary);
+    outline-offset: 2px;
+}
+
+.module-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(122, 82, 196, 0.12);
+    color: var(--sgde-primary);
+    font-size: 1.65rem;
+    transition: transform var(--sgde-transition-fast, 0.15s ease);
+}
+
+.module-icon-customer {
+    background: rgba(16, 124, 98, 0.12);
+    color: var(--sgde-state-active, #107C62);
+}
+
+.module-icon-audit {
+    background: rgba(217, 119, 6, 0.12);
+    color: var(--sgde-state-maintenance, #D97706);
+}
+
+.module-icon-reports {
+    background: rgba(59, 130, 246, 0.12);
+    color: #3B82F6;
+}
+
+.card-module:hover .module-icon-wrapper {
+    transform: scale(1.08);
+}
+
+.module-action-indicator {
+    color: var(--sgde-primary);
+    transition: gap var(--sgde-transition-fast, 0.15s ease);
+}
+
+.card-module:hover .module-action-indicator {
+    gap: 0.5rem !important;
+}

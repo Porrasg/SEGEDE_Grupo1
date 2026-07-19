@@ -1,6 +1,5 @@
 using SEGEDE_Grupo1.DataAccess.DAO;
 using SEGEDE_Grupo1.EntitiesDTOs;
-using SEGEDE_Grupo1.EntitiesDTOs.Entities;
 
 namespace SEGEDE_Grupo1.DataAccess.CRUD;
 
@@ -38,7 +37,7 @@ public class UserCrudFactory : CrudFactory
         op.AddStringParameter("@Phone", user.Phone);
         op.AddStringParameter("@Role", user.Role);
         op.AddStringParameter("@Status", user.Status);
-        op.AddDateTimeParameter("@Updated", user.Updated);
+        op.AddDateTimeParameter("@Updated", user.Updated ?? DateTime.Now);
         sqlDao.ExecuteProcedure(op);
     }
 

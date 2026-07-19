@@ -1,6 +1,5 @@
 using SEGEDE_Grupo1.DataAccess.DAO;
 using SEGEDE_Grupo1.EntitiesDTOs;
-using SEGEDE_Grupo1.EntitiesDTOs.Entities;
 
 namespace SEGEDE_Grupo1.DataAccess.CRUD;
 
@@ -31,7 +30,7 @@ public class MaintenanceCrudFactory : CrudFactory
         op.AddNullableDateTimeParameter("@ActualEndDate", m.ActualEndDate);
         op.AddStringParameter("@Result", m.Result);
         op.AddStringParameter("@Status", m.Status);
-        op.AddDateTimeParameter("@Updated", m.Updated);
+        op.AddDateTimeParameter("@Updated", m.Updated ?? DateTime.Now);
         sqlDao.ExecuteProcedure(op);
     }
 

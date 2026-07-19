@@ -9,5 +9,6 @@ public class BaseDTO
     // Marca de tiempo (UTC/Local) en que se creó el registro de auditoría.
     public DateTime Created { get; set; }
     // Propiedad de datos mapeada a la columna de base de datos o parámetro de transferencia.
-    public DateTime Updated { get; set; }
+    public DateTime? Updated { get; set; }
 }
+

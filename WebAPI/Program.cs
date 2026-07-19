@@ -4,7 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using SEGEDE_Grupo1.DataAccess.DAO;
 using SEGEDE_Grupo1.WebAPI.BackgroundServices;
 using SEGEDE_Grupo1.WebAPI.Middleware;
-using SEGEDE_Grupo1.CoreApp.Managers;
+using SEGEDE_Grupo1.CoreApp;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +16,7 @@ SqlDao.Configure(connectionString);
 // Puente configuración → variables de entorno para los managers sin DI (NotificationManager lee
 // "Smtp:*" y OtpServiceClient lee "OtpService:*" vía Environment.GetEnvironmentVariable).
 // Así las credenciales viven en appsettings.Development.json (gitignored) y no en archivos versionados.
-foreach (var key in new[] { "Smtp:Host", "Smtp:Port", "Smtp:User", "Smtp:Password", "Smtp:FromAddress", "Smtp:EnableSsl", "OtpService:BaseUrl", "OtpService:ApiKey" })
+foreach (var key in new[] { "Smtp:Host", "Smtp:Port", "Smtp:User", "Smtp:Password", "Smtp:FromAddress", "Smtp:EnableSsl", "OtpService:BaseUrl", "OtpService:ApiKey", "Jwt:Secret" })
 {
     var value = builder.Configuration[key];
     if (!string.IsNullOrWhiteSpace(value))
@@ -69,12 +69,27 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Registro de servicios en segundo plano para simulación de energía, notificaciones y auditoría WORM.
+// Registro de servicios en segundo plano para simulación de energía, notificaciones, auditoría WORM y flush automático.
 builder.Services.AddHostedService<EnergySimulationJob>();
 builder.Services.AddHostedService<NotificationProcessingJob>();
 builder.Services.AddHostedService<AuditArchiveJob>();
+builder.Services.AddHostedService<AutoFlushJob>();
 
 var app = builder.Build();
+
+// Seguridad fail-closed (§13.3): fuera de Development, el segundo factor OTP no puede quedar en modo
+// simulación local (BaseUrl vacío o ".local"), porque eso reduciría el login a solo contraseña sin aviso.
+if (!app.Environment.IsDevelopment())
+{
+    var otpBaseUrl = builder.Configuration["OtpService:BaseUrl"];
+    if (string.IsNullOrWhiteSpace(otpBaseUrl) ||
+        otpBaseUrl.Contains(".local", StringComparison.OrdinalIgnoreCase))
+    {
+        throw new InvalidOperationException(
+            "OtpService:BaseUrl no puede estar vacío ni en modo simulación (.local) en producción: " +
+            "el OTP quedaría desactivado. Configure la URL del servicio OTP real.");
+    }
+}
 
 // Intercepción global de excepciones para convertir errores de negocio en respuestas HTTP estandarizadas.
 app.UseExceptionHandlingMiddleware();
@@ -98,6 +113,12 @@ if (app.Environment.IsDevelopment())
 
 // Redirección automática de la ruta raíz hacia la interfaz visual Swagger para facilitar inspección en el navegador.
 app.MapGet("/", () => Results.Redirect("/swagger"));
+
+// HSTS en entornos no-Development: fuerza HTTPS en el navegador durante un año.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+}
 
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
